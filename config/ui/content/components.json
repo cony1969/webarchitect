@@ -1,0 +1,294 @@
+{
+    "native": [
+        {
+            "category": "Formulárové prvky",
+            "items": [
+                {
+                    "id": "import-textove-pole-input",
+                    "name": "Textové pole (Input)",
+                    "path": "native/formularove-prvky/textove-pole-input/textove-pole-input.json"
+                },
+                {
+                    "id": "import-textova-oblast-textarea",
+                    "name": "Textová oblasť (Textarea)",
+                    "path": "native/formularove-prvky/textova-oblast-textarea/textova-oblast-textarea.json"
+                },
+                {
+                    "id": "import-vyberove-pole-select",
+                    "name": "Výberové pole (Select)",
+                    "path": "native/formularove-prvky/vyberove-pole-select/vyberove-pole-select.json"
+                },
+                {
+                    "id": "checkbox",
+                    "name": "Zaškrtávacie pole (Checkbox)"
+                },
+                {
+                    "id": "radio",
+                    "name": "Prepínač (Radio Button)"
+                },
+                {
+                    "id": "form-file",
+                    "name": "Nahrávanie súboru (File Input)"
+                }
+            ]
+        },
+        {
+            "category": "Text a Obsah",
+            "items": [
+                {
+                    "id": "heading",
+                    "name": "Nadpisy (H1 - H6)"
+                },
+                {
+                    "id": "paragraph",
+                    "name": "Paragraf (Paragraph)"
+                },
+                {
+                    "id": "table",
+                    "name": "Tabuľka (Table)"
+                },
+                {
+                    "id": "list-unordered",
+                    "name": "Neusporiadaný zoznam (UL/LI)"
+                },
+                {
+                    "id": "list-ordered",
+                    "name": "Usporiadaný zoznam (OL/LI)"
+                },
+                {
+                    "id": "block-quote",
+                    "name": "Citácia (Blockquote)"
+                }
+            ]
+        },
+        {
+            "category": "Navigácia, Tlačidlá a Odkazy",
+            "items": [
+                {
+                    "id": "button",
+                    "name": "Tlačidlo (Button)"
+                },
+                {
+                    "id": "link",
+                    "name": "Odkaz (Anchor)"
+                },
+                {
+                    "id": "nav-native",
+                    "name": "Navigačný blok (Nav)"
+                }
+            ]
+        },
+        {
+            "category": "Médiá a Bloky",
+            "items": [
+                {
+                    "id": "image-native",
+                    "name": "Obrázok (Img)"
+                },
+                {
+                    "id": "video-native",
+                    "name": "Video prehrávač (Video)"
+                },
+                {
+                    "id": "container-div",
+                    "name": "Prázdny blok (Div)"
+                },
+                {
+                    "id": "container-section",
+                    "name": "Sekcia (Section)"
+                }
+            ]
+        }
+    ],
+    "bootstrap": [
+        {
+            "category": "Editor a Rozšírenia",
+            "items": [
+                {
+                    "id": "bootstrap-editor",
+                    "name": "Rich Text Editor (WYSIWYG)"
+                }
+            ]
+        },
+        {
+            "category": "Interaktívne komponenty (JS Bundle)",
+            "items": [
+                {
+                    "id": "bs-modal",
+                    "name": "Modálne okno (Modal)"
+                },
+                {
+                    "id": "bs-accordion",
+                    "name": "Akordeón (Accordion)"
+                },
+                {
+                    "id": "bs-carousel",
+                    "name": "Rotátor obrázkov (Carousel)"
+                },
+                {
+                    "id": "bs-dropdown",
+                    "name": "Rozbaľovacie menu (Dropdown)"
+                },
+                {
+                    "id": "bs-offcanvas",
+                    "name": "Bočný vysúvací panel (Offcanvas)"
+                },
+                {
+                    "id": "bs-toast",
+                    "name": "Notifikačné okno (Toast)"
+                },
+                {
+                    "id": "bs-tooltip",
+                    "name": "Bublinová nápoveda (Tooltip)"
+                },
+                {
+                    "id": "bs-popover",
+                    "name": "Rozšírená nápoveda (Popover)"
+                }
+            ]
+        },
+        {
+            "category": "Navigácia a Rozvrhnutie",
+            "items": [
+                {
+                    "id": "bs-navbar",
+                    "name": "Hlavná lišta (Navbar)"
+                },
+                {
+                    "id": "bs-navs-tabs",
+                    "name": "Záložky a Navigácia (Navs & Tabs)"
+                },
+                {
+                    "id": "bs-breadcrumb",
+                    "name": "Omrvinková navigácia (Breadcrumb)"
+                },
+                {
+                    "id": "bs-pagination",
+                    "name": "Stránkovanie (Pagination)"
+                }
+            ]
+        },
+        {
+            "category": "Zobrazenie dát a Prvky",
+            "items": [
+                {
+                    "id": "bs-card",
+                    "name": "Karta (Card)"
+                },
+                {
+                    "id": "bs-table",
+                    "name": "Tabuľka (Table)"
+                },
+                {
+                    "id": "bs-datatable",
+                    "name": "Tabuľka z dát (DataTable)"
+                },
+                {
+                    "id": "bs-list-group",
+                    "name": "Zoznamová skupina (List Group)"
+                },
+                {
+                    "id": "bs-alert",
+                    "name": "Upozornenie (Alert)"
+                },
+                {
+                    "id": "bs-badge",
+                    "name": "Odznak (Badge)"
+                },
+                {
+                    "id": "bs-progress",
+                    "name": "Ukazovateľ priebehu (Progress Bar)"
+                },
+                {
+                    "id": "bs-spinner",
+                    "name": "Indikátor načítania (Spinner)"
+                },
+                {
+                    "id": "bs-placeholder",
+                    "name": "Načítavacia maketa (Placeholder)"
+                }
+            ]
+        },
+        {
+            "category": "Bootstrap Pokročilé Formuláre",
+            "items": [
+                {
+                    "id": "bs-form-control",
+                    "name": "Formulárové pole (Floating Labels)"
+                },
+                {
+                    "id": "bs-input-group",
+                    "name": "Skupina vstupov (Input Group)"
+                },
+                {
+                    "id": "bs-checks-radios",
+                    "name": "Prepínače (Checks & Radios)"
+                },
+                {
+                    "id": "bs-range",
+                    "name": "Posuvník rozsahu (Range)"
+                }
+            ]
+        }
+    ],
+    "other": [
+        {
+            "category": "Menu",
+            "items": [
+                {
+                    "id": "custom-sidebar",
+                    "name": "Sidebar"
+                },
+                {
+                    "id": "custom-topmenu",
+                    "name": "Top menu"
+                },
+                {
+                    "id": "custom-dropdown",
+                    "name": "Dropdown"
+                },
+                {
+                    "id": "import-title",
+                    "name": "Title",
+                    "path": "other/title.json"
+                }
+            ]
+        },
+        {
+            "category": "Pokročilé Formuláre",
+            "items": [
+                {
+                    "id": "custom-form",
+                    "name": "Formulár"
+                },
+                {
+                    "id": "custom-field",
+                    "name": "Pole formulára"
+                }
+            ]
+        },
+        {
+            "category": "Tabuľky a Zoznamy",
+            "items": [
+                {
+                    "id": "custom-table",
+                    "name": "Tabuľka"
+                },
+                {
+                    "id": "custom-list",
+                    "name": "Zoznam"
+                }
+            ]
+        },
+        {
+            "category": "Importované",
+            "items": [
+                {
+                    "id": "import-title",
+                    "name": "Title",
+                    "path": "other/title.json"
+                }
+            ]
+        }
+    ]
+}

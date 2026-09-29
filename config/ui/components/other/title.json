@@ -1,0 +1,19 @@
+{
+    "name": "Title",
+    "slug": "title",
+    "tab": "other",
+    "objects": {
+        "type": "div",
+        "class": "component",
+        "content": [
+            {
+                "type": "h3",
+                "content": "Novy komponent"
+            },
+            {
+                "type": "p",
+                "content": "Sem vlozte HTML obsah..."
+            }
+        ]
+    }
+}

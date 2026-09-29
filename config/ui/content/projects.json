@@ -1,0 +1,58 @@
+{
+    "user_1": [
+        {
+            "id": "project-1785185437814",
+            "name": "Test",
+            "domains": [
+                {
+                    "id": "domain-1785185466765",
+                    "name": "test.pokerclub.sk",
+                    "pages": [
+                        {
+                            "id": "page-1785185477088",
+                            "name": "index"
+                        },
+                        {
+                            "id": "page-1785185484318",
+                            "name": "new-page"
+                        },
+                        {
+                            "id": "page-1785583574962",
+                            "name": "test-page"
+                        }
+                    ]
+                }
+            ]
+        }
+    ],
+    "user_2": [
+        {
+            "id": "project-1785185437814",
+            "name": "Test",
+            "domains": [
+                {
+                    "id": "domain-1785185466765",
+                    "name": "test.pokerclub.sk",
+                    "pages": [
+                        {
+                            "id": "page-1785185477088",
+                            "name": "index"
+                        },
+                        {
+                            "id": "page-1785185484318",
+                            "name": "new-page"
+                        },
+                        {
+                            "id": 1785671151858,
+                            "name": "test-page"
+                        },
+                        {
+                            "id": 1785671162434,
+                            "name": "next-page"
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

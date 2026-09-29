@@ -1,0 +1,26 @@
+[
+    {
+        "id": "layout-1785191678501",
+        "name": "blank"
+    },
+    {
+        "id": "layout-1785357144261",
+        "name": "table"
+    },
+    {
+        "id": "layout-1785357150418",
+        "name": "form"
+    },
+    {
+        "id": "layout-1785357164059",
+        "name": "sidebar"
+    },
+    {
+        "id": "layout-1785357177985",
+        "name": "topbar"
+    },
+    {
+        "id": "layout-1785357198757",
+        "name": "tobbar + sidebar"
+    }
+]

@@ -1,0 +1,8 @@
+{
+    "name": "Textová oblasť (Textarea)",
+    "slug": "textova-oblast-textarea",
+    "tab": "native",
+    "objects": {
+        "type": "textarea"
+    }
+}

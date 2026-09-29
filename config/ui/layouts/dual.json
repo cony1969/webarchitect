@@ -1,0 +1,28 @@
+{
+  "theme": "default",
+  "sidebar_collapsed": false,
+  "fixed_header": true,
+  "top_menu_sticky": true,
+  "sidebar": {
+    "width": 320
+  },
+  "blocks": {
+    "block_1": {
+      "title": "Komponenty",
+      "height": 220,
+      "component": "content.components",
+      "tabs": [
+        { "id": "native", "title": "Natívne" },
+        { "id": "bootstrap", "title": "Bootstrap" },
+        { "id": "other", "title": "Ostatné" }
+      ]
+    },
+    "block_2": {
+      "title": "Layouts",
+      "height": 220
+    },
+    "block_3": {
+      "title": "Projekty"
+    }
+  }
+}

@@ -1,0 +1,13 @@
+{
+    "name": "Výberové pole (Select)",
+    "slug": "vyberove-pole-select",
+    "tab": "native",
+    "objects": {
+        "type": "select",
+        "content": [
+            {
+                "type": "option"
+            }
+        ]
+    }
+}

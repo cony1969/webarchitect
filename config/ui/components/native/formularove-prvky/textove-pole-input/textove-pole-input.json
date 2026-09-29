@@ -1,0 +1,8 @@
+{
+    "name": "Textové pole (Input)",
+    "slug": "textove-pole-input",
+    "tab": "native",
+    "objects": {
+        "type": "input"
+    }
+}
