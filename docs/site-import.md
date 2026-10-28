@@ -6,7 +6,7 @@ Táto etapa nevytvára projekt, pracovnú kópiu, stránky ani súbory. Nespúš
 
 ## Zdroj a oprávnenia
 
-`config/site-import.php` obsahuje explicitný zoznam povolených účtov a zdrojov na tomto serveri. Prvý účet (ID 1) má povolenú `postovna.online`, koreň `/www/wwwroot/postovna.online`, alias `www.postovna.online`. Doména bola overená v konfigurácii virtuálneho hosta. Katalóg sa zatiaľ dopĺňa na serveri; nie je to automatický úplný inventár všetkých DNS subdomén. Pri ďalšom samostatnom webe sa pridá samostatná položka aj jeho skutočný document root. Alias toho istého koreňa nie je duplicitný projekt/doména.
+`config/site-import.php` obsahuje explicitný zoznam povolených účtov a zdrojov na tomto serveri. Osobný účet `dex.kralik@gmail.com` (ID 2) má povolenú `postovna.online`, koreň `/www/wwwroot/postovna.online`, alias `www.postovna.online`. Doména bola overená v konfigurácii virtuálneho hosta. Katalóg sa zatiaľ dopĺňa na serveri; nie je to automatický úplný inventár všetkých DNS subdomén. Pri ďalšom samostatnom webe sa pridá samostatná položka aj jeho skutočný document root. Alias toho istého koreňa nie je duplicitný projekt/doména.
 
 Backend overuje oprávnenie pri čítaní katalógu aj analýze. Neprijíma ľubovoľnú cestu, URL ani koreň od klienta a neposkytuje čítanie obsahu súborov. Symbolické odkazy sa neprechádzajú. Skryté súbory, zálohy, cache a koreňové adresáre vendor/node_modules/storage sa vynechávajú. `assets/vendor` sa započítava, lebo obsahuje potrebné frontend knižnice. Analýza má limit počtu a celkovej veľkosti súborov; veľké jednotlivé zdrojové súbory sa neparsujú.
 
