@@ -12,12 +12,12 @@
             get active() { return this.current !== null; },
             get isDomain() { return this.current?.kind === 'domain'; },
             defaults(settings = {}) {
-                return { ...clone(config.defaults), ...clone(settings), setup: { ...config.defaults.setup, ...(settings.setup || {}) } };
+                return { ...clone(config.defaults), ...clone(settings), setup: { ...config.defaults.setup, ...(settings.setup || {}) }, bootstrap: { colors: { ...config.defaults.bootstrap.colors, ...(settings.bootstrap?.colors || {}) } } };
             },
             ensure(key, id = null, kind = 'project', projectId = null) {
                 if (!this.drafts[key]) {
                     const form = kind === 'domain' ? { name: '', status: 'draft', settings: this.defaults() } : { name: '' };
-                    this.drafts[key] = { id, kind, projectId, projectName: '', overview: {}, revision: 1, form, document: null, baseline: JSON.stringify(form), loaded: !id, loading: false, saving: false, error: '', errors: {}, notice: '', conflict: false, copyOpen: false, copyName: '', copySlug: '', autoSlug: true };
+                    this.drafts[key] = { id, kind, projectId, projectName: '', propertyTab: 'general', overview: {}, revision: 1, form, document: null, baseline: JSON.stringify(form), loaded: !id, loading: false, saving: false, error: '', errors: {}, notice: '', conflict: false, copyOpen: false, copyName: '', copySlug: '', autoSlug: true };
                 }
                 if (id && !this.drafts[key].id) { this.drafts[key].id = id; this.drafts[key].loaded = false; }
                 return this.drafts[key];
@@ -140,6 +140,10 @@
         }));
         Alpine.data('waProjectProperties', () => ({
             select: null,
+            get draft() { return this.$store.projectEditor.current; },
+            get propertyTab() { return this.draft?.propertyTab || 'general'; },
+            changePropertyTab(tab) { if (this.draft) this.draft.propertyTab = tab; },
+            resetBootstrapColors() { this.draft.form.settings.bootstrap.colors = clone(config.defaults.bootstrap.colors); },
             init() {
                 this.$nextTick(() => {
                     this.select = window.jQuery(this.$refs.projectType);

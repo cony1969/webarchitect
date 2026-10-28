@@ -14,6 +14,9 @@ class DomainSettings
             throw ValidationException::withMessages(['settings.setup' => 'Nastavenia vytvorenia webu musia byť objekt.']);
         }
         Validator::make(['settings' => $settings], [
+            'settings.bootstrap' => ['sometimes', 'array:colors'],
+            'settings.bootstrap.colors' => ['sometimes', 'array:'.implode(',', array_keys(config('domain-editor.bootstrap_colors')))],
+            'settings.bootstrap.colors.*' => ['required', 'string', 'regex:/^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/'],
             'settings.site_type' => ['sometimes', 'filled', Rule::in(array_keys(config('domain-editor.types')))],
             'settings.description' => ['sometimes', 'string', 'max:5000'],
             'settings.git_repository' => ['sometimes', 'string', 'max:500', function ($attribute, $value, $fail) {
@@ -33,6 +36,15 @@ class DomainSettings
             'settings.setup.database_engine' => ['sometimes', 'filled', Rule::in(array_keys(config('domain-editor.databases')))],
         ])->validate();
 
-        return array_replace_recursive(config('domain-editor.defaults'), $settings);
+        $result = array_replace_recursive(config('domain-editor.defaults'), $settings);
+        foreach ($result['bootstrap']['colors'] as &$color) {
+            $color = strtolower($color);
+            if (strlen($color) === 4) {
+                $color = '#'.$color[1].$color[1].$color[2].$color[2].$color[3].$color[3];
+            }
+        }
+        unset($color);
+
+        return $result;
     }
 }

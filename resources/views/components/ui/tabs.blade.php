@@ -25,7 +25,7 @@
     >
 @endif
 
-<ul @if($accessiblePrefix) role="tablist" aria-label="Vlastnosti komponentu" @endif class="nav" style="border-bottom: 2px solid var(--wa-border-strong); margin-bottom: {{ $scrollable ? '0' : '15px' }}; display: flex; flex-wrap: {{ $scrollable ? 'nowrap' : 'wrap' }}; padding-left: 0; list-style: none; width: {{ $scrollable ? 'max-content' : '100%' }}; min-width: {{ $scrollable ? '100%' : '0' }}; gap: 5px;">
+<ul @if($accessiblePrefix) role="tablist" aria-label="Záložky vlastností" @endif class="nav" style="border-bottom: 2px solid var(--wa-border-strong); margin-bottom: {{ $scrollable ? '0' : '15px' }}; display: flex; flex-wrap: {{ $scrollable ? 'nowrap' : 'wrap' }}; padding-left: 0; list-style: none; width: {{ $scrollable ? 'max-content' : '100%' }}; min-width: {{ $scrollable ? '100%' : '0' }}; gap: 5px;">
     @foreach($tabs as $tab)
         @php
             $tabId = $tab['id'] ?? '';

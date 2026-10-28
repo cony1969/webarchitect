@@ -116,11 +116,18 @@
                     this.store.stylesChanged(this.key);
                 }
                 this.ui.search = '';
-                this.$nextTick(() => this.$root.querySelector('[data-css-row="' + row.id + '"] input:nth-of-type(2)')?.focus());
+                this.$nextTick(() => this.$root.querySelector('[data-css-row="' + row.id + '"] [data-css-value]')?.focus());
             },
             addStyleRow() {
                 const row = blankRow(); this.ui.styleRows.push(row);
                 this.$nextTick(() => this.$root.querySelector('[data-css-row="' + row.id + '"] input')?.focus());
+            },
+            colorsFor(row) { return window.waColors.rowColors(row); },
+            setRowColor(row, index, value) {
+                const token = this.colorsFor(row)[index];
+                if (!token) return;
+                row.value = window.waColors.replaceColor(row.value, token, value);
+                this.store.stylesChanged(this.key);
             },
             removeStyleRow(index) { this.ui.styleRows.splice(index, 1); this.store.stylesChanged(this.key); },
         }));

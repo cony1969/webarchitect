@@ -50,7 +50,14 @@
                     <div class="wa-css-row" :data-css-row="row.id" @input="store.stylesChanged(key)">
                         <input type="text" :aria-label="'CSS vlastnosť ' + (index + 1)" x-model="row.name" maxlength="128" placeholder="napr. padding" list="wa-css-property-names" spellcheck="false" autocomplete="off">
                         <span aria-hidden="true">:</span>
-                        <input type="text" :aria-label="'CSS hodnota ' + (index + 1)" x-model="row.value" maxlength="20000" placeholder="napr. 20px" spellcheck="false" autocomplete="off">
+                        <div class="wa-css-value">
+                            <input type="text" data-css-value :aria-label="'CSS hodnota ' + (index + 1)" x-model="row.value" maxlength="20000" placeholder="napr. 20px" spellcheck="false" autocomplete="off">
+                            <div class="wa-css-colors" x-show="colorsFor(row).length">
+                                <template x-for="(token, colorIndex) in colorsFor(row)" :key="colorIndex">
+                                    <span x-data="waColorPicker({get: () => colorsFor(row)[colorIndex]?.color || '', set: value => setRowColor(row, colorIndex, value), disabled: () => !draft?.loaded || draft.loading || draft.saving || !!draft.codeError || !ui.editable, label: 'Vybrať farbu pre ' + row.name + ' · ' + (colorIndex + 1)})"><button type="button" class="wa-color-trigger" x-ref="color" :aria-label="'Vybrať farbu pre ' + row.name + ' · ' + (colorIndex + 1)"><span aria-hidden="true">▾</span></button></span>
+                                </template>
+                            </div>
+                        </div>
                         <button type="button" :aria-label="'Odstrániť CSS riadok ' + (index + 1)" @click="removeStyleRow(index)" class="wa-css-remove">×</button>
                     </div>
                 </template>

@@ -73,3 +73,25 @@ aj rozšírené nastavenia; po vymazaní dotazu sa vráti pôvodný výber. Nast
 upravené cez výsledky ostane medzi pridanými ovládačmi. CSS ponúka bežné vlastnosti
 aj vlastné názvy už použité v komponente. Kliknutie pridá riadok alebo zameria
 existujúci, bez vytvorenia duplicity; samotné vyhľadávanie definíciu nemení.
+
+## Farby domény a komponentov
+
+Vlastnosti domény majú záložky Všeobecné a Bootstrap. Každá doména ukladá vlastnú
+paletu ôsmich významových farieb v `settings.bootstrap.colors`. Hex hodnoty sa
+validujú na serveri a normalizujú na šesťmiestny zápis. Paleta sa prenesie aj pri
+kopírovaní domény, bez ovplyvnenia pôvodnej alebo susednej domény.
+
+Náhľad stránky načíta paletu svojej domény. Pri súčasnom Bootstrape 5.0.2 sa okrem
+premenných dopĺňajú farebné utility, tlačidlá a outline tlačidlá, odkazy a alerty;
+primary aj pre bežné aktívne navigačné prvky. Ďalšie zložené komponenty budú
+pribúdať postupne spolu s ich tematizáciou. Predvolená paleta CSS nemení.
+Tieto štýly sa vkladajú do izolovaného náhľadu, nie do rozhrania CMS.
+Publikovanie alebo prestavba pôvodného webu zostáva ďalším krokom.
+
+Výber farieb používa existujúci lokálny Spectrum color picker. V komponentoch je
+picker pri CSS farbách vrátane jednotlivých farieb v orámovaní, tieňoch a gradientoch.
+Zmena zachová rozmery, funkcie, ostatné farby aj `!important`. URL, komentáre a
+reťazce sa neinterpretujú ako farby. Textový vstup ostáva dostupný aj pre CSS
+premenné a moderné farebné formáty; picker ich neprepisuje bez výberu používateľa.
+Priehľadnosť je dostupná pre CSS komponentu; významová paleta Bootstrapu používa
+nepriehľadné farby. Klik na Zrušiť nemení definíciu.

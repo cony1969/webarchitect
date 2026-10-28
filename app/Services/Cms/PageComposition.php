@@ -81,12 +81,18 @@ class PageComposition
     {
         $page->load('project', 'domain');
 
+        $composition = $this->resolve($user, $page->document, $page->project_id);
+        $palette = app(BootstrapPalette::class)->css($page->domain?->settings['bootstrap']['colors'] ?? []);
+        if ($palette !== '') {
+            $composition['preview']['css'] = $palette."\n".$composition['preview']['css'];
+        }
+
         return array_merge([
             'id' => $page->id, 'legacy_id' => $page->legacy_id, 'name' => $page->name, 'slug' => $page->slug,
             'revision' => $page->revision, 'project_id' => $page->project_id, 'project_name' => $page->project?->name,
             'project_legacy_id' => $page->project?->legacy_id, 'domain_legacy_id' => $page->domain?->legacy_id,
             'domain_id' => $page->domain_id, 'domain_name' => $page->domain?->name,
             'placements_count' => count(array_filter($page->document['nodes'], fn ($node) => is_array($node) && $node['type'] === 'cms-component')),
-        ], $this->resolve($user, $page->document, $page->project_id));
+        ], $composition);
     }
 }
