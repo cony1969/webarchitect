@@ -21,3 +21,5 @@
 #accordion-projects-content .wa-tree-actions{display:inline-flex;align-items:center;gap:2px;margin-left:auto;flex:0 0 auto}
 #accordion-projects-content .wa-tree-action,#accordion-projects-content .wa-tree-trash{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;flex:0 0 24px;padding:0;line-height:1}
 #accordion-projects-content .wa-tree-trash{color:#ef4444;opacity:.9;pointer-events:none}
+
+#accordion-projects-content .wa-tree-add{font-size:20px;font-weight:600}
