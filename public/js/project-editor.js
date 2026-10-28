@@ -7,7 +7,7 @@
     document.addEventListener('alpine:init', () => {
         const config = window.waProjectEditorConfig;
         Alpine.store('projectEditor', {
-            drafts: {}, activeKey: null,
+            drafts: {}, activeKey: null, activeMode: null,
             get current() { return this.activeKey ? this.drafts[this.activeKey] || null : null; },
             get active() { return this.current !== null; },
             get isDomain() { return this.current?.kind === 'domain'; },
@@ -27,6 +27,8 @@
                 return !!state && JSON.stringify(state.form) !== state.baseline;
             },
             activate(tab) {
+                this.activeMode = tab?.mode || null;
+                if (this.activeMode === 'import') emit('project-editor-focused', {});
                 this.activeKey = ['project', 'domain'].includes(tab?.mode) ? tab.id : null;
                 if (!this.activeKey) return;
                 const state = this.ensure(tab.id, tab.mode === 'domain' ? tab.domainId : tab.projectId, tab.mode, tab.projectId || null);
@@ -177,7 +179,7 @@
         setActiveTab(id) {
             this.activeTab = id;
             const mode = this.tabs.find(tab => tab.id === id)?.mode;
-            this.hoveredElement = mode === 'domain' ? 'Editor domény' : mode === 'project' ? 'Editor projektu' : 'Pracovná plocha (Canvas)';
+            this.hoveredElement = mode === 'import' ? 'Analýza webu' : mode === 'domain' ? 'Editor domény' : mode === 'project' ? 'Editor projektu' : 'Pracovná plocha (Canvas)';
             this.editor.activate(this.tabs.find(tab => tab.id === id));
             this.persistTabs();
             this.$nextTick(() => {
@@ -194,11 +196,12 @@
             if (mode === 'project') return detail?.projectId ? 'project:' + detail.projectId : 'project-draft:' + crypto.randomUUID();
             if (mode === 'domain') return detail?.domainId ? 'domain:' + detail.domainId : 'domain-draft:' + crypto.randomUUID();
             if (mode === 'profile') return 'profile';
+            if (mode === 'import') return 'site-import';
             if (mode === 'page') return 'page:' + [detail?.project?.id || 'project', detail?.domain?.id || 'domain', detail?.page?.id || detail?.page?.route || detail?.page?.name || title].join('|');
             return route ? 'route:' + route : 'mode:' + mode + '|title:' + title;
         },
         addTab(title = 'Nová stránka', mode = 'page', appendNumber = true, route = null, detail = {}) {
-            if (mode === 'profile' || ['project', 'domain'].includes(mode)) route = null;
+            if (mode === 'profile' || ['project', 'domain', 'import'].includes(mode)) route = null;
             const contentKey = this.buildContentKey(mode, route, title, detail);
             const existing = this.tabs.find(tab => tab.contentKey === contentKey || (mode === 'project' && tab.mode === 'project' && detail.projectId && tab.projectId === detail.projectId) || (mode === 'profile' && tab.mode === mode) || (route && tab.route === route));
             if (existing) { this.setActiveTab(existing.id); return existing; }
@@ -253,7 +256,7 @@
         },
         updateInspector(event) {
             const target = event.target;
-            this.hoveredElement = ['project', 'domain'].includes(this.currentMode) ? (this.currentMode === 'domain' ? 'Editor domény' : 'Editor projektu') : (target?.getAttribute('data-name') || target?.tagName?.toLowerCase() || 'Pracovná plocha (Canvas)');
+            this.hoveredElement = this.currentMode === 'import' ? 'Analýza webu' : ['project', 'domain'].includes(this.currentMode) ? (this.currentMode === 'domain' ? 'Editor domény' : 'Editor projektu') : (target?.getAttribute('data-name') || target?.tagName?.toLowerCase() || 'Pracovná plocha (Canvas)');
         },
         destroy() { clearTimeout(this.persistTimer); },
     });

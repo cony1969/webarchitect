@@ -239,6 +239,9 @@
     <x-ui.accordion-header section="projects" :title="$layout['blocks']['block_3']['title'] ?? 'Projekty'" action-label="Nový projekt" action="triggerModal()" />
     
     <div class="block-content sidebar-accordion-content" id="accordion-projects-content" role="region" aria-labelledby="accordion-projects-toggle" x-show="activeSection === 'projects'" x-cloak style="padding: 10px 15px; flex: 1; overflow-y: auto; color: #fff; font-size: 13px; user-select: none;">
+        @if(in_array((int) auth()->id(), config('site-import.user_ids', []), true))
+            <button type="button" class="btn wa-project-secondary mb-3" style="width:100%;font-size:12px" @click="$dispatch('add-new-tab', { title: 'Import z ASUS-u', mode: 'import' })">Načítať web z ASUS-u</button>
+        @endif
         <template x-for="project in projects" :key="project.id">
             <div style="margin-bottom: 8px;">
                 <!-- 1. ÚROVEŇ: PROJEKT -->

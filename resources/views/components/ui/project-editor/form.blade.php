@@ -52,5 +52,8 @@
         </template>
         <p class="wa-project-muted" x-show="draft.id && !(draft.overview.domains || []).length">Projekt zatiaľ nemá doménu ani subdoménu.</p>
     </section>
+    @if(in_array((int) auth()->id(), config('site-import.user_ids', []), true))
+        <section class="wa-project-card"><h2>Existujúci web</h2><p class="wa-project-muted">Pred načítaním webu si pozrite jeho štruktúru a dostupné subdomény.</p><button type="button" class="btn wa-project-secondary" @click="$dispatch('add-new-tab', { title: 'Import z ASUS-u', mode: 'import' })">Načítať web z ASUS-u</button></section>
+    @endif
     <x-ui.project-editor.copy />
 </div>

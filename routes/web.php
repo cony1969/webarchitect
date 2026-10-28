@@ -4,6 +4,7 @@ use App\Http\Controllers\Cms\DocumentController;
 use App\Http\Controllers\Cms\DomainController;
 use App\Http\Controllers\Cms\LegacyTreeController;
 use App\Http\Controllers\Cms\ProjectTreeController;
+use App\Http\Controllers\Cms\SiteImportController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\UI\ComponentImportController;
 use App\Models\UserSetting;
@@ -19,6 +20,8 @@ Route::get('/dashboard', function () {
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
+    Route::get('/api/cms/site-import/sources', [SiteImportController::class, 'sources']);
+    Route::post('/api/cms/site-import/analyze', [SiteImportController::class, 'analyze'])->middleware('throttle:10,1');
     Route::get('/api/cms/domains', [DomainController::class, 'index']);
     Route::post('/api/cms/domains', [DomainController::class, 'store']);
     Route::get('/api/cms/domains/{id}', [DomainController::class, 'show'])->whereUuid('id');
