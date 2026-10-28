@@ -157,6 +157,7 @@
                         this.$store.componentEditor.stylesChanged(this.$store.componentEditor.activeKey);
                     });
                     this.$watch('row.name', () => this.sync());
+                    this.$watch('draft?.controls.styleRows.map(item => item.id).join(",")', () => this.sync());
                     this.$watch('draft?.saving', () => this.sync());
                     this.$watch('draft?.loading', () => this.sync());
                     this.$watch('draft?.codeError', () => this.sync());

@@ -114,3 +114,21 @@ Pri samostatných farebných vlastnostiach sa hodnota zobrazuje iba farebným
 tlačidlom. Kód ostáva v JSON a v otvorenom pickeri. Viacfarebné hodnoty majú
 samostatné tlačidlá pre jednotlivé farby. Zložené vlastnosti ako border a box-shadow
 zachovávajú textový vstup pre rozmery a štýl aj pickery pre jednotlivé farby.
+
+## Grafický box model v CSS komponentu
+
+V záložke CSS je vnorený diagram margin / border / padding / obsah. Úprava strany
+vytvorí alebo aktualizuje príslušný fyzický longhand v rovnakom zozname CSS riadkov,
+napríklad `margin-top` alebo `border-left-width`. Nevzniká druhý zdroj nastavení.
+JSON, náhľad a existujúce ukladanie používajú tieto isté deklarácie. Prepínače
+Spojiť strany aplikujú ďalšiu úpravu na všetky štyri strany. Okraj má výber strany,
+štýlu a farebné tlačidlo; nová šírka bez explicitného štýlu pridá `solid`.
+
+Diagram číta inline štýl cez CSSStyleDeclaration, vrátane existujúcich shorthandov
+a priority deklarácií. Nezobrazuje vypočítané rozmery ani hodnoty externých tried.
+Prázdne pole označuje nenastavenú inline vlastnosť. Číslo bez jednotky znamená px,
+iné jednotky, `auto` pre margin, `calc()` a `var()` sa zachovávajú. Prehliadač
+validuje hodnotu pred zápisom. Vymazanie odstráni iba daný longhand a môže odkryť
+pôvodný shorthand. Zmena strany sa zaradí za pôvodné deklarácie; dôležité inline
+štýly a prítomné Bootstrap utility zachovajú účinok cez `!important`. Ostatné
+triedy, korene a štýly komponentu sa nemenia.

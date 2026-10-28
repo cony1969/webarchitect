@@ -40,6 +40,7 @@
         </div>
         <div id="component-property-css" role="tabpanel" aria-labelledby="component-property-tab-css" x-show="ui.tab === 'css'">
             <fieldset class="wa-project-fields" :disabled="!draft.loaded || draft.loading || draft.saving || !!draft.codeError || !ui.editable">
+                <x-ui.component-editor.box-model />
                 <p class="wa-project-muted" role="status" x-show="ui.search.trim()" x-text="cssResults.length ? 'Filter Select2: ' + cssResults.length + ' vlastností' : 'Žiadna vlastnosť nezodpovedá filtru.'"></p>
                 <div class="wa-css-heading"><strong>CSS vlastnosti</strong><button type="button" class="wa-control-plus" aria-label="Pridať CSS riadok" @click="addStyleRow()">+</button></div>
                 <div class="wa-css-row-labels" aria-hidden="true"><span>Vlastnosť</span><span>Hodnota</span></div>

@@ -62,3 +62,13 @@ it('offers utility choices available in the installed Bootstrap CSS and renders 
     }
     $this->get('/dashboard')->assertOk()->assertSee('component-controls.js')->assertSee('Základné nastavenia')->assertSee('Pridať CSS riadok')->assertSee('Zobraziť všetky nastavenia')->assertSee('waCssProperty(row)', false)->assertSee('Filter Select2:');
 });
+
+
+it('persists box model longhands alongside shorthands and Bootstrap classes', function () {
+    $this->source['objects']['class'] = 'container p-3';
+    $rows = [['name'=>'padding','value'=>'10px 20px'], ['name'=>'padding-top','value'=>'24px !important'], ['name'=>'border-left-width','value'=>'2px'], ['name'=>'border-left-style','value'=>'solid'], ['name'=>'border-left-color','value'=>'#008080']];
+    $this->postJson('/ui/components/editor', array_replace($this->payload, ['json_content'=>json_encode($this->source), 'style_rows'=>$rows]))->assertOk();
+    $saved = $this->component->fresh()->document['nodes'][0]['attributes'];
+    expect($saved['class'])->toBe('container p-3')->and($saved['style'])->toBe('padding: 10px 20px; padding-top: 24px !important; border-left-width: 2px; border-left-style: solid; border-left-color: #008080;');
+    $this->get('/dashboard')->assertOk()->assertSee('js/box-model.js', false)->assertSee('Box model')->assertSee('margin hore')->assertSee('padding vľavo')->assertSee('Farba okraja');
+});
