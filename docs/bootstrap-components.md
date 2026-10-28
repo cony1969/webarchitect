@@ -70,9 +70,9 @@ oddelená od knižnice; editory projektu a domény tieto záložky nemajú.
 Vyhľadávanie v záložkách Bootstrap a CSS rozpoznáva slovenské aj anglické názvy,
 bez ohľadu na veľké písmená, diakritiku či pomlčky. Bootstrap pri hľadaní prechádza
 aj rozšírené nastavenia; po vymazaní dotazu sa vráti pôvodný výber. Nastavenie
-upravené cez výsledky ostane medzi pridanými ovládačmi. CSS ponúka bežné vlastnosti
-aj vlastné názvy už použité v komponente. Kliknutie pridá riadok alebo zameria
-existujúci, bez vytvorenia duplicity; samotné vyhľadávanie definíciu nemení.
+upravené cez výsledky ostane medzi pridanými ovládačmi. CSS ponúka celý katalóg vlastností v Select2 vrátane vlastných názvov už použitých
+v komponente. Horné vyhľadávanie filtruje ponuku Select2; samotné vyhľadávanie
+definíciu nemení. Nový riadok sa pridáva tlačidlom +.
 
 ## Farby domény a komponentov
 
@@ -95,3 +95,22 @@ reťazce sa neinterpretujú ako farby. Textový vstup ostáva dostupný aj pre C
 premenné a moderné farebné formáty; picker ich neprepisuje bez výberu používateľa.
 Priehľadnosť je dostupná pre CSS komponentu; významová paleta Bootstrapu používa
 nepriehľadné farby. Klik na Zrušiť nemení definíciu.
+
+## Select2 pre CSS vlastnosti
+
+Pole Vlastnosť používa Select2 s lokálnym katalógom 671 CSS názvov z MDN Data
+2.37.2 (`css/properties.json`, CC0, prevzaté 2026-10-28). Zdroj:
+https://github.com/mdn/data/blob/main/css/properties.json . Názvy sú uložené v
+`resources/data/css-properties.json`, licencia v `resources/data/MDN-DATA-LICENSE`.
+Abstraktný záznam `--*` sa neponúka; konkrétne vlastné premenné `--nazov` možno
+pridať v Select2. Existujúce neznáme názvy z JSON zostávajú zachované.
+
+Horné vyhľadávanie filtruje ponuku každého CSS Select2. Vnútorné vyhľadávanie
+Select2 môže výsledky ďalej zúžiť. Obe podmienky sa vyhodnocujú spoločne; vyhľadávanie rozpoznáva slovenské
+slová a ignoruje diakritiku. Bežné názvy sú pred vendorovými rozšíreniami. Filter nemení existujúce riadky ani hodnoty.
+Tlačidlo + otvorí nový výber s aktuálnym filtrom.
+
+Pri samostatných farebných vlastnostiach sa hodnota zobrazuje iba farebným
+tlačidlom. Kód ostáva v JSON a v otvorenom pickeri. Viacfarebné hodnoty majú
+samostatné tlačidlá pre jednotlivé farby. Zložené vlastnosti ako border a box-shadow
+zachovávajú textový vstup pre rozmery a štýl aj pickery pre jednotlivé farby.

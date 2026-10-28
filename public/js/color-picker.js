@@ -35,14 +35,21 @@
         }
         return result;
     };
+    const colorOnly = row => {
+        const name = String(row.name || '').trim().toLowerCase();
+        if (/(?:^|-)color$|^(?:fill|stroke)$/.test(name)) return true;
+        if (name !== 'background' && !name.startsWith('--')) return false;
+        const colors = colorTokens(row.value);
+        return colors.length === 1 && !row.value.slice(0, colors[0].start).trim() && /^(?:\s*!important)?\s*$/i.test(row.value.slice(colors[0].end));
+    };
     const rowColors = row => {
         if (!colorProperty(row.name)) return [];
         const result = colorTokens(row.value);
-        if (!result.length && /^(?:\s*|\s*var\([\s\S]*\)\s*|\s*(?:inherit|initial|unset|revert|revert-layer)\s*)$/i.test(row.value)) return [{ start: 0, end: row.value.length, color: '' }];
+        if (!result.length && (colorOnly(row) || /^(?:\s*|\s*var\([\s\S]*\)\s*|\s*(?:inherit|initial|unset|revert|revert-layer)\s*)$/i.test(row.value))) return [{ start: 0, end: row.value.replace(/\s*!important\s*$/i, '').length, color: '' }];
         return result;
     };
     const replaceColor = (value, token, color) => value.slice(0, token.start) + color + value.slice(token.end);
-    window.waColors = { colorProperty, colorTokens, rowColors, replaceColor };
+    window.waColors = { colorProperty, colorTokens, rowColors, replaceColor, colorOnly };
     document.addEventListener('alpine:init', () => {
         Alpine.data('waColorPicker', options => ({
             widget: null,
@@ -58,8 +65,9 @@
                         show: () => this.widget.attr('aria-expanded', 'true'),
                         hide: () => { this.widget.attr('aria-expanded', 'false'); },
                     });
-                    this.widget.attr({ 'aria-label': options.label, 'aria-haspopup': 'dialog', 'aria-expanded': 'false' });
-                    this.widget.spectrum('container').attr({ role: 'dialog', 'aria-label': options.label });
+                    const label = typeof options.label === 'function' ? options.label() : options.label;
+                    this.widget.attr({ 'aria-label': label, 'aria-haspopup': 'dialog', 'aria-expanded': 'false' });
+                    this.widget.spectrum('container').attr({ role: 'dialog', 'aria-label': label });
                     this.$watch(() => options.get(), () => this.sync());
                     this.$watch(() => options.disabled(), () => this.sync());
                     this.sync();
@@ -72,7 +80,9 @@
                 const color = options.get() || '';
                 this.widget[0].style.setProperty('--wa-selected-color', color && CSS.supports('color', color) ? color : 'transparent');
                 this.widget.prop('disabled', options.disabled());
-                this.widget.attr({ 'aria-disabled': String(options.disabled()), title: color ? options.label + ': ' + color : options.label });
+                const label = typeof options.label === 'function' ? options.label() : options.label;
+                this.widget.attr({ 'aria-label': label, 'aria-disabled': String(options.disabled()), title: options.showValue !== false && color ? label + ': ' + color : label });
+                this.widget.spectrum('container').attr('aria-label', label);
             },
             destroy() { if (this.widget?.data('spectrum.id') !== undefined) this.widget.spectrum('destroy'); this.widget = null; },
         }));

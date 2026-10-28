@@ -73,11 +73,16 @@
         ['flex-direction', 'Smer flex'], ['flex-wrap', 'Zalamovanie flex'], ['justify-content', 'Rozloženie obsahu'], ['align-items', 'Zarovnanie prvkov'], ['align-self', 'Zarovnanie samotného prvku'], ['flex-grow', 'Roztiahnutie flex'], ['flex-shrink', 'Zmenšenie flex'], ['order', 'Poradie prvku'],
         ['grid-template-columns', 'Stĺpce mriežky'], ['grid-template-rows', 'Riadky mriežky'], ['cursor', 'Kurzor'], ['transform', 'Transformácia'], ['transition', 'Prechod'], ['object-fit', 'Prispôsobenie obrázka'], ['aspect-ratio', 'Pomer strán'],
     ].map(([name, label]) => ({ name, label }));
-    const cssSearchResults = (query, rows) => {
-        const known = new Set(cssProperties.map(property => property.name));
-        const custom = rows.map(row => String(row.name || '').trim()).filter(name => name && !known.has(name));
-        return [...cssProperties, ...[...new Set(custom)].map(name => ({ name, label: 'Vlastná vlastnosť' }))].filter(property => matchesSearch(query, property.name, property.label));
+    const cssWords = { color: 'farba', background: 'pozadie', border: 'oramovanie', width: 'sirka', height: 'vyska', min: 'minimalna', max: 'maximalna', top: 'hore horny', bottom: 'dole dolny', left: 'vlavo lavy', right: 'vpravo pravy', start: 'zaciatok', end: 'koniec', inline: 'riadkovy', block: 'blokovy', padding: 'vnutorne odsadenie', margin: 'vonkajsie odsadenie', text: 'text', font: 'pismo', size: 'velkost', weight: 'hrubka', style: 'styl', align: 'zarovnanie', shadow: 'tien', radius: 'zaoblenie rohov', gap: 'medzera', row: 'riadok', column: 'stlpec', grid: 'mriezka', flex: 'flex', wrap: 'zalamovanie', image: 'obrazok', position: 'pozicia', opacity: 'priehladnost', display: 'zobrazenie', overflow: 'pretekanie', animation: 'animacia', duration: 'trvanie', delay: 'oneskorenie', transform: 'transformacia', transition: 'prechod', scroll: 'rolovanie', outline: 'obrys', decoration: 'dekoracia', line: 'ciara riadok', spacing: 'rozostup', letter: 'pismeno', word: 'slovo', content: 'obsah', justify: 'rozlozenie', items: 'prvky', self: 'samotny prvok', cursor: 'kurzor', visibility: 'viditelnost', fill: 'vypln', stroke: 'tah', accent: 'zvyraznenie', caret: 'kurzor', scrollbar: 'rolovacia lista', selection: 'vyber', scheme: 'schema' };
+    const cssAliases = name => name.split('-').map(word => cssWords[word] || '').join(' ');
+    const cssCatalog = (rows = []) => {
+        const labels = new Map(cssProperties.map(property => [property.name, property.label]));
+        const names = new Set([...(window.waComponentPropertyConfig?.cssProperties || []), ...labels.keys(), ...rows.map(row => row.name.trim()).filter(Boolean)]);
+        return [...names].sort((a, b) => Number(a.startsWith('-')) - Number(b.startsWith('-')) || a.localeCompare(b)).map(name => ({ name, label: labels.get(name) || name, aliases: cssAliases(name) }));
     };
+    const cssMatches = (query, property) => matchesSearch(query, property.name, property.label, property.aliases);
+    const cssSearchResults = (query, rows) => cssCatalog(rows).filter(property => cssMatches(query, property));
+    const cssCustomProperty = value => /^--[a-zA-Z0-9_-]+$/.test(value);
     const state = () => ({ tab: 'basic', search: '', rootIndex: 0, rootOptions: [], editable: false, breakpoint: '', extraFields: [], allFields: false, allClasses: false, classTokens: [], styleRows: [], stylesTouched: false });
     const blankRow = () => ({ id: crypto.randomUUID(), name: '', value: '' });
     const sync = (draft, source) => {
@@ -92,7 +97,7 @@
         ui.styleRows = styleRows(String(attribute(node, 'style'))).map(row => ({ id: crypto.randomUUID(), ...row }));
         if (!ui.styleRows.length) ui.styleRows.push(blankRow());
     };
-    window.waComponentControls = { tokens, roots, attribute, setAttribute, styleRows, serializeStyles, fieldOptions, replaceField, state, blankRow, sync, normalizeSearch, matchesSearch, visibleFields, cssSearchResults };
+    window.waComponentControls = { tokens, roots, attribute, setAttribute, styleRows, serializeStyles, fieldOptions, replaceField, state, blankRow, sync, normalizeSearch, matchesSearch, visibleFields, cssSearchResults, cssCatalog, cssMatches, cssCustomProperty };
 
     document.addEventListener('alpine:init', () => {
         Alpine.data('waComponentProperties', () => ({
@@ -106,22 +111,14 @@
             get cssResults() { return cssSearchResults(this.ui.search, this.ui.styleRows); },
             changePropertyTab(tab) { this.ui.tab = tab; },
             addField() { if (this.extraField && !this.ui.extraFields.includes(this.extraField)) this.ui.extraFields.push(this.extraField); this.extraField = ''; },
-            useCssProperty(name) {
-                if (!this.ui.editable || this.draft.saving || this.draft.codeError) return;
-                let row = this.ui.styleRows.find(row => row.name.trim().toLowerCase() === name.toLowerCase());
-                if (!row) {
-                    row = this.ui.styleRows.find(row => !row.name.trim() && !row.value.trim());
-                    if (row) row.name = name;
-                    else { row = { ...blankRow(), name }; this.ui.styleRows.push(row); }
-                    this.store.stylesChanged(this.key);
-                }
-                this.ui.search = '';
-                this.$nextTick(() => this.$root.querySelector('[data-css-row="' + row.id + '"] [data-css-value]')?.focus());
-            },
             addStyleRow() {
                 const row = blankRow(); this.ui.styleRows.push(row);
-                this.$nextTick(() => this.$root.querySelector('[data-css-row="' + row.id + '"] input')?.focus());
+                this.$nextTick(() => requestAnimationFrame(() => {
+                    const select = this.$root.querySelector('[data-css-row="' + row.id + '"] [data-css-property]');
+                    if (select && window.jQuery(select).data('select2')) window.jQuery(select).select2('open');
+                }));
             },
+            colorOnly(row) { return window.waColors.colorOnly(row); },
             colorsFor(row) { return window.waColors.rowColors(row); },
             setRowColor(row, index, value) {
                 const token = this.colorsFor(row)[index];
@@ -130,6 +127,49 @@
                 this.store.stylesChanged(this.key);
             },
             removeStyleRow(index) { this.ui.styleRows.splice(index, 1); this.store.stylesChanged(this.key); },
+        }));
+        Alpine.data('waCssProperty', row => ({
+            row, widget: null,
+            get draft() { return this.$store.componentEditor.current; },
+            get query() { return this.draft?.controls.search || ''; },
+            init() {
+                this.$nextTick(() => {
+                    this.widget = window.jQuery(this.$refs.property);
+                    this.widget.append(new Option('', ''));
+                    for (const property of cssCatalog(this.draft?.controls.styleRows || [])) this.widget.append(new Option(property.name, property.name));
+                    this.widget.select2({
+                        width: '100%', placeholder: 'Vyberte vlastnosť…', allowClear: true, tags: true,
+                        dropdownCssClass: 'wa-project-type-dropdown wa-css-property-dropdown',
+                        matcher: (params, data) => {
+                            if (!data.id) return null;
+                            const property = { name: data.id, label: cssProperties.find(p => p.name === data.id)?.label || data.id, aliases: cssAliases(data.id) };
+                            return cssMatches(this.query, property) && cssMatches(params.term || '', property) ? data : null;
+                        },
+                        createTag: params => {
+                            const name = params.term.trim();
+                            return cssCustomProperty(name) && cssMatches(this.query, { name, label: name, aliases: cssAliases(name) }) ? { id: name, text: name } : null;
+                        },
+                        language: { noResults: () => 'Žiadna vlastnosť nezodpovedá filtru.', searching: () => 'Vyhľadávam…' },
+                    });
+                    this.widget.on('change.waCssProperty', () => {
+                        if (!this.draft?.controls.editable || this.draft.saving || this.draft.codeError) return;
+                        this.row.name = this.widget.val() || '';
+                        this.$store.componentEditor.stylesChanged(this.$store.componentEditor.activeKey);
+                    });
+                    this.$watch('row.name', () => this.sync());
+                    this.$watch('draft?.saving', () => this.sync());
+                    this.$watch('draft?.loading', () => this.sync());
+                    this.$watch('draft?.codeError', () => this.sync());
+                    this.sync();
+                });
+            },
+            sync() {
+                if (!this.widget || !this.draft) return;
+                if (this.row.name && ![...this.$refs.property.options].some(option => option.value === this.row.name)) this.widget.append(new Option(this.row.name, this.row.name));
+                this.widget.prop('disabled', !this.draft.loaded || this.draft.loading || this.draft.saving || !!this.draft.codeError || !this.draft.controls.editable).val(this.row.name).trigger('change.select2');
+                this.widget.next('.select2').find('[role=combobox]').attr('aria-label', 'CSS vlastnosť ' + (this.draft.controls.styleRows.indexOf(this.row) + 1));
+            },
+            destroy() { if (this.widget?.data('select2')) this.widget.off('.waCssProperty').select2('destroy'); this.widget = null; },
         }));
         Alpine.data('waBootstrapField', field => ({
             field, widget: null,

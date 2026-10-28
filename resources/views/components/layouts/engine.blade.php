@@ -40,14 +40,14 @@
     <link rel="stylesheet" href="{{ asset('assets/libs/spectrum-colorpicker2/spectrum.min.css') }}">
     <script defer src="{{ asset('assets/libs/spectrum-colorpicker2/spectrum.min.js') }}"></script>
     <script defer src="{{ asset('js/color-picker.js') }}?v=20261028-color-button3"></script>
-    <script defer src="{{ asset('js/project-editor.js') }}?v=20261028-colors3"></script>
-    <script defer src="{{ asset('js/site-import.js') }}?v=20261028-colors3"></script>
+    <script defer src="{{ asset('js/project-editor.js') }}?v=20261028-css-select2"></script>
+    <script defer src="{{ asset('js/site-import.js') }}?v=20261028-css-select2"></script>
     <script defer src="{{ asset('assets/libs/ace/ace.js') }}"></script>
     <script defer src="{{ asset('assets/libs/ace/mode-json.js') }}"></script>
     <script defer src="{{ asset('assets/libs/ace/theme-tomorrow_night.js') }}"></script>
-    <script defer src="{{ asset('js/component-controls.js') }}?v=20261028-colors3"></script>
-    <script defer src="{{ asset('js/component-editor.js') }}?v=20261028-colors3"></script>
-    <script defer src="{{ asset('js/page-preview.js') }}?v=20261028-colors3"></script>
+    <script defer src="{{ asset('js/component-controls.js') }}?v=20261028-css-select2"></script>
+    <script defer src="{{ asset('js/component-editor.js') }}?v=20261028-css-select2"></script>
+    <script defer src="{{ asset('js/page-preview.js') }}?v=20261028-css-select2"></script>
     <!-- Stabilné, oficiálne načítanie AlpineJS a HTMX -->
     <script defer src="{{ asset('js/alpine.min.js') }}"></script>
     <script src="{{ asset('js/htmx.min.js') }}"></script>    

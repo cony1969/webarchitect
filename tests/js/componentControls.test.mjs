@@ -3,7 +3,8 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import vm from 'node:vm';
 import { webcrypto } from 'node:crypto';
-const context = { window: {}, crypto: webcrypto, document: { addEventListener() {} } };
+const cssNames = JSON.parse(readFileSync(new URL('../../resources/data/css-properties.json', import.meta.url), 'utf8'));
+const context = { window: { waComponentPropertyConfig: { cssProperties: cssNames } }, crypto: webcrypto, document: { addEventListener() {} } };
 vm.runInNewContext(readFileSync(new URL('../../public/js/component-controls.js', import.meta.url), 'utf8'), context);
 const c = context.window.waComponentControls;
 const plain = value => JSON.parse(JSON.stringify(value));
@@ -78,4 +79,27 @@ test('CSS search finds bilingual names and existing custom properties without du
     assert.equal(c.cssSearchResults('brand', rows).length, 1);
     assert.equal(c.cssSearchResults('zzzz-no-match', rows).length, 0);
     assert.equal(rows.length, 2);
+});
+
+test('CSS catalog includes extended vendor and existing custom properties', () => {
+    const catalog = plain(c.cssCatalog([{name:'--brand-color',value:'red'},{name:'future-property',value:'1'}]));
+    assert.ok(catalog.length >= 671);
+    for (const name of ['animation-timeline','container-type','grid-template-areas','-webkit-text-fill-color','--brand-color','future-property']) assert.ok(catalog.some(p=>p.name===name),name);
+    assert.ok(!catalog.some(p=>p.name==='--*'));
+    assert.equal(c.cssCustomProperty('--brand-color'),true);
+    assert.equal(c.cssCustomProperty('not-a-css-property'),false);
+});
+test('shared CSS filter and Select2 search form an intersection without changing rows', () => {
+    const rows=[{name:'padding',value:'20px'},{name:'color',value:'#123456'}];
+    const before=JSON.stringify(rows);
+    const filtered=plain(c.cssSearchResults('color',rows));
+    assert.ok(filtered.length>10);
+    assert.ok(filtered.every(p=>p.name.includes('color')));
+    const narrowed=filtered.filter(p=>c.cssMatches('background',p));
+    assert.ok(narrowed.some(p=>p.name==='background-color'));
+    assert.ok(narrowed.every(p=>p.name.includes('color')&&p.name.includes('background')));
+    assert.ok(c.cssSearchResults('farba',rows).some(p=>p.name==='accent-color'));
+    assert.ok(c.cssSearchResults('odsadenie',rows).some(p=>p.name==='padding-inline-start'));
+    assert.equal(JSON.stringify(rows),before);
+    assert.ok(c.cssSearchResults('',rows).length>filtered.length);
 });

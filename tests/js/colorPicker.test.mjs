@@ -37,3 +37,19 @@ test('keeps modern CSS color functions as one editable color', () => {
     const tokens=c.colorTokens(value);assert.equal(tokens.length,1);
     assert.equal(c.replaceColor(value,tokens[0],'#00ffff'),'#00ffff !important');
 });
+
+test('color-only properties use button values while composite CSS keeps editable dimensions', () => {
+    for(const name of ['color','background-color','border-inline-start-color','accent-color','scrollbar-color','fill','stroke']) {
+        assert.equal(c.colorOnly({name,value:''}),true,name);
+        assert.equal(c.rowColors({name,value:'auto'}).length,1,name);
+    }
+    assert.equal(c.colorOnly({name:'background',value:'#fff !important'}),true);
+    assert.equal(c.colorOnly({name:'--brand',value:'teal'}),true);
+    assert.equal(c.colorOnly({name:'--spacing',value:'20px'}),false);
+    for(const [name,value] of [['border','1px solid red'],['box-shadow','0 0 4px #fff'],['background','linear-gradient(red,blue)']]) assert.equal(c.colorOnly({name,value}),false);
+});
+
+test('replacing a variable color keeps important priority', () => {
+    const row={name:'color',value:'var(--brand) !important'};
+    assert.equal(c.replaceColor(row.value,c.rowColors(row)[0],'#123456'),'#123456 !important');
+});

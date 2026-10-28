@@ -53,11 +53,12 @@ it('requires a root even when the submitted rows array is empty', function () {
 
 it('offers utility choices available in the installed Bootstrap CSS and renders all property tabs', function () {
     $config = app(ComponentPropertyCatalog::class)->data();
+    expect($config['cssProperties'])->toHaveCount(671)->toContain('background-color', 'container-type', '-webkit-text-fill-color')->not->toContain('--*');
     expect($config['classes'])->toContain('container', 'container-fluid', 'p-md-3', 'd-md-flex')->not->toContain('opacity-50');
     foreach ($config['fields'] as $field) {
         foreach ($field['options'] as $values) {
             expect(array_diff($values, $config['classes']))->toBe([]);
         }
     }
-    $this->get('/dashboard')->assertOk()->assertSee('component-controls.js')->assertSee('Základné nastavenia')->assertSee('Pridať CSS riadok')->assertSee('Zobraziť všetky nastavenia');
+    $this->get('/dashboard')->assertOk()->assertSee('component-controls.js')->assertSee('Základné nastavenia')->assertSee('Pridať CSS riadok')->assertSee('Zobraziť všetky nastavenia')->assertSee('waCssProperty(row)', false)->assertSee('Filter Select2:');
 });

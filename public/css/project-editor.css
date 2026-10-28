@@ -39,3 +39,5 @@
 .wa-color-trigger>span{font-size:15px;color:#fff;text-shadow:0 1px 2px #000,0 -1px 2px #000;line-height:1}
 .wa-color-trigger:hover{border-color:#72d7da}.wa-color-trigger:focus-visible{outline:2px solid #3bc0c3;outline-offset:2px}.wa-color-trigger:disabled{opacity:.45;cursor:default}
 .wa-domain-color-value>span{display:inline-flex;flex:0 0 auto}.wa-css-colors .wa-color-trigger{width:34px;height:28px;flex-basis:34px}
+
+.wa-css-row{grid-template-columns:minmax(0,1.8fr) 7px minmax(0,1fr) 20px}.wa-css-row-labels{grid-template-columns:1.8fr 1fr}.wa-css-property{min-width:0}.wa-css-property .select2-selection--single .select2-selection__rendered{font-size:12px!important;padding-right:28px!important}.wa-css-property .select2-selection__clear{margin-right:4px}.wa-css-colors.is-color-only{margin-top:0}.wa-css-colors.is-color-only .wa-color-trigger{width:100%;min-width:36px;height:42px;flex-basis:auto}.wa-css-colors.is-color-only>span{flex:1;min-width:30px}.wa-css-property-dropdown .select2-results__option{overflow-wrap:anywhere;font-size:12px}

@@ -40,28 +40,25 @@
         </div>
         <div id="component-property-css" role="tabpanel" aria-labelledby="component-property-tab-css" x-show="ui.tab === 'css'">
             <fieldset class="wa-project-fields" :disabled="!draft.loaded || draft.loading || draft.saving || !!draft.codeError || !ui.editable">
-                <div class="wa-css-search-results" x-show="ui.search.trim()">
-                    <p class="wa-project-muted" role="status" x-show="!cssResults.length">Žiadna vlastnosť nezodpovedá vyhľadávaniu. Vlastný názov môžete zadať priamo do riadku.</p>
-                    <template x-for="property in cssResults" :key="property.name"><button type="button" class="wa-css-property-result" @click="useCssProperty(property.name)"><span x-text="property.label"></span><code x-text="property.name"></code></button></template>
-                </div>
+                <p class="wa-project-muted" role="status" x-show="ui.search.trim()" x-text="cssResults.length ? 'Filter Select2: ' + cssResults.length + ' vlastností' : 'Žiadna vlastnosť nezodpovedá filtru.'"></p>
                 <div class="wa-css-heading"><strong>CSS vlastnosti</strong><button type="button" class="wa-control-plus" aria-label="Pridať CSS riadok" @click="addStyleRow()">+</button></div>
                 <div class="wa-css-row-labels" aria-hidden="true"><span>Vlastnosť</span><span>Hodnota</span></div>
                 <template x-for="(row, index) in ui.styleRows" :key="row.id">
                     <div class="wa-css-row" :data-css-row="row.id" @input="store.stylesChanged(key)">
-                        <input type="text" :aria-label="'CSS vlastnosť ' + (index + 1)" x-model="row.name" maxlength="128" placeholder="napr. padding" list="wa-css-property-names" spellcheck="false" autocomplete="off">
+                        <span class="wa-css-property" x-data="waCssProperty(row)"><select data-css-property x-ref="property" :aria-label="'CSS vlastnosť ' + (index + 1)"></select></span>
                         <span aria-hidden="true">:</span>
                         <div class="wa-css-value">
-                            <input type="text" data-css-value :aria-label="'CSS hodnota ' + (index + 1)" x-model="row.value" maxlength="20000" placeholder="napr. 20px" spellcheck="false" autocomplete="off">
-                            <div class="wa-css-colors" x-show="colorsFor(row).length">
+                            <input type="text" data-css-value x-show="!colorOnly(row)" :aria-label="'CSS hodnota ' + (index + 1)" x-model="row.value" maxlength="20000" placeholder="napr. 20px" spellcheck="false" autocomplete="off">
+                            <div class="wa-css-colors" :class="{'is-color-only': colorOnly(row)}" x-show="colorsFor(row).length">
                                 <template x-for="(token, colorIndex) in colorsFor(row)" :key="colorIndex">
-                                    <span x-data="waColorPicker({get: () => colorsFor(row)[colorIndex]?.color || '', set: value => setRowColor(row, colorIndex, value), disabled: () => !draft?.loaded || draft.loading || draft.saving || !!draft.codeError || !ui.editable, label: 'Vybrať farbu pre ' + row.name + ' · ' + (colorIndex + 1)})"><button type="button" class="wa-color-trigger" x-ref="color" :aria-label="'Vybrať farbu pre ' + row.name + ' · ' + (colorIndex + 1)"><span aria-hidden="true">▾</span></button></span>
+                                    <span x-data="waColorPicker({get: () => colorsFor(row)[colorIndex]?.color || '', set: value => setRowColor(row, colorIndex, value), disabled: () => !draft?.loaded || draft.loading || draft.saving || !!draft.codeError || !ui.editable, showValue: false, label: () => 'Vybrať farbu pre ' + row.name + ' · ' + (colorIndex + 1)})"><button type="button" class="wa-color-trigger" x-ref="color" :aria-label="'Vybrať farbu pre ' + row.name + ' · ' + (colorIndex + 1)"><span aria-hidden="true">▾</span></button></span>
                                 </template>
                             </div>
                         </div>
                         <button type="button" :aria-label="'Odstrániť CSS riadok ' + (index + 1)" @click="removeStyleRow(index)" class="wa-css-remove">×</button>
                     </div>
                 </template>
-                <datalist id="wa-css-property-names">@foreach(['width','max-width','min-width','height','min-height','max-height','margin','margin-top','margin-bottom','padding','padding-top','padding-bottom','background-color','color','font-size','font-weight','line-height','border','border-radius','box-shadow','display','gap','opacity','position','overflow'] as $property)<option value="{{ $property }}"></option>@endforeach</datalist>
+
                 <p class="wa-project-note">Riadok bez názvu vlastnosti sa neuloží. CSS sa pridá do štýlu vybraného prvku.</p>
             </fieldset>
         </div>

@@ -58,6 +58,8 @@ class ComponentPropertyCatalog
         $add('float', 'Obtekanie', 'float', ['start', 'end', 'none'], true);
         $add('user-select', 'Výber textu', 'user-select', ['all', 'auto', 'none']);
 
-        return compact('classes', 'breakpoints', 'fields');
+        $cssProperties = json_decode(file_get_contents(resource_path('data/css-properties.json')), true, 512, JSON_THROW_ON_ERROR);
+
+        return compact('classes', 'breakpoints', 'fields', 'cssProperties');
     }
 }
