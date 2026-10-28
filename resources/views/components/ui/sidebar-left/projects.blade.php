@@ -252,7 +252,7 @@
                     <span>📁</span>
                     <span class="wa-tree-name" :title="project.name" x-text="project.name"></span>
                     <span class="wa-tree-actions">
-                        <button type="button" class="wa-tree-action wa-tree-add" title="Pridať doménu" aria-label="Pridať doménu" @click.stop="triggerNodeModal('domain', project)">+</button>
+                        <button type="button" class="wa-tree-action" title="Pridať doménu" aria-label="Pridať doménu" @click.stop="triggerNodeModal('domain', project)">+</button>
                         <button type="button" class="wa-tree-action" title="Otvoriť editor projektu" aria-label="Otvoriť editor projektu" @click.stop="openProject(project)"><i class="fas fa-pen" aria-hidden="true"></i></button>
                         <span class="wa-tree-trash" title="Zmazat" aria-label="Zmazat">
                             <i class="fas fa-trash" style="font-size: 12px;" aria-hidden="true"></i>
@@ -271,7 +271,7 @@
                                 <span>🌐</span>
                                 <span class="wa-tree-name" :title="domain.name" x-text="domain.name"></span>
                                 <span class="wa-tree-actions">
-                                    <button type="button" class="wa-tree-action wa-tree-add" title="Pridať stránku" aria-label="Pridať stránku" @click.stop="triggerNodeModal('page', project, domain)">+</button>
+                                    <button type="button" class="wa-tree-action" title="Pridať stránku" aria-label="Pridať stránku" @click.stop="triggerNodeModal('page', project, domain)">+</button>
                                     <button type="button" class="wa-tree-action" title="Otvoriť editor domény" aria-label="Otvoriť editor domény" @click.stop="openDomain(project, domain)"><i class="fas fa-pen" aria-hidden="true"></i></button>
                                     <span class="wa-tree-trash" title="Zmazat" aria-label="Zmazat">
                                         <i class="fas fa-trash" style="font-size: 12px;" aria-hidden="true"></i>
