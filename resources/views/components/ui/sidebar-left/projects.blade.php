@@ -4,6 +4,9 @@
 
          x-data="{
              projects: window.sidebarProjectsData || [],
+             revision: window.sidebarProjectsRevision || 1,
+             saving: false,
+             saveAgain: false,
              selectedProject: window.sidebarProjectsTreeState && window.sidebarProjectsTreeState.selectedProject ? window.sidebarProjectsTreeState.selectedProject : null,
              selectedDomain: window.sidebarProjectsTreeState && window.sidebarProjectsTreeState.selectedDomain ? window.sidebarProjectsTreeState.selectedDomain : null,
              selectedPage: window.sidebarProjectsTreeState && window.sidebarProjectsTreeState.selectedPage ? window.sidebarProjectsTreeState.selectedPage : null,
@@ -169,21 +172,26 @@
                  });
              },
 
-             saveToDb() {
+             async saveToDb() {
+                 if (this.saving) { this.saveAgain = true; return; }
+                 this.saving = true;
                  this.projects = this.normalizeProjects(this.projects);
-
-                 fetch('/api/ui/save-projects', {
-                     method: 'POST',
-                     headers: {
-                         'Content-Type': 'application/json',
-                         'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                     },
-                     body: JSON.stringify({
-                         projects: this.projects
-                     })
-                 }).catch(() => {
-                     // Keep UI responsive even if persistence fails.
-                 });
+                 try {
+                     const response = await fetch('/api/ui/save-projects', {
+                         method: 'POST',
+                         headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+                         body: JSON.stringify({ projects: this.projects, revision: this.revision })
+                     });
+                     const data = await response.json();
+                     if (!response.ok || !data.success) throw new Error(data.message || 'Uloženie sa nepodarilo.');
+                     this.revision = data.revision;
+                 } catch (error) {
+                     this.saveAgain = false;
+                     alert(error.message || 'Uloženie sa nepodarilo.');
+                 } finally {
+                     this.saving = false;
+                     if (this.saveAgain) { this.saveAgain = false; this.saveToDb(); }
+                 }
              }
          }"
          @project-modal-submit.window="handleInflow($event.detail.value)"

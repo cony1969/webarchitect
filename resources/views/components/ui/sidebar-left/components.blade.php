@@ -5,7 +5,7 @@
 <section class="sidebar-block" :class="{ 'is-open': activeSection === 'components' }"
 
          x-data="{ 
-             activeTab: '{{ $savedTab }}',
+             activeTab: @js($savedTab),
              changeTab(tabId) {
                  this.activeTab = tabId;
                  fetch('/sidebar/save-setting', {

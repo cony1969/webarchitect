@@ -15,6 +15,8 @@
          activeTab: '',
          activeCategory: '',
          targetPath: '',
+         componentId: null,
+         sourceRevision: null,
          itemPath: '',
          componentName: '',
          componentSlug: '',
@@ -60,6 +62,8 @@
              this.editorMode = 'import';
              this.activeTab = detail.tab || '';
              this.activeCategory = detail.category || '';
+             this.componentId = null;
+             this.sourceRevision = null;
              this.targetPath = detail.targetPath || this.slugify(this.activeTab || 'components');
              this.itemPath = detail.itemPath || '';
              this.componentName = detail.name || '';
@@ -91,6 +95,7 @@
                  });
 
                  const data = await response.json().catch(() => ({}));
+                 if (data.exists) { this.componentId = data.component_id; this.sourceRevision = data.revision; }
                  if (!response.ok || !data.success) {
                      throw new Error(data.message || 'Nepodarilo sa nacitat JSON komponentu.');
                  }
@@ -147,6 +152,8 @@
                          name: this.componentName,
                          slug: this.componentSlug,
                          html: this.editorMode === 'json' ? '' : this.componentHtml,
+                         component_id: this.componentId,
+                         revision: this.sourceRevision,
                          json_content: this.editorMode === 'json' ? this.componentHtml : null
                      })
                  });
@@ -222,7 +229,7 @@
                         </div>
 
                         <div>
-                            <label style="display: block; margin-bottom: 6px; font-size: 11px; color: #8a94ad; font-weight: 600; letter-spacing: 0.4px; text-transform: uppercase;">Cieľová cesta v config/ui/components</label>
+                            <label style="display: block; margin-bottom: 6px; font-size: 11px; color: #8a94ad; font-weight: 600; letter-spacing: 0.4px; text-transform: uppercase;">Umiestnenie v knižnici</label>
                             <input type="text"
                                    x-model="targetPath"
                                    readonly

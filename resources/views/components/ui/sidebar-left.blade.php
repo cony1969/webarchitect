@@ -1,29 +1,12 @@
 @props(['layout' => [], 'components' => [], 'savedTab' => 'native'])
 
 @php
-    $baseDir = config_path('ui');
-    $projectsFilePath = $baseDir . '/content/projects.json';
-    $layoutsFilePath = $baseDir . '/content/layouts.json';
-    
-    $projectsData = [];
-    if (file_exists($projectsFilePath)) {
-        $allData = json_decode(file_get_contents($projectsFilePath), true) ?: [];
-        
-        $userId = auth()->id();
-        $userKey = 'user_' . $userId;
-        
-        if ($userId && isset($allData[$userKey]) && is_array($allData[$userKey])) {
-            $projectsData = $allData[$userKey];
-        }
-    }
-
-    $layoutsData = [];
-    if (file_exists($layoutsFilePath)) {
-        $decodedLayouts = json_decode(file_get_contents($layoutsFilePath), true) ?: [];
-        if (is_array($decodedLayouts)) {
-            $layoutsData = $decodedLayouts;
-        }
-    }
+    $projects = app(\App\Services\Cms\ProjectTree::class);
+    $sections = app(\App\Services\Cms\SectionLibrary::class);
+    $projectsData = $projects->read(auth()->user());
+    $layoutsData = $sections->read(auth()->user());
+    $projectsRevision = $projects->revision(auth()->user());
+    $layoutsRevision = $sections->revision(auth()->user());
 
     $projectsTreeState = [
         'selectedProject' => null,
@@ -50,9 +33,11 @@
 
 {{-- Globálny JavaScript objekt mimo PHP bloku --}}
 <script>
-    window.sidebarProjectsData = {!! json_encode($projectsData) !!};
-    window.sidebarLayoutsData = {!! json_encode($layoutsData) !!};
-    window.sidebarProjectsTreeState = {!! json_encode($projectsTreeState) !!};
+    window.sidebarProjectsRevision = @js($projectsRevision);
+    window.sidebarLayoutsRevision = @js($layoutsRevision);
+    window.sidebarProjectsData = @js($projectsData);
+    window.sidebarLayoutsData = @js($layoutsData);
+    window.sidebarProjectsTreeState = @js($projectsTreeState);
 </script>
 
 <aside class="advanced-sidebar" aria-label="Nástroje a projekty">

@@ -4,6 +4,9 @@
 
          x-data="{
              layouts: window.sidebarLayoutsData || [],
+             revision: window.sidebarLayoutsRevision || 1,
+             saving: false,
+             saveAgain: false,
              validationError: '',
 
              normalizeId(prefix, value) {
@@ -82,19 +85,26 @@
                  }));
              },
 
-             saveToDb() {
+             async saveToDb() {
+                 if (this.saving) { this.saveAgain = true; return; }
+                 this.saving = true;
                  this.layouts = this.normalizeLayouts(this.layouts);
-
-                 fetch('/api/ui/save-layouts', {
-                     method: 'POST',
-                     headers: {
-                         'Content-Type': 'application/json',
-                         'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                     },
-                     body: JSON.stringify(this.layouts)
-                 }).catch(() => {
-                     // Keep UI responsive even if persistence fails.
-                 });
+                 try {
+                     const response = await fetch('/api/ui/save-layouts', {
+                         method: 'POST',
+                         headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+                         body: JSON.stringify({ layouts: this.layouts, revision: this.revision })
+                     });
+                     const data = await response.json();
+                     if (!response.ok || !data.success) throw new Error(data.message || 'Uloženie sa nepodarilo.');
+                     this.revision = data.revision;
+                 } catch (error) {
+                     this.saveAgain = false;
+                     alert(error.message || 'Uloženie sa nepodarilo.');
+                 } finally {
+                     this.saving = false;
+                     if (this.saveAgain) { this.saveAgain = false; this.saveToDb(); }
+                 }
              }
          }"
          @layout-modal-submit.window="handleInflow($event.detail.value)"

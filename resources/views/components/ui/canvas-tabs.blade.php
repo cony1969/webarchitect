@@ -24,7 +24,7 @@
 <script>
     // Bezpečne prenesieme dáta z DB do localStorage ešte pred štartom Alpine
     localStorage.setItem('open_canvas_tabs', JSON.stringify(@js($initialTabs)));
-    localStorage.setItem('active_canvas_tab', '{{ $initialActiveTab }}');
+    localStorage.setItem('active_canvas_tab', @js($initialActiveTab));
 </script>
 
 @props(['slot' => ''])

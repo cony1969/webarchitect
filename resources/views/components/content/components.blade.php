@@ -1,8 +1,7 @@
 @props(['app' => [], 'layout' => [], 'components' => []])
 
 @php
-    $fixedPath = config_path('ui/content/components.json');
-    $loadedComponents = file_exists($fixedPath) ? json_decode(file_get_contents($fixedPath), true) : ['native' => [], 'bootstrap' => []];
+    $loadedComponents = app(\App\Services\Cms\ComponentLibrary::class)->catalog(auth()->user());
 
     $userSettings = [];
     if (auth()->check()) {
@@ -27,7 +26,7 @@
 <div class="tab-content" 
      style="color: #fff; font-size: 13px;"
      x-data="{
-         openCategory: '{{ $savedCategory }}',
+         openCategory: @js($savedCategory),
          importContext: @js($savedImportContext),
          selectedItemKey: @js($savedImportContext['itemKey'] ?? ''),
 

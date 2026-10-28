@@ -1,8 +1,7 @@
 @props(['app' => [], 'layout' => []])
 
 @php
-    // Načítanie dát z configu, kam ich uložil Provider
-    $components = config('ui.components', []);
+    $components = [];
 
     $userSettings = [];
     if (auth()->check()) {
