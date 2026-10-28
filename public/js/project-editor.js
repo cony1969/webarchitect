@@ -171,14 +171,16 @@
     window.waCanvasTabs = (tabs, activeTab, csrf) => ({
         tabs, activeTab, hoveredElement: 'Pracovná plocha (Canvas)', tabSaveError: '', persistTimer: null,
         get editor() { return Alpine.store('projectEditor'); },
+        get pages() { return Alpine.store('pagePreview'); },
         get components() { return Alpine.store('componentEditor'); },
         dirty(id) { return this.editor.dirty(id) || this.components.dirty(id); },
-        saving(id) { return this.editor.drafts[id]?.saving || this.components.drafts[id]?.saving; },
+        saving(id) { return this.editor.drafts[id]?.saving || this.components.drafts[id]?.saving || this.components.drafts[id]?.placement?.saving; },
         get currentMode() { return this.tabs.find(tab => tab.id === this.activeTab)?.mode || 'page'; },
         init() {
             if (!this.tabs.some(tab => tab.id === this.activeTab)) this.activeTab = this.tabs[0]?.id;
             this.editor.activate(this.tabs.find(tab => tab.id === this.activeTab));
             this.components.activate(this.tabs.find(tab => tab.id === this.activeTab));
+            this.pages.activate(this.tabs.find(tab => tab.id === this.activeTab));
         },
         setActiveTab(id) {
             this.activeTab = id;
@@ -186,6 +188,7 @@
             this.hoveredElement = mode === 'import' ? 'Analýza webu' : mode === 'domain' ? 'Editor domény' : mode === 'project' ? 'Editor projektu' : mode === 'component' ? 'Editor komponentu' : 'Pracovná plocha (Canvas)';
             this.editor.activate(this.tabs.find(tab => tab.id === id));
             this.components.activate(this.tabs.find(tab => tab.id === id));
+            this.pages.activate(this.tabs.find(tab => tab.id === id));
             this.persistTabs();
             this.$nextTick(() => {
                 const active = [...this.$el.querySelectorAll('[data-tab-id]')].find(element => element.dataset.tabId === id);
@@ -210,8 +213,8 @@
             if (mode === 'profile' || ['project', 'domain', 'import', 'component'].includes(mode)) route = null;
             const contentKey = this.buildContentKey(mode, route, title, detail);
             const existing = this.tabs.find(tab => tab.contentKey === contentKey || (mode === 'project' && tab.mode === 'project' && detail.projectId && tab.projectId === detail.projectId) || (mode === 'profile' && tab.mode === mode) || (route && tab.route === route));
-            if (existing) { this.setActiveTab(existing.id); return existing; }
-            const tab = { id: 'tab-' + crypto.randomUUID(), title: appendNumber ? title + ' #' + (this.tabs.length + 1) : title, mode, route, contentKey, ...(['project', 'domain'].includes(mode) ? { projectId: detail.projectId || null, domainId: detail.domainId || null, projectName: detail.projectName || '' } : {}), ...(mode === 'component' ? { componentId: detail.componentId || null, componentPath: detail.componentPath || null } : {}) };
+            if (existing) { if (mode === 'page' && detail.pageId) existing.pageId = detail.pageId; this.setActiveTab(existing.id); return existing; }
+            const tab = { id: 'tab-' + crypto.randomUUID(), title: appendNumber ? title + ' #' + (this.tabs.length + 1) : title, mode, route, contentKey, ...(['project', 'domain'].includes(mode) ? { projectId: detail.projectId || null, domainId: detail.domainId || null, projectName: detail.projectName || '' } : {}), ...(mode === 'page' ? { pageId: detail.pageId || null } : {}), ...(mode === 'component' ? { componentId: detail.componentId || null, componentPath: detail.componentPath || null } : {}) };
             if (['project', 'domain'].includes(mode) && detail.document) this.editor.apply(tab.id, detail.document);
             this.tabs.push(tab); this.setActiveTab(tab.id); return tab;
         },
@@ -236,6 +239,11 @@
             const tab = this.tabs.find(tab => tab.id === detail.key);
             if (tab) tab.title = detail.document.name;
         },
+        pageComposed(detail) {
+            const data = detail.document;
+            const tab = this.addTab(data.name, 'page', false, null, { pageId: data.id, page: { id: data.legacy_id }, project: { id: data.project_legacy_id }, domain: { id: data.domain_legacy_id } });
+            this.pages.apply(tab.id, data);
+        },
         componentLoaded(detail) {
             const tab = this.tabs.find(tab => tab.id === detail.key);
             if (tab) { tab.title = detail.document.name; tab.componentId = detail.document.id; tab.componentPath = detail.document.item_path; tab.contentKey = 'component:' + tab.componentPath; }
@@ -256,6 +264,7 @@
             this.tabs = this.tabs.filter(tab => tab.id !== id);
             delete this.editor.drafts[id];
             delete this.components.drafts[id];
+            delete this.pages.drafts[id];
             if (this.activeTab === id) this.setActiveTab(this.tabs[Math.min(index, this.tabs.length - 1)].id);
             this.persistTabs();
         },

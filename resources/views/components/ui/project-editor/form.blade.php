@@ -41,6 +41,14 @@
         <p class="wa-project-muted" x-show="draft.overview.updated_at">Posledná úprava: <span x-text="draft.overview.updated_at ? new Date(draft.overview.updated_at).toLocaleString('sk-SK') : ''"></span></p>
     </section>
     <section class="wa-project-card">
+        <h2>Komponenty projektu</h2>
+        <p class="wa-project-muted">Vlastné verzie môžete upravovať alebo vložiť do ďalšieho projektu. Základné komponenty nájdete v ľavej knižnici.</p>
+        <template x-for="component in (draft.overview.components || [])" :key="component.id">
+            <button type="button" class="wa-domain-list-item" @click="$dispatch('add-new-tab', { title: component.name, mode: 'component', componentId: component.id, componentPath: 'cms/' + component.id + '.json' })"><span x-text="component.name"></span><span>Upraviť / vložiť <i class="fas fa-chevron-right" aria-hidden="true"></i></span></button>
+        </template>
+        <p class="wa-project-muted" x-show="!(draft.overview.components || []).length">Projekt zatiaľ nemá vlastné komponenty.</p>
+    </section>
+    <section class="wa-project-card">
         <div class="wa-domain-list-heading"><h2>Domény a subdomény</h2><button type="button" class="btn wa-project-secondary" :disabled="!draft.id || draft.saving" @click="$dispatch('add-new-tab', { title: 'Nová doména', mode: 'domain', projectId: draft.id, projectName: draft.form.name })">Pridať doménu</button></div>
         <p class="wa-project-muted">Každá doména a subdoména má vlastný základ webu a vlastné nastavenia.</p>
         <p class="wa-project-muted" x-show="!draft.id">Najprv uložte projekt a potom pridajte doménu.</p>

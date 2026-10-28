@@ -26,10 +26,19 @@ Prepínač **Náhľad / JSON · Ace** mení zobrazenie v tej istej karte.
 Prázdny Container má pomocný rám; rám a jeho popis nie sú súčasťou uloženej definície.
 Náhľad je izolovaný iframe bez spúšťania JavaScriptu a bez odosielania formulárov.
 
-**Uložiť zmeny** používa revíziu otvoreného komponentu. **Uložiť ako nový**
-vyžaduje nový slug a vytvorí samostatnú položku knižnice z aktuálneho obsahu editora.
-Duplicitný slug ani stará revízia neprepíšu existujúci komponent. Spoločnú predlohu
-možno uložiť ako vlastnú kópiu. Neplatný JSON ponechá posledný platný náhľad a blokuje uloženie.
+**Uložiť zmeny** používa revíziu otvoreného komponentu. **Vložiť do projektu**
+otvorí výber zdroja (knižnica alebo vlastné komponenty existujúcich projektov), cieľového projektu a stránky.
+Prvé použitie vytvorí vlastnú definíciu cieľového projektu. Ďalšie použitia rovnakého zdroja
+zachovajú už upravenú projektovú verziu; nikdy ju neprepíšu pôvodným vzorom.
+Kópia z iného projektu je nezávislá vrátane vnorených odkazov na komponenty.
+Projektové verzie sú dostupné v karte projektu v sekcii Komponenty projektu.
+
+Stránka ukladá uzly `cms-component` s odkazom na definíciu projektu. Náhľad stránky
+rieši tieto odkazy, skladá existujúce uzly, CSS a JS a kontroluje vlastníctvo, vnorenie a cykly.
+Náhľad ostáva izolovaný bez vykonávania skriptov; publikovanie webu je samostatný budúci krok.
+Vloženie je transakčné, kontroluje revíziu zdroja aj stránky a pri opakovaní tej istej
+požiadavky nepridá druhé použitie. Nový úmyselný klik môže vložiť ďalšie použitie.
+Neplatný JSON ponechá posledný platný náhľad a blokuje uloženie.
 Neuložené zmeny sú označené v karte; prepínanie kariet ich zachová.
 
 V migrovanej ani staršej kópii aplikácie sa nenašla integrácia Ace; doplnená je lokálna

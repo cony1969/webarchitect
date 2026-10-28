@@ -39,7 +39,7 @@ class ComponentLibrary
             $tree[$entry->tab][$entry->category] = $group;
         }
         $listed = $entries->pluck('component_id')->all();
-        foreach (Component::where('user_id', $user->id)->whereNotIn('id', $listed)->whereNull('source_key')->orderBy('created_at')->get() as $component) {
+        foreach (Component::where('user_id', $user->id)->whereNotIn('id', $listed)->whereNull('project_id')->whereNull('source_key')->orderBy('created_at')->get() as $component) {
             $tree['other']['Importované'] ??= ['category' => 'Importované', 'items' => []];
             $tree['other']['Importované']['items'][] = ['id' => 'component-'.$component->id, 'name' => $component->name, 'path' => 'cms/'.$component->id.'.json'];
         }
@@ -72,9 +72,11 @@ class ComponentLibrary
 
         return [
             'id' => $component->id, 'revision' => $component->revision, 'name' => $component->name,
-            'slug' => $component->slug, 'item_path' => $path, 'target_path' => trim(dirname($path), '/.'),
+            'slug' => $component->slug, 'item_path' => $path, 'target_path' => $component->project_id ? 'projects/'.$component->project->slug : trim(dirname($path), '/.'),
             'tab' => $component->settings['tab'] ?? $entry?->tab ?? 'other',
-            'category' => $entry?->category ?? 'Importované', 'shared' => $component->user_id === null,
+            'category' => $entry?->category ?? $component->settings['category'] ?? 'Importované',
+            'project_id' => $component->project_id, 'project_name' => $component->project?->name,
+            'shared' => $component->user_id === null,
             'content' => json_encode($this->legacy($component), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
         ];
     }
@@ -96,7 +98,9 @@ class ComponentLibrary
             } else {
                 $component = new Component(['user_id' => $user->id, 'owner_key' => 'user:'.$user->id, 'source_key' => $path, 'scope_key' => '', 'kind' => 'component', 'settings' => $original?->settings ?? [], 'source_payload' => $original?->source_payload]);
             }
-            $component->source_key ??= $path;
+            if (! $component->project_id) {
+                $component->source_key ??= $path;
+            }
             $tab = $data['tab'] ?? 'other';
             $category = $data['category'] ?? 'Importované';
             $document = DocumentData::fromLegacy($objects);
@@ -104,6 +108,9 @@ class ComponentLibrary
             $document['js'] = $data['document_js'] ?? '';
             $component->fill(['name' => $data['name'], 'slug' => Str::slug($data['slug']), 'document' => DocumentData::validate($document), 'source_payload' => array_replace($component->source_payload ?? [], $data['source_payload'] ?? []), 'settings' => array_replace($component->settings ?? [], ['tab' => $tab, 'placeholder' => false])]);
             $this->store->save($component, $user->id);
+            if ($component->project_id) {
+                return $component;
+            }
             $sharedEntry = ComponentEntry::whereHas('component', fn ($q) => $q->where('source_key', $path))->where('tab', $tab)->where('category', $category)->first();
             $item = $sharedEntry?->source_payload ?? ['id' => 'import-'.$component->slug, 'path' => $path];
             $item['name'] = $component->name;

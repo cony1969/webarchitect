@@ -30,6 +30,7 @@
      @add-new-layout-tab.window="addTab('Šablóna', 'layout')"
      @add-new-component-tab.window="addTab('Komponent', 'component')"
      @add-new-tab.window="handleAddNewTab($event)"
+     @cms-page-composed.window="pageComposed($event.detail)"
      x-on:component-document-loaded.window="componentLoaded($event.detail)"
      x-on:component-document-saved.window="componentSaved($event.detail)"
      @project-document-saved.window="projectSaved($event.detail)"
@@ -52,7 +53,7 @@
     <!-- 2. PLÁTNO (CANVAS) -->
     <div class="canvas-scroll-container p-0" 
          style="flex: 1; overflow: auto; display: flex; align-items: flex-start; justify-content: center; background: #eaedf1;"
-         :style="{ background: ['project', 'domain', 'import', 'component'].includes(currentMode) ? 'var(--wa-surface-base)' : '#eaedf1' }"
+         :style="{ background: (['project', 'domain', 'import', 'component'].includes(currentMode) || !!pages.current) ? 'var(--wa-surface-base)' : '#eaedf1' }"
          @mousemove="updateInspector($event)"
     >
         <template x-for="(tab, tabIndex) in tabs" :key="tab.id + '-canvas'">
@@ -60,15 +61,16 @@
                  :id="'canvas-' + tab.id"
                  class="editor-canvas shadow-sm"
                  :style="{
-                     backgroundImage: ['project', 'domain', 'import', 'component'].includes(tab.mode) ? 'none' : 'linear-gradient(rgba(59, 192, 195, 0.15) 1px, transparent 1px), linear-gradient(90deg, rgba(59, 192, 195, 0.15) 1px, transparent 1px)',
-                     backgroundColor: ['project', 'domain', 'import', 'component'].includes(tab.mode) ? 'var(--wa-surface-base)' : '#ffffff',
-                     maxWidth: ['project', 'domain', 'import', 'component'].includes(tab.mode) ? 'none' : '1200px',
+                     backgroundImage: (['project', 'domain', 'import', 'component'].includes(tab.mode) || (tab.mode === 'page' && tab.pageId)) ? 'none' : 'linear-gradient(rgba(59, 192, 195, 0.15) 1px, transparent 1px), linear-gradient(90deg, rgba(59, 192, 195, 0.15) 1px, transparent 1px)',
+                     backgroundColor: (['project', 'domain', 'import', 'component'].includes(tab.mode) || (tab.mode === 'page' && tab.pageId)) ? 'var(--wa-surface-base)' : '#ffffff',
+                     maxWidth: (['project', 'domain', 'import', 'component'].includes(tab.mode) || (tab.mode === 'page' && tab.pageId)) ? 'none' : '1200px',
                      minHeight: 'calc(100vh - 190px)',
-                     padding: ['project', 'domain', 'import', 'component'].includes(tab.mode) || tab.route ? '0px' : '30px',
-                     marginTop: ['project', 'domain', 'import', 'component'].includes(tab.mode) ? '0px' : '20px'
+                     padding: (['project', 'domain', 'import', 'component'].includes(tab.mode) || (tab.mode === 'page' && tab.pageId)) || tab.route ? '0px' : '30px',
+                     marginTop: (['project', 'domain', 'import', 'component'].includes(tab.mode) || (tab.mode === 'page' && tab.pageId)) ? '0px' : '20px'
                  }"
                  style="width: 100%; background-size: 20px 20px; border-radius: 4px; box-sizing: border-box; position: relative; transition: all 0.3s ease; margin-top: 20px;"
             >
+                <template x-if="tab.mode === 'page' && tab.pageId"><x-ui.page-editor.preview /></template>
                 <template x-if="tab.mode === 'component'">
                     <x-ui.component-editor.form />
                 </template>
@@ -89,13 +91,13 @@
                     <div x-html="document.getElementById('html-profile-tab-template')?.innerHTML" style="width: 100%;"></div>
                 </template>
 
-                <template x-if="tab.mode !== 'profile' && !['project', 'domain', 'import', 'component'].includes(tab.mode) && tab.route">
+                <template x-if="tab.mode !== 'profile' && !(['project', 'domain', 'import', 'component'].includes(tab.mode) || (tab.mode === 'page' && tab.pageId)) && tab.route">
                     <iframe :src="tab.route" 
                             style="width: 100%; height: calc(100vh - 250px); border: none; background: transparent; border-radius: 4px;">
                     </iframe>
                 </template>
 
-                <template x-if="tab.mode !== 'profile' && !['project', 'domain', 'import', 'component'].includes(tab.mode) && !tab.route">
+                <template x-if="tab.mode !== 'profile' && !(['project', 'domain', 'import', 'component'].includes(tab.mode) || (tab.mode === 'page' && tab.pageId)) && !tab.route">
                     <div>
                         <div style="border: 2px dashed #cbd5e1; border-radius: 6px; padding: 40px; text-align: center; color: #94a3b8; font-family: sans-serif; font-size: 14px;">
                             <p style="margin: 0; font-weight: 600;">Režim: <span x-text="tab.mode.toUpperCase()" style="color: #3bc0c3;"></span> — <span x-text="tab.title + (dirty(tab.id) ? ' •' : '')"></span></p>

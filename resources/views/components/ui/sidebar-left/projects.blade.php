@@ -73,6 +73,7 @@
                  this.revision = data.revision;
                  this.projectIds = data.ids || this.projectIds;
                  this.domainIds = data.domain_ids || this.domainIds;
+                 window.sidebarPageIds = data.page_ids || window.sidebarPageIds || {};
                  window.sidebarProjectsData = this.projects;
                  window.sidebarProjectsRevision = this.revision;
                  window.sidebarProjectIds = this.projectIds;
@@ -168,6 +169,7 @@
 
                  window.dispatchEvent(new CustomEvent('add-new-tab', {
                      detail: {
+                         pageId: (window.sidebarPageIds || {})[page.id] || null,
                          title: page.name,
                          type: 'page',
                          mode: 'page',

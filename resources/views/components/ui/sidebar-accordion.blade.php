@@ -13,7 +13,7 @@
                  }
              } catch (e) {}
              this.$nextTick(() => {
-                 if (@js($id) === 'right' && this.$store.projectEditor.active) this.openSection('properties');
+                 if (@js($id) === 'right' && (this.$store.projectEditor.active || this.$store.componentEditor.current || this.$store.pagePreview.current)) this.openSection('properties');
              });
          },
          rememberSection() {

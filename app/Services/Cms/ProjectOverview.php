@@ -16,6 +16,7 @@ class ProjectOverview
         return array_merge($project->toArray(), [
             'editor_kind' => 'project',
             'overview' => [
+                'components' => Component::where('project_id', $project->id)->where('user_id', $project->user_id)->orderBy('name')->get(['id', 'name', 'slug', 'revision'])->toArray(),
                 'domains' => $domains->map(fn ($domain) => ['id' => $domain->id, 'legacy_id' => $domain->legacy_id, 'name' => $domain->name, 'site_type' => $domain->settings['site_type'] ?? 'laravel13', 'pages_count' => $domain->pages_count])->all(),
                 'domains_count' => $project->domains_count, 'pages_count' => $project->pages_count,
                 'components_count' => Component::where('project_id', $project->id)->where('user_id', $project->user_id)->count(),

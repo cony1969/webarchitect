@@ -43,7 +43,7 @@
             drafts: {}, activeKey: null,
             get current() { return this.drafts[this.activeKey] || null; },
             ensure(key, path = null) {
-                if (!this.drafts[key]) this.drafts[key] = { id: null, path, revision: 1, shared: false, loaded: false, loading: false, saving: false, form: { name: '', slug: '', target_path: '', tab: 'bootstrap', category: '' }, code: '', baseline: '', view: 'preview', preview: '', codeError: '', error: '', errors: {}, notice: '', copyOpen: false, copyName: '', copySlug: '' };
+                if (!this.drafts[key]) this.drafts[key] = { id: null, path, revision: 1, shared: false, loaded: false, loading: false, saving: false, form: { name: '', slug: '', target_path: '', tab: 'bootstrap', category: '' }, code: '', baseline: '', view: 'preview', preview: '', codeError: '', error: '', errors: {}, notice: '', projectId: null, projectName: '', placement: null };
                 if (path && !this.drafts[key].path) this.drafts[key].path = path;
                 return this.drafts[key];
             },
@@ -64,7 +64,7 @@
             },
             apply(key, data) {
                 const draft = this.ensure(key);
-                Object.assign(draft, { id: data.id, path: data.item_path, revision: data.revision, shared: data.shared, loaded: true, error: '', errors: {}, code: data.content, codeError: '' });
+                Object.assign(draft, { id: data.id, path: data.item_path, revision: data.revision, shared: data.shared, projectId: data.project_id || null, projectName: data.project_name || '', loaded: true, error: '', errors: {}, code: data.content, codeError: '' });
                 draft.form = { name: data.name, slug: data.slug, target_path: data.target_path, tab: data.tab, category: data.category };
                 this.updateDocument(key, false);
                 draft.baseline = this.snapshot(draft);
@@ -104,21 +104,49 @@
                 const draft = this.drafts[key];
                 try { draft.code = pretty(this.parsed(draft)); this.updateDocument(key); } catch (error) { draft.codeError = 'Neplatný JSON: ' + error.message; }
             },
-            openCopy(key) {
+            async openPlacement(key) {
                 const draft = this.drafts[key];
-                draft.copyName = draft.form.name + ' – kópia'; draft.copySlug = draft.form.slug + '-kopia'; draft.copyOpen = true; draft.error = ''; draft.errors = {};
+                draft.error = ''; draft.errors = {};
+                const previous = draft.placement;
+                draft.placement = { loading: true, saving: false, sources: [], projects: [], sourceId: previous?.sourceId || draft.id, projectId: previous?.projectId || '', pageId: previous?.pageId || '', id: previous?.id || crypto.randomUUID() };
+                try {
+                    const options = await this.request('/api/cms/component-placement/options');
+                    Object.assign(draft.placement, options);
+                    draft.placement.projectId ||= options.projects.find(p => p.legacy_id === window.sidebarProjectsTreeState?.selectedProject)?.id || options.projects[0]?.id || '';
+                    this.placementProjectChanged(key);
+                } catch (error) { draft.error = error.message; } finally { draft.placement.loading = false; }
             },
-            async save(key, asNew = false) {
+            placementProjectChanged(key) {
+                const selection = this.drafts[key].placement;
+                const pages = selection.projects.find(p => p.id === selection.projectId)?.pages || [];
+                if (!pages.some(page => page.id === selection.pageId)) selection.pageId = pages.find(p => p.legacy_id === window.sidebarProjectsTreeState?.selectedPage)?.id || pages[0]?.id || '';
+            },
+            async insert(key) {
+                const draft = this.drafts[key], selection = draft.placement;
+                if (!selection || selection.loading || selection.saving) return;
+                if (selection.sourceId === draft.id && this.dirty(key)) { draft.error = 'Najprv uložte zmeny zdrojového komponentu.'; return; }
+                const source = selection.sources.find(c => c.id === selection.sourceId);
+                const page = selection.projects.find(p => p.id === selection.projectId)?.pages.find(p => p.id === selection.pageId);
+                if (!source || !page) { draft.error = 'Vyberte zdroj, cieľový projekt a stránku.'; return; }
+                selection.saving = true; draft.error = ''; draft.errors = {};
+                try {
+                    const result = await this.request('/api/cms/component-placement', { component_id: source.id, component_revision: source.id === draft.id ? draft.revision : source.revision, project_id: selection.projectId, page_id: page.id, page_revision: page.revision, placement_id: selection.id });
+                    draft.placement = null; draft.notice = 'Komponent bol vložený do stránky ' + result.data.name + '.';
+                    emit('cms-project-tree-updated', result.project_tree);
+                    emit('cms-page-composed', { document: result.data });
+                } catch (error) { draft.error = error.message; draft.errors = error.fields || {}; } finally { selection.saving = false; }
+            },
+            async save(key) {
                 const draft = this.drafts[key];
                 if (!draft?.loaded || draft.saving || draft.loading) return;
                 this.updateDocument(key);
                 if (draft.codeError) { draft.view = 'json'; return; }
                 draft.saving = true; draft.error = ''; draft.errors = {}; draft.notice = '';
                 try {
-                    const result = await this.request('/ui/components/editor', { ...draft.form, component_id: draft.id, revision: draft.revision, as_new: asNew, name: asNew ? draft.copyName : draft.form.name, slug: asNew ? draft.copySlug : draft.form.slug, json_content: draft.code });
-                    if (!asNew) this.apply(key, result.data);
-                    draft.copyOpen = false; draft.notice = asNew ? 'Nový komponent je uložený v samostatnej karte.' : 'Zmeny sú uložené.';
-                    emit('component-document-saved', { key, document: result.data, asNew });
+                    const result = await this.request('/ui/components/editor', { ...draft.form, component_id: draft.id, revision: draft.revision, as_new: false, name: draft.form.name, slug: draft.form.slug, json_content: draft.code });
+                    this.apply(key, result.data);
+                    draft.notice = 'Zmeny sú uložené.';
+                    emit('component-document-saved', { key, document: result.data, asNew: false });
                     emit('component-catalog-updated', { catalog: result.catalog });
                 } catch (error) { draft.error = error.message; draft.errors = error.fields || {}; } finally { draft.saving = false; }
             },
@@ -127,6 +155,31 @@
             const store = Alpine.store('componentEditor');
             if (Object.keys(store.drafts).some(key => store.dirty(key))) { event.preventDefault(); event.returnValue = ''; }
         });
+        Alpine.data('waComponentPlacement', key => ({
+            key, widgets: [],
+            get selection() { return Alpine.store('componentEditor').drafts[this.key].placement; },
+            init() {
+                this.$nextTick(() => {
+                    for (const field of ['sourceId', 'projectId', 'pageId']) {
+                        const widget = window.jQuery(this.$refs[field]);
+                        widget.select2({ width: '100%', minimumResultsForSearch: 0, dropdownCssClass: 'wa-project-type-dropdown', language: { noResults: () => 'Žiadna položka sa nenašla.' } });
+                        widget.on('change.waPlacement', () => {
+                            if (!this.selection || this.selection.loading || this.selection.saving) return;
+                            this.selection[field] = widget.val() || '';
+                            if (field === 'projectId') Alpine.store('componentEditor').placementProjectChanged(this.key);
+                        });
+                        this.widgets.push([field, widget]);
+                    }
+                    this.$watch('selection?.projectId', () => this.sync());
+                    this.$watch('selection?.pageId', () => this.sync());
+                    this.$watch('selection?.loading', () => this.sync());
+                    this.$watch('selection?.saving', () => this.sync());
+                    this.sync();
+                });
+            },
+            sync() { this.$nextTick(() => { if (this.selection) for (const [field, widget] of this.widgets) widget.prop('disabled', this.selection.loading || this.selection.saving).val(this.selection[field]).trigger('change.select2'); }); },
+            destroy() { for (const [, widget] of this.widgets) if (widget.data('select2')) widget.off('.waPlacement').select2('destroy'); },
+        }));
         Alpine.data('waComponentForm', key => ({
             key, observer: null,
             get store() { return Alpine.store('componentEditor'); },

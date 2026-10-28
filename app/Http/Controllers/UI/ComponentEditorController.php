@@ -46,11 +46,15 @@ class ComponentEditorController extends Controller
                 abort_unless($original, 422, 'Najprv vyberte existujúci komponent alebo použite Uložiť ako nový.');
                 abort_unless((int) $original->user_id === (int) $request->user()->id, 403, 'Spoločnú predlohu uložte ako nový vlastný komponent.');
                 abort_unless(isset($data['revision']) && $original->revision === $data['revision'], 409, 'Komponent medzitým zmenil iný editor. Načítajte ho znovu.');
-                abort_unless($data['slug'] === $original->slug, 422, 'Pre nový slug použite Uložiť ako nový.');
+                abort_unless($data['slug'] === $original->slug, 422, 'Slug tejto definície je nemenný. Pre ďalšiu projektovú verziu použite Vložiť do projektu.');
             }
             $path = $data['target_path'].'/'.$data['slug'].'.json';
-            $duplicate = Component::withTrashed()->where('user_id', $request->user()->id)
-                ->where(fn ($q) => $q->where('source_key', $path)->orWhere(fn ($q) => $q->where('scope_key', '')->where('slug', $data['slug'])))
+            if ($original?->project_id && $data['as_new']) {
+                abort(422, 'Projektový komponent vložte do ďalšieho projektu cez Vložiť do projektu.');
+            }
+            $scope = $original?->project_id ?? '';
+            $duplicate = Component::withTrashed()->where('user_id', $request->user()->id)->where('scope_key', $scope)
+                ->where(fn ($q) => $q->where('source_key', $path)->orWhere('slug', $data['slug']))
                 ->when(! $data['as_new'] && $original, fn ($q) => $q->whereKeyNot($original->id))->exists();
             if ($duplicate) {
                 throw ValidationException::withMessages(['slug' => 'Komponent s týmto slugom už existuje. Pre nový komponent zvoľte iný slug.']);

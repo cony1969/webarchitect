@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Cms\DocumentController;
+use App\Http\Controllers\Cms\ComponentPlacementController;
 use App\Http\Controllers\Cms\DomainController;
 use App\Http\Controllers\Cms\LegacyTreeController;
 use App\Http\Controllers\Cms\ProjectTreeController;
@@ -21,6 +22,9 @@ Route::get('/dashboard', function () {
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
+    Route::get('/api/cms/component-placement/options', [ComponentPlacementController::class, 'options']);
+    Route::post('/api/cms/component-placement', [ComponentPlacementController::class, 'insert']);
+    Route::get('/api/cms/page-composition/{id}', [ComponentPlacementController::class, 'show'])->whereUuid('id');
     Route::get('/api/cms/site-import/sources', [SiteImportController::class, 'sources']);
     Route::post('/api/cms/site-import/analyze', [SiteImportController::class, 'analyze'])->middleware('throttle:10,1');
     Route::get('/api/cms/domains', [DomainController::class, 'index']);
