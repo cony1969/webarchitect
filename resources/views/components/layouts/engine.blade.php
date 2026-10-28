@@ -47,7 +47,7 @@
 
     <x-ui.styles />
     <x-ui.theme />
-    <link rel="stylesheet" href="{{ asset('css/project-editor.css') }}?v=20261028-import1">
+    <link rel="stylesheet" href="{{ asset('css/project-editor.css') }}?v=20261028-tree1">
 </head>
 <body>
 

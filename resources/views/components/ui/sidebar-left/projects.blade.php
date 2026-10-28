@@ -248,19 +248,19 @@
                 <div @click="selectProject(project.id)" 
                      :style="{ color: selectedProject === project.id ? '#3bc0c3' : '#fff' }"
                      style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: bold; padding: 4px 0;">
-                    <span x-text="selectedProject === project.id ? '▼' : '►'" style="font-size: 9px; width: 10px;"></span>
+                    <span x-text="selectedProject === project.id ? '▼' : '►'" style="font-size: 9px; width: 10px; flex-shrink: 0;"></span>
                     <span>📁</span>
-                    <span x-text="project.name"></span>
-                    <button type="button" class="wa-tree-action" title="Otvoriť editor projektu" aria-label="Otvoriť editor projektu" @click.stop="openProject(project)"><i class="fas fa-pen" aria-hidden="true"></i></button>
-                    <button type="button" class="wa-tree-action" title="Pridať doménu" aria-label="Pridať doménu" @click.stop="triggerNodeModal('domain', project)">+</button>
-                    <span title="Zmazat"
-                          aria-label="Zmazat"
-                          style="display: inline-flex; align-items: center; justify-content: center; width: 14px; height: 14px; opacity: 0.9; margin-left: auto; pointer-events: none; color: #ef4444;">
-                        <svg viewBox="0 0 16 16" width="12" height="12" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                            <path d="M2.5 4H13.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
-                            <path d="M6 2.8H10" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
-                            <path d="M4 4.5L4.6 13H11.4L12 4.5" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/>
-                        </svg>
+                    <span class="wa-tree-name" :title="project.name" x-text="project.name"></span>
+                    <span class="wa-tree-actions">
+                        <button type="button" class="wa-tree-action" title="Pridať doménu" aria-label="Pridať doménu" @click.stop="triggerNodeModal('domain', project)">+</button>
+                        <button type="button" class="wa-tree-action" title="Otvoriť editor projektu" aria-label="Otvoriť editor projektu" @click.stop="openProject(project)"><i class="fas fa-pen" aria-hidden="true"></i></button>
+                        <span class="wa-tree-trash" title="Zmazat" aria-label="Zmazat">
+                            <svg viewBox="0 0 16 16" width="12" height="12" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                <path d="M2.5 4H13.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+                                <path d="M6 2.8H10" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+                                <path d="M4 4.5L4.6 13H11.4L12 4.5" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/>
+                            </svg>
+                        </span>
                     </span>
                 </div>
 
@@ -271,19 +271,19 @@
                             <div @click="selectDomain(domain.id, $event)"
                                  :style="{ color: selectedDomain === domain.id ? '#3bc0c3' : '#8a94ad' }"
                                  style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 600; padding: 2px 0;">
-                                <span x-text="selectedDomain === domain.id ? '▼' : '►'" style="font-size: 9px; width: 10px;"></span>
+                                <span x-text="selectedDomain === domain.id ? '▼' : '►'" style="font-size: 9px; width: 10px; flex-shrink: 0;"></span>
                                 <span>🌐</span>
-                                <span x-text="domain.name"></span>
-                                <button type="button" class="wa-tree-action" title="Otvoriť editor domény" aria-label="Otvoriť editor domény" @click.stop="openDomain(project, domain)"><i class="fas fa-pen" aria-hidden="true"></i></button>
-                                <button type="button" class="wa-tree-action" title="Pridať stránku" aria-label="Pridať stránku" @click.stop="triggerNodeModal('page', project, domain)">+</button>
-                                <span title="Zmazat"
-                                      aria-label="Zmazat"
-                                      style="display: inline-flex; align-items: center; justify-content: center; width: 14px; height: 14px; opacity: 0.9; margin-left: auto; pointer-events: none; color: #ef4444;">
-                                    <svg viewBox="0 0 16 16" width="12" height="12" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                                        <path d="M2.5 4H13.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
-                                        <path d="M6 2.8H10" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
-                                        <path d="M4 4.5L4.6 13H11.4L12 4.5" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/>
-                                    </svg>
+                                <span class="wa-tree-name" :title="domain.name" x-text="domain.name"></span>
+                                <span class="wa-tree-actions">
+                                    <button type="button" class="wa-tree-action" title="Pridať stránku" aria-label="Pridať stránku" @click.stop="triggerNodeModal('page', project, domain)">+</button>
+                                    <button type="button" class="wa-tree-action" title="Otvoriť editor domény" aria-label="Otvoriť editor domény" @click.stop="openDomain(project, domain)"><i class="fas fa-pen" aria-hidden="true"></i></button>
+                                    <span class="wa-tree-trash" title="Zmazat" aria-label="Zmazat">
+                                        <svg viewBox="0 0 16 16" width="12" height="12" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                            <path d="M2.5 4H13.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+                                            <path d="M6 2.8H10" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+                                            <path d="M4 4.5L4.6 13H11.4L12 4.5" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/>
+                                        </svg>
+                                    </span>
                                 </span>
                             </div>
 
@@ -291,19 +291,19 @@
                             <div x-show="selectedDomain === domain.id" style="padding-left: 18px; margin-top: 2px; display: flex; flex-direction: column; gap: 4px;">
                                 <template x-for="page in domain.pages" :key="page.id">
                                     <div :style="{ background: selectedPage === page.id ? '#3b82f6' : 'var(--wa-surface-raised)' }"
-                                         style="display: flex; align-items: center; gap: 8px; padding: 3px 6px; border-radius: 3px; font-size: 12px; color: #fff; cursor: pointer;"
+                                         style="display: flex; align-items: center; gap: 8px; padding: 3px 0 3px 6px; border-radius: 3px; font-size: 12px; color: #fff; cursor: pointer;"
                                          @click="selectPage(page, domain, project, $event)"
                                     >
                                         <span>📄</span>
-                                        <span x-text="page.name"></span>
-                                        <span title="Zmazat"
-                                              aria-label="Zmazat"
-                                                style="display: inline-flex; align-items: center; justify-content: center; width: 14px; height: 14px; opacity: 0.9; margin-left: auto; pointer-events: none; color: #ef4444;">
-                                            <svg viewBox="0 0 16 16" width="12" height="12" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                                                <path d="M2.5 4H13.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
-                                                <path d="M6 2.8H10" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
-                                                <path d="M4 4.5L4.6 13H11.4L12 4.5" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/>
-                                            </svg>
+                                        <span class="wa-tree-name" :title="page.name" x-text="page.name"></span>
+                                        <span class="wa-tree-actions">
+                                            <span class="wa-tree-trash" title="Zmazat" aria-label="Zmazat">
+                                                <svg viewBox="0 0 16 16" width="12" height="12" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                                    <path d="M2.5 4H13.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+                                                    <path d="M6 2.8H10" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+                                                    <path d="M4 4.5L4.6 13H11.4L12 4.5" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/>
+                                                </svg>
+                                            </span>
                                         </span>
                                     </div>
                                 </template>
