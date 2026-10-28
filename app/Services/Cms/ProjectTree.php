@@ -12,7 +12,7 @@ use Illuminate\Support\Str;
 
 class ProjectTree
 {
-    public function __construct(private DocumentStore $store) {}
+    public function __construct(private DocumentStore $store, private DomainStore $domains) {}
 
     public function revision(User $user): int
     {
@@ -42,14 +42,14 @@ class ProjectTree
                 $project = Project::withTrashed()->firstOrNew(['owner_key' => 'user:'.$user->id, 'legacy_id' => $data['id']]);
                 $project->fill(['user_id' => $user->id, 'name' => $data['name'], 'slug' => $project->exists && $project->name === $data['name'] ? $project->slug : (Str::slug($data['name']) ?: 'project'), 'kind' => 'project', 'position' => $position, 'scope_key' => '', 'deleted_at' => null]);
                 $project->document ??= DocumentData::empty();
-                $project->settings = array_replace($project->settings ?? [], Arr::except($data, ['id', 'name', 'domains']));
-                $project->source_payload = Arr::except($data, ['domains']);
+                $project->settings = [];
+                $project->source_payload = Arr::only($data, ['id', 'name']);
                 $this->store->save($project, $user->id);
                 $projectIds[] = $project->id;
                 foreach ($data['domains'] ?? [] as $domainPosition => $domainData) {
                     $domain = Domain::withTrashed()->firstOrNew(['project_id' => $project->id, 'legacy_id' => $domainData['id']]);
-                    $domain->fill(['name' => $domainData['name'], 'position' => $domainPosition, 'settings' => Arr::except($domainData, ['id', 'name', 'pages']), 'source_payload' => Arr::except($domainData, ['pages']), 'deleted_at' => null]);
-                    $domain->save();
+                    $domain->fill(['name' => $domainData['name'], 'position' => $domainPosition, 'settings' => array_replace($domain->settings ?? [], Arr::except($domainData, ['id', 'name', 'pages'])), 'source_payload' => Arr::except($domainData, ['pages']), 'deleted_at' => null]);
+                    $this->domains->persist($domain, $user->id);
                     $domainIds[] = $domain->id;
                     foreach ($domainData['pages'] ?? [] as $pagePosition => $pageData) {
                         $page = Page::withTrashed()->firstOrNew(['owner_key' => 'user:'.$user->id, 'legacy_id' => $pageData['id']]);

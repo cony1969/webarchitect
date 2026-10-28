@@ -39,7 +39,7 @@
             <div class="wa-canvas-tab" role="presentation" :data-tab-id="tab.id" @click="setActiveTab(tab.id)" :class="{ 'is-active': activeTab === tab.id }">
                 <button type="button" class="wa-canvas-close" :aria-label="'Zavrieť kartu ' + tab.title" @click.stop="closeTab(tab.id, $event)" :disabled="!!editor.drafts[tab.id]?.saving">×</button>
                 <button type="button" class="wa-canvas-label" role="tab" :aria-selected="activeTab === tab.id" :aria-controls="'canvas-' + tab.id" :tabindex="activeTab === tab.id ? 0 : -1" :aria-label="tab.title + (editor.dirty(tab.id) ? ', neuložené zmeny' : '')" @keydown.left.prevent="stepTab(tab.id, -1)" @keydown.right.prevent="stepTab(tab.id, 1)">
-                    <span aria-hidden="true" x-text="tab.mode === 'layout' ? '📐' : (tab.mode === 'component' ? '🧩' : (tab.mode === 'profile' ? '👤' : (tab.mode === 'project' ? '📁' : '📄')))"></span>
+                    <span aria-hidden="true" x-text="({project:'📁',domain:'🌐',layout:'📐',component:'🧩',profile:'👤'})[tab.mode] || '📄'"></span>
                     <span x-text="tab.title + (editor.dirty(tab.id) ? ' •' : '')"></span>
                 </button>
             </div>
@@ -50,7 +50,7 @@
     <!-- 2. PLÁTNO (CANVAS) -->
     <div class="canvas-scroll-container p-0" 
          style="flex: 1; overflow: auto; display: flex; align-items: flex-start; justify-content: center; background: #eaedf1;"
-         :style="{ background: currentMode === 'project' ? 'var(--wa-surface-base)' : '#eaedf1' }"
+         :style="{ background: ['project', 'domain'].includes(currentMode) ? 'var(--wa-surface-base)' : '#eaedf1' }"
          @mousemove="updateInspector($event)"
     >
         <template x-for="(tab, tabIndex) in tabs" :key="(tab.id || 'canvas') + '-canvas-' + tabIndex">
@@ -58,12 +58,12 @@
                  :id="'canvas-' + tab.id"
                  class="editor-canvas shadow-sm"
                  :style="{
-                     backgroundImage: tab.mode === 'project' ? 'none' : 'linear-gradient(rgba(59, 192, 195, 0.15) 1px, transparent 1px), linear-gradient(90deg, rgba(59, 192, 195, 0.15) 1px, transparent 1px)',
-                     backgroundColor: tab.mode === 'project' ? 'var(--wa-surface-base)' : '#ffffff',
-                     maxWidth: tab.mode === 'project' ? 'none' : (tab.mode === 'component' ? '500px' : '1200px'),
+                     backgroundImage: ['project', 'domain'].includes(tab.mode) ? 'none' : 'linear-gradient(rgba(59, 192, 195, 0.15) 1px, transparent 1px), linear-gradient(90deg, rgba(59, 192, 195, 0.15) 1px, transparent 1px)',
+                     backgroundColor: ['project', 'domain'].includes(tab.mode) ? 'var(--wa-surface-base)' : '#ffffff',
+                     maxWidth: ['project', 'domain'].includes(tab.mode) ? 'none' : (tab.mode === 'component' ? '500px' : '1200px'),
                      minHeight: tab.mode === 'component' ? '300px' : 'calc(100vh - 190px)',
-                     padding: tab.mode === 'project' || tab.route ? '0px' : '30px',
-                     marginTop: tab.mode === 'project' ? '0px' : '20px'
+                     padding: ['project', 'domain'].includes(tab.mode) || tab.route ? '0px' : '30px',
+                     marginTop: ['project', 'domain'].includes(tab.mode) ? '0px' : '20px'
                  }"
                  style="width: 100%; background-size: 20px 20px; border-radius: 4px; box-sizing: border-box; position: relative; transition: all 0.3s ease; margin-top: 20px;"
             >
@@ -71,17 +71,21 @@
                     <x-ui.project-editor.form />
                 </template>
 
+                <template x-if="tab.mode === 'domain'">
+                    <x-ui.domain-editor.form />
+                </template>
+
                 <template x-if="tab.mode === 'profile'">
                     <div x-html="document.getElementById('html-profile-tab-template')?.innerHTML" style="width: 100%;"></div>
                 </template>
 
-                <template x-if="tab.mode !== 'profile' && tab.mode !== 'project' && tab.route">
+                <template x-if="tab.mode !== 'profile' && !['project', 'domain'].includes(tab.mode) && tab.route">
                     <iframe :src="tab.route" 
                             style="width: 100%; height: calc(100vh - 250px); border: none; background: transparent; border-radius: 4px;">
                     </iframe>
                 </template>
 
-                <template x-if="tab.mode !== 'profile' && tab.mode !== 'project' && !tab.route">
+                <template x-if="tab.mode !== 'profile' && !['project', 'domain'].includes(tab.mode) && !tab.route">
                     <div>
                         <div style="border: 2px dashed #cbd5e1; border-radius: 6px; padding: 40px; text-align: center; color: #94a3b8; font-family: sans-serif; font-size: 14px;">
                             <p style="margin: 0; font-weight: 600;">Režim: <span x-text="tab.mode.toUpperCase()" style="color: #3bc0c3;"></span> — <span x-text="tab.title + (editor.dirty(tab.id) ? ' •' : '')"></span></p>

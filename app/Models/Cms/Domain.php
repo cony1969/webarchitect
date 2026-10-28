@@ -16,7 +16,7 @@ class Domain extends Model
 
     protected function casts(): array
     {
-        return ['settings' => 'array', 'source_payload' => 'array'];
+        return ['settings' => 'array', 'source_payload' => 'array', 'revision' => 'integer', 'position' => 'integer'];
     }
 
     public function project()

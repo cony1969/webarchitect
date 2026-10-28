@@ -6,6 +6,7 @@
              projects: window.sidebarProjectsData || [],
              revision: window.sidebarProjectsRevision || 1,
              projectIds: window.sidebarProjectIds || {},
+             domainIds: window.sidebarDomainIds || {},
              saving: false,
              saveAgain: false,
              selectedProject: window.sidebarProjectsTreeState && window.sidebarProjectsTreeState.selectedProject ? window.sidebarProjectsTreeState.selectedProject : null,
@@ -49,7 +50,17 @@
                  if (!projectId) { alert('Obnovte zoznam projektov a skúste to znova.'); return; }
                  window.dispatchEvent(new CustomEvent('add-new-tab', { detail: { title: project.name, mode: 'project', projectId } }));
              },
+             openDomain(project, domain) {
+                 const projectId = this.projectIds[project.id];
+                 const domainId = this.domainIds[projectId] && this.domainIds[projectId][domain.id];
+                 if (!domainId) { alert('Obnovte zoznam domén a skúste to znova.'); return; }
+                 window.dispatchEvent(new CustomEvent('add-new-tab', { detail: { title: domain.name, mode: 'domain', projectId, domainId, projectName: project.name } }));
+             },
              triggerNodeModal(mode, project, domain = null) {
+                 if (mode === 'domain') {
+                     window.dispatchEvent(new CustomEvent('add-new-tab', { detail: { title: 'Nová doména', mode: 'domain', projectId: this.projectIds[project.id], projectName: project.name } }));
+                     return;
+                 }
                  this.modalMode = mode;
                  this.selectedProject = project.id;
                  this.selectedDomain = domain ? domain.id : null;
@@ -61,9 +72,11 @@
                  this.projects = data.projects;
                  this.revision = data.revision;
                  this.projectIds = data.ids || this.projectIds;
+                 this.domainIds = data.domain_ids || this.domainIds;
                  window.sidebarProjectsData = this.projects;
                  window.sidebarProjectsRevision = this.revision;
                  window.sidebarProjectIds = this.projectIds;
+                 window.sidebarDomainIds = this.domainIds;
                  if (data.focusProject && data.focusProject !== this.selectedProject) {
                      this.selectedProject = data.focusProject; this.selectedDomain = null; this.selectedPage = null;
                      this.saveTreePosition();
@@ -125,6 +138,7 @@
                      domainData = projectData.domains.find(d => d.id === this.selectedDomain) || null;
                  }
 
+                 if (domainData) this.openDomain(projectData, domainData);
                  window.dispatchEvent(new CustomEvent('domain-selected', {
                      detail: domainData ? {
                          domain: domainData,
@@ -201,9 +215,11 @@
                      if (this.saveAgain || JSON.stringify(this.projects) !== submittedTree) {
                          this.revision = data.revision;
                          this.projectIds = data.ids || this.projectIds;
+                         this.domainIds = data.domain_ids || this.domainIds;
                          this.saveAgain = true;
                      } else {
                          this.replaceTree(data);
+                         window.dispatchEvent(new CustomEvent('cms-project-overviews-refresh'));
                      }
                  } catch (error) {
                      this.saveAgain = false;
@@ -217,7 +233,7 @@
          @project-modal-submit.window="handleInflow($event.detail.value)"
          @project-properties-save.window="saveToDb()"
          @cms-project-tree-updated.window="replaceTree($event.detail)"
-         @project-editor-focused.window="if ($event.detail.projectId) { const legacy = Object.keys(projectIds).find(id => projectIds[id] === $event.detail.projectId); if (legacy && selectedProject !== legacy) { selectedProject = legacy; selectedDomain = null; selectedPage = null; saveTreePosition(); } }"
+         @project-editor-focused.window="if ($event.detail.projectId) { const legacy = Object.keys(projectIds).find(id => projectIds[id] === $event.detail.projectId); if (legacy) { selectedProject = legacy; selectedDomain = $event.detail.domainId ? Object.keys(domainIds[$event.detail.projectId] || {}).find(id => domainIds[$event.detail.projectId][id] === $event.detail.domainId) || null : null; selectedPage = null; saveTreePosition(); } }"
 >
     <!-- Plusko plynule odpáli globálny vycentrovaný modal -->
     <x-ui.accordion-header section="projects" :title="$layout['blocks']['block_3']['title'] ?? 'Projekty'" action-label="Nový projekt" action="triggerModal()" />
@@ -255,6 +271,7 @@
                                 <span x-text="selectedDomain === domain.id ? '▼' : '►'" style="font-size: 9px; width: 10px;"></span>
                                 <span>🌐</span>
                                 <span x-text="domain.name"></span>
+                                <button type="button" class="wa-tree-action" title="Otvoriť editor domény" aria-label="Otvoriť editor domény" @click.stop="openDomain(project, domain)"><i class="fas fa-pen" aria-hidden="true"></i></button>
                                 <button type="button" class="wa-tree-action" title="Pridať stránku" aria-label="Pridať stránku" @click.stop="triggerNodeModal('page', project, domain)">+</button>
                                 <span title="Zmazat"
                                       aria-label="Zmazat"

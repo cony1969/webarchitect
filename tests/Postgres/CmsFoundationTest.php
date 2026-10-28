@@ -152,9 +152,9 @@ it('renders the existing shell from the database and preserves saved tabs', func
 
 it('keeps API metadata and custom slugs when the compatible tree is saved', function () {
     $project = Project::where('user_id', 1)->first();
-    $this->actingAs($this->alice)->putJson('/api/cms/projects/'.$project->id, ['name' => $project->name, 'slug' => 'custom-slug', 'settings' => ['description' => 'Preserved'], 'revision' => 1])->assertOk();
+    $this->actingAs($this->alice)->putJson('/api/cms/projects/'.$project->id, ['name' => $project->name, 'slug' => 'custom-slug', 'revision' => 1])->assertOk();
     $tree = app(ProjectTree::class)->read($this->alice);
-    expect($tree[0]['description'])->toBe('Preserved');
+    expect($project->fresh()->settings)->toBe([]);
     $this->postJson('/api/ui/save-projects', ['projects' => $tree, 'revision' => 2])->assertOk();
     expect($project->fresh()->slug)->toBe('custom-slug');
 });

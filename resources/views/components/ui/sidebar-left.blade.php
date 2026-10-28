@@ -35,6 +35,7 @@
 <script>
     window.sidebarProjectsRevision = @js($projectsRevision);
     window.sidebarLayoutsRevision = @js($layoutsRevision);
+    window.sidebarDomainIds = @js(\App\Models\Cms\Domain::whereHas('project', fn ($q) => $q->where('user_id', auth()->id()))->get(['id','project_id','legacy_id'])->groupBy('project_id')->map(fn ($domains) => $domains->pluck('id','legacy_id')));
     window.sidebarProjectIds = @js(\App\Models\Cms\Project::where('user_id', auth()->id())->pluck('id', 'legacy_id'));
     window.sidebarProjectsData = @js($projectsData);
     window.sidebarLayoutsData = @js($layoutsData);

@@ -1,97 +1,117 @@
 <?php
 
 use App\Models\Cms\Domain;
-use App\Models\Cms\Project;
 use App\Models\User;
 use App\Services\Cms\DocumentStore;
+use App\Services\Cms\DomainConfigurationMigration;
+use App\Services\Cms\DomainStore;
+use App\Services\Cms\ProjectTree;
 use Illuminate\Support\Facades\DB;
 
 beforeEach(function () {
-    expect(DB::getDriverName())->toBe('pgsql');
     expect(DB::connection()->getDatabaseName())->toBe('webarchitect_test');
     $this->user = User::factory()->create();
+    $this->project = app(DocumentStore::class)->create('projects', $this->user, ['name' => 'Firma']);
 });
 
-it('creates a project with Laravel 13 and PostgreSQL defaults and refreshes the tree', function () {
-    $result = $this->actingAs($this->user)->postJson('/api/cms/projects', ['name' => 'Nový projekt', 'slug' => 'novy-projekt'])->assertCreated();
-    $result->assertJsonPath('data.settings.project_type', 'laravel13')->assertJsonPath('data.settings.setup.database_engine', 'pgsql')->assertJsonPath('data.settings.setup.create_database', false)->assertJsonPath('project_tree.revision', 2);
-    $id = $result->json('data.id');
-    $legacy = $result->json('data.legacy_id');
-    expect($result->json('project_tree.ids')[$legacy])->toBe($id);
-    $this->getJson('/api/ui/project-tree')->assertOk()->assertJsonPath('projects.0.name', 'Nový projekt');
+it('accepts a project name alone and generates its internal slug', function () {
+    $this->actingAs($this->user)->postJson('/api/cms/projects', ['name' => 'Nový projekt'])->assertCreated()->assertJsonPath('data.settings', [])->assertJsonPath('data.slug', 'novy-projekt');
+    $this->postJson('/api/cms/projects', ['name' => 'Nový projekt'])->assertCreated()->assertJsonPath('data.slug', 'novy-projekt-2');
+    $this->putJson('/api/cms/projects/'.$this->project->id, ['name' => 'Nová firma', 'revision' => 1])->assertOk()->assertJsonPath('data.revision', 2);
+    $this->postJson('/api/cms/projects', ['name' => 'Wrong', 'settings' => ['site_type' => 'php']])->assertUnprocessable();
 });
 
-it('saves Laravel setup choices as configuration without creating a database', function () {
+it('reports scoped domain page component and section counts', function () {
+    $domain = app(DomainStore::class)->save($this->user, ['name' => 'app.example.com', 'project_id' => $this->project->id]);
+    app(DocumentStore::class)->create('pages', $this->user, ['name' => 'Home', 'slug' => 'home', 'domain_id' => $domain->id]);
+    app(DocumentStore::class)->create('components', $this->user, ['name' => 'Card', 'slug' => 'card', 'project_id' => $this->project->id]);
+    app(DocumentStore::class)->create('sections', $this->user, ['name' => 'Header', 'slug' => 'header', 'project_id' => $this->project->id]);
+    $this->actingAs($this->user)->getJson('/api/cms/projects/'.$this->project->id)->assertOk()->assertJsonPath('data.overview.domains_count', 1)->assertJsonPath('data.overview.pages_count', 1)->assertJsonPath('data.overview.components_count', 1)->assertJsonPath('data.overview.sections_count', 1)->assertJsonPath('data.overview.domains.0.name', 'app.example.com');
+    $other = User::factory()->create();
+    $this->actingAs($other)->getJson('/api/cms/projects/'.$this->project->id)->assertNotFound();
+});
+
+it('keeps the project copy empty and original domain data intact', function () {
+    app(DomainStore::class)->save($this->user, ['name' => 'www.example.com', 'project_id' => $this->project->id]);
+    $copy = $this->actingAs($this->user)->postJson('/api/cms/projects/'.$this->project->id.'/copy', ['name' => 'Firma kópia'])->assertCreated();
+    $copy->assertJsonPath('data.settings', [])->assertJsonPath('data.overview.domains_count', 0);
+    expect($copy->json('data.id'))->not->toBe($this->project->id);
+    expect($this->project->domains()->count())->toBe(1);
+});
+
+it('gives every domain an independent stack', function () {
+    $this->actingAs($this->user);
+    $first = $this->postJson('/api/cms/domains', ['name' => 'app.example.com', 'project_id' => $this->project->id])->assertCreated()->assertJsonPath('data.settings.site_type', 'laravel13')->assertJsonPath('data.settings.setup.database_engine', 'pgsql')->json('data');
+    $second = $this->postJson('/api/cms/domains', ['name' => 'api.example.com', 'project_id' => $this->project->id, 'settings' => ['site_type' => 'python']])->assertCreated()->json('data');
+    $this->putJson('/api/cms/domains/'.$first['id'], ['name' => 'app.example.com', 'revision' => 1, 'settings' => ['site_type' => 'php']])->assertOk()->assertJsonPath('data.revision', 2);
+    expect(Domain::find($second['id'])->settings['site_type'])->toBe('python');
+    expect($this->project->fresh()->settings)->toBe([]);
+});
+
+it('saves Laravel options without creating a physical database', function () {
     $before = DB::select('select datname from pg_database order by datname');
-    $settings = ['project_type' => 'laravel13', 'description' => 'Web pre klienta', 'primary_domain' => 'client.example', 'git_repository' => 'git@github.com:team/client.git', 'environment' => 'staging', 'setup' => ['from_template' => true, 'template' => 'business', 'login_page' => true, 'create_database' => true, 'database_engine' => 'pgsql']];
-    $id = $this->actingAs($this->user)->postJson('/api/cms/projects', ['name' => 'Klient', 'slug' => 'klient', 'settings' => $settings])->assertCreated()->json('data.id');
-    expect(Project::findOrFail($id)->settings)->toEqual($settings);
+    $settings = ['site_type' => 'laravel13', 'description' => 'Web', 'git_repository' => 'git@github.com:team/web.git', 'environment' => 'staging', 'setup' => ['from_template' => true, 'template' => 'business', 'login_page' => true, 'create_database' => true, 'database_engine' => 'pgsql']];
+    $this->actingAs($this->user)->postJson('/api/cms/domains', ['name' => 'web.example.com', 'project_id' => $this->project->id, 'settings' => $settings])->assertCreated()->assertJsonPath('data.settings.setup.login_page', true);
     expect(DB::select('select datname from pg_database order by datname'))->toEqual($before);
 });
 
-it('supports every offered project type', function (string $type) {
-    $this->actingAs($this->user)->postJson('/api/cms/projects', ['name' => 'Web', 'slug' => 'web', 'settings' => ['project_type' => $type]])->assertCreated()->assertJsonPath('data.settings.project_type', $type);
+it('supports each offered stack on a domain', function (string $type) {
+    $this->actingAs($this->user)->postJson('/api/cms/domains', ['name' => 'web.example.com', 'project_id' => $this->project->id, 'settings' => ['site_type' => $type]])->assertCreated()->assertJsonPath('data.settings.site_type', $type);
 })->with(['laravel13', 'php', 'python', 'nodejs', 'static']);
 
-it('validates project types, setup choices, domains and repository URLs', function ($settings, $field) {
-    $this->actingAs($this->user)->postJson('/api/cms/projects', ['name' => 'Web', 'slug' => 'web', 'settings' => $settings])->assertUnprocessable()->assertJsonValidationErrors($field);
-    expect(Project::count())->toBe(0);
+it('rejects invalid host names and settings', function ($data, $field) {
+    $this->actingAs($this->user)->postJson('/api/cms/domains', array_replace(['name' => 'web.example.com', 'project_id' => $this->project->id], $data))->assertUnprocessable()->assertJsonValidationErrors($field);
+    expect(Domain::count())->toBe(0);
 })->with([
-    [['project_type' => 'unknown'], 'settings.project_type'],
-    [['project_type' => ''], 'settings.project_type'],
-    [['setup' => ''], 'settings.setup'],
-    [['setup' => ['template' => 'unknown']], 'settings.setup.template'],
-    [['setup' => ['login_page' => 'perhaps']], 'settings.setup.login_page'],
-    [['setup' => ['database_engine' => 'unknown']], 'settings.setup.database_engine'],
-    [['primary_domain' => 'https://example.com/path'], 'settings.primary_domain'],
-    [['git_repository' => 'javascript:alert(1)'], 'settings.git_repository'],
-    [['git_repository' => 'https://user:password@example.com/repo'], 'settings.git_repository'],
+    [['name' => 'https://example.com/path'], 'name'],
+    [['settings' => ['site_type' => 'unknown']], 'settings.site_type'],
+    [['settings' => ['setup' => '']], 'settings.setup'],
+    [['settings' => ['setup' => ['database_engine' => 'unknown']]], 'settings.setup.database_engine'],
+    [['settings' => ['git_repository' => 'https://user:password@example.com/repo']], 'settings.git_repository'],
 ]);
 
-it('updates a project in place and preserves settings that existed before this editor', function () {
-    $project = app(DocumentStore::class)->create('projects', $this->user, ['name' => 'Original', 'slug' => 'original', 'settings' => ['legacy_appearance' => ['color' => 'teal']]]);
-    $settings = $project->settings;
-    $settings['project_type'] = 'python';
-    $settings['description'] = 'Updated';
-    $result = $this->actingAs($this->user)->putJson('/api/cms/projects/'.$project->id, ['name' => 'Updated', 'slug' => 'updated', 'revision' => 1, 'settings' => $settings])->assertOk();
-    $result->assertJsonPath('data.id', $project->id)->assertJsonPath('data.revision', 2)->assertJsonPath('data.settings.legacy_appearance.color', 'teal')->assertJsonPath('project_tree.projects.0.name', 'Updated');
-    expect(Project::count())->toBe(1);
-    $this->putJson('/api/cms/projects/'.$project->id, ['name' => 'Stale', 'slug' => 'stale', 'revision' => 1])->assertConflict();
-    expect($project->fresh()->name)->toBe('Updated');
-});
-
-it('saves current edited settings as a new project without altering or duplicating its domains', function () {
-    $project = app(DocumentStore::class)->create('projects', $this->user, ['name' => 'Original', 'slug' => 'original']);
-    Domain::create(['project_id' => $project->id, 'legacy_id' => 'domain-original', 'name' => 'original.example', 'position' => 0, 'settings' => []]);
-    $settings = $project->settings;
-    $settings['description'] = 'Unsaved edited description';
-    $settings['setup']['login_page'] = true;
-    $response = $this->actingAs($this->user)->postJson('/api/cms/projects/'.$project->id.'/copy', ['name' => 'Copy', 'slug' => 'copy', 'settings' => $settings])->assertCreated();
-    expect($response->json('data.id'))->not->toBe($project->id);
-    $response->assertJsonPath('data.settings.description', 'Unsaved edited description')->assertJsonPath('data.settings.setup.login_page', true)->assertJsonPath('data.revision', 1);
-    expect($project->fresh()->settings['description'])->toBe('')->and(Project::count())->toBe(2)->and(Domain::count())->toBe(1);
-    expect(Project::findOrFail($response->json('data.id'))->domains()->count())->toBe(0);
-});
-
-it('rejects duplicate slugs and access to another user project', function () {
-    $project = app(DocumentStore::class)->create('projects', $this->user, ['name' => 'Original', 'slug' => 'original']);
-    $this->actingAs($this->user)->postJson('/api/cms/projects/'.$project->id.'/copy', ['name' => 'Copy', 'slug' => 'original'])->assertUnprocessable()->assertJsonValidationErrors('slug');
+it('protects other owners and stale revisions and records domain history', function () {
+    $domain = app(DomainStore::class)->save($this->user, ['name' => 'web.example.com', 'project_id' => $this->project->id]);
+    $this->actingAs($this->user)->putJson('/api/cms/domains/'.$domain->id, ['name' => 'new.example.com', 'revision' => 1])->assertOk();
+    $this->putJson('/api/cms/domains/'.$domain->id, ['name' => 'stale.example.com', 'revision' => 1])->assertConflict();
+    expect(DB::table('cms_document_revisions')->where('document_type', 'domains')->where('document_id', $domain->id)->count())->toBe(2);
     $other = User::factory()->create();
-    $this->actingAs($other)->getJson('/api/cms/projects/'.$project->id)->assertNotFound();
-    $this->getJson('/api/ui/project-tree')->assertOk()->assertJsonCount(0, 'projects');
-    $this->postJson('/api/cms/projects/'.$project->id.'/copy', ['name' => 'Stolen', 'slug' => 'stolen'])->assertNotFound();
+    $this->actingAs($other)->getJson('/api/cms/domains/'.$domain->id)->assertNotFound();
+    $this->postJson('/api/cms/domains', ['name' => 'stolen.example.com', 'project_id' => $this->project->id])->assertNotFound();
+    $this->postJson('/api/cms/domains/'.$domain->id.'/copy', ['name' => 'stolen.example.com'])->assertNotFound();
 });
 
-it('renders the project editor, right properties and local Select2 assets', function () {
-    $this->actingAs($this->user)->get('/dashboard')->assertOk()->assertSee('waCanvasTabs', false)->assertSee('wa-project-editor', false)->assertSee('wa-project-type', false)->assertSee('assets/libs/select2/js/select2.full.min.js', false)->assertSee('Uložiť ako nový')->assertSee('Vytvoriť zo vzoru')->assertSee('Vytvoriť prihlasovaciu stránku')->assertSee('Vytvoriť databázu');
+it('copies edited domain settings without its pages and prevents duplicate hosts', function () {
+    $domain = app(DomainStore::class)->save($this->user, ['name' => 'web.example.com', 'project_id' => $this->project->id]);
+    app(DocumentStore::class)->create('pages', $this->user, ['name' => 'Home', 'slug' => 'home', 'domain_id' => $domain->id]);
+    $this->actingAs($this->user)->postJson('/api/cms/domains/'.$domain->id.'/copy', ['name' => 'copy.example.com', 'settings' => ['site_type' => 'python']])->assertCreated()->assertJsonPath('data.pages_count', 0)->assertJsonPath('data.settings.site_type', 'python');
+    expect($domain->fresh()->settings['site_type'])->toBe('laravel13');
+    $this->postJson('/api/cms/domains', ['name' => 'WEB.EXAMPLE.COM', 'project_id' => $this->project->id])->assertUnprocessable();
 });
 
-it('keeps project order stable when a project is updated', function () {
-    $store = app(DocumentStore::class);
-    $first = $store->create('projects', $this->user, ['name' => 'First', 'slug' => 'first']);
-    $second = $store->create('projects', $this->user, ['name' => 'Second', 'slug' => 'second']);
-    $third = $store->create('projects', $this->user, ['name' => 'Third', 'slug' => 'third']);
-    expect([$first->position, $second->position, $third->position])->toBe([0, 1, 2]);
-    $this->actingAs($this->user)->putJson('/api/cms/projects/'.$first->id, ['name' => 'Updated first', 'slug' => 'first', 'revision' => 1])->assertOk()->assertJsonPath('project_tree.projects.0.name', 'Updated first');
-    expect($this->getJson('/api/ui/project-tree')->assertOk()->json('projects'))->toHaveCount(3);
+it('protects new domain configuration from a stale whole-tree save', function () {
+    $before = app(ProjectTree::class)->revision($this->user);
+    app(DomainStore::class)->save($this->user, ['name' => 'web.example.com', 'project_id' => $this->project->id]);
+    $this->actingAs($this->user)->postJson('/api/ui/save-projects', ['projects' => [], 'revision' => $before])->assertConflict();
+    expect(Domain::count())->toBe(1);
+});
+
+it('moves historical settings once while preserving domain overrides and page links', function () {
+    DB::table('cms_imports')->where('source', 'domain-settings-v1')->delete();
+    $this->project->settings = ['project_type' => 'laravel13', 'description' => 'Inherited', 'setup' => ['login_page' => true]];
+    $this->project->save();
+    $domain = Domain::create(['project_id' => $this->project->id, 'legacy_id' => 'old-domain', 'name' => 'web.example.com', 'settings' => ['site_type' => 'python']]);
+    $page = app(DocumentStore::class)->create('pages', $this->user, ['name' => 'Home', 'slug' => 'home', 'domain_id' => $domain->id]);
+    app(DomainConfigurationMigration::class)->run();
+    expect($this->project->fresh()->settings)->toBe([]);
+    expect($domain->fresh()->settings)->toMatchArray(['site_type' => 'python', 'description' => 'Inherited']);
+    expect($domain->fresh()->settings['setup']['login_page'])->toBeTrue();
+    expect($page->fresh()->domain_id)->toBe($domain->id);
+    $revision = $domain->fresh()->revision;
+    app(DomainConfigurationMigration::class)->run();
+    expect($domain->fresh()->revision)->toBe($revision);
+});
+
+it('renders the project overview and the separate domain editor', function () {
+    $this->actingAs($this->user)->get('/dashboard')->assertOk()->assertSee('Prehľad projektu')->assertSee('Domény / subdomény')->assertSee('EDITOR DOMÉNY')->assertSee('Základ webu')->assertSee('select2.full.min.js', false);
 });

@@ -55,6 +55,9 @@ class DocumentStore
             User::whereKey($user->id)->lockForUpdate()->firstOrFail();
             $class = self::MODELS[$kind];
             $id = (string) Str::uuid();
+            if ($kind === 'projects' && empty($data['slug'])) {
+                $data['slug'] = $this->projectSlug($user, $data['name']);
+            }
             $attributes = $this->attributes($kind, $user, $data);
             $this->uniqueSlug($class, $user, $attributes);
             $document = new $class(array_merge($attributes, [
@@ -89,7 +92,12 @@ class DocumentStore
     {
         $original = $this->query($kind, $user)->findOrFail($id);
 
-        return $this->create($kind, $user, array_merge($original->only(['name', 'slug', 'document', 'settings', 'project_id', 'domain_id']), $data, ['status' => 'draft']));
+        $attributes = $original->only(['name', 'slug', 'document', 'settings', 'project_id', 'domain_id']);
+        if ($kind === 'projects') {
+            unset($attributes['slug']);
+        }
+
+        return $this->create($kind, $user, array_merge($attributes, $data, ['status' => 'draft']));
     }
 
     private function bumpCollection(string $kind, User $user, Document $document): void
@@ -108,7 +116,7 @@ class DocumentStore
         $attributes = [
             'name' => $data['name'], 'slug' => $data['slug'], 'status' => $data['status'] ?? 'draft',
             'document' => DocumentData::validate($data['document'] ?? DocumentData::empty()),
-            'settings' => $kind === 'projects' ? app(ProjectSettings::class)->normalize($data['settings'] ?? []) : ($data['settings'] ?? []), 'scope_key' => '',
+            'settings' => $kind === 'projects' ? [] : ($data['settings'] ?? []), 'scope_key' => '',
         ];
         if ($kind !== 'projects') {
             $attributes['project_id'] = $data['project_id'] ?? null;
@@ -130,6 +138,18 @@ class DocumentStore
         }
 
         return $attributes;
+    }
+
+    private function projectSlug(User $user, string $name): string
+    {
+        $base = Str::limit(Str::slug($name) ?: 'projekt', 150, '');
+        $slug = $base;
+        $number = 2;
+        while (Project::where('user_id', $user->id)->where('slug', $slug)->exists()) {
+            $slug = $base.'-'.$number++;
+        }
+
+        return $slug;
     }
 
     private function uniqueSlug(string $class, User $user, array $attributes, ?string $except = null): void

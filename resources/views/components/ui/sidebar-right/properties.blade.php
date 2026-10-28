@@ -13,7 +13,7 @@
              projectTab: 'basic',
 
              headerTitle() {
-                 if (this.$store.projectEditor.active) return 'VLASTNOSTI PROJEKTU {' + (this.$store.projectEditor.current.form.name || 'Nový projekt') + '}';
+                 if (this.$store.projectEditor.active) return (this.$store.projectEditor.isDomain ? 'VLASTNOSTI DOMÉNY {' : 'VLASTNOSTI PROJEKTU {') + (this.$store.projectEditor.current.form.name || 'Nový projekt') + '}';
                  if (this.selectedPageObj && this.selectedPageObj.name) {
                      return 'VLASTNOSTI STRÁNKY {' + this.selectedPageObj.name + '}';
                  }
@@ -23,7 +23,7 @@
                  }
 
                  if (this.selectedProjectObj && this.selectedProjectObj.name) {
-                     return 'VLASTNOSTI PROJEKTU {' + this.selectedProjectObj.name + '}';
+                     return (this.$store.projectEditor.isDomain ? 'VLASTNOSTI DOMÉNY {' : 'VLASTNOSTI PROJEKTU {') + this.selectedProjectObj.name + '}';
                  }
 
                  return 'VLASTNOSTI PROJEKTU';
@@ -181,6 +181,7 @@
     <x-ui.accordion-header section="properties" title="Vlastnosti" dynamic-title="headerTitle()" />
     <div class="block-content sidebar-accordion-content" id="accordion-properties-content" role="region" aria-labelledby="accordion-properties-toggle" x-show="activeSection === 'properties'" x-cloak style="padding: 0 15px; overflow-y: auto; color: #fff;">
         <x-ui.project-editor.properties />
+        <x-ui.domain-editor.properties />
         <div x-show="!$store.projectEditor.active">
         <x-ui.sidebar-right.properties.project />
         <x-ui.sidebar-right.properties.domain />

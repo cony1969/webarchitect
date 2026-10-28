@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Cms\DocumentController;
+use App\Http\Controllers\Cms\DomainController;
 use App\Http\Controllers\Cms\LegacyTreeController;
 use App\Http\Controllers\Cms\ProjectTreeController;
 use App\Http\Controllers\ProfileController;
@@ -18,6 +19,11 @@ Route::get('/dashboard', function () {
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
+    Route::get('/api/cms/domains', [DomainController::class, 'index']);
+    Route::post('/api/cms/domains', [DomainController::class, 'store']);
+    Route::get('/api/cms/domains/{id}', [DomainController::class, 'show'])->whereUuid('id');
+    Route::put('/api/cms/domains/{id}', [DomainController::class, 'update'])->whereUuid('id');
+    Route::post('/api/cms/domains/{id}/copy', [DomainController::class, 'copy'])->whereUuid('id');
     Route::get('/api/ui/project-tree', ProjectTreeController::class);
     Route::post('/profile/save-tabs', [ProfileController::class, 'saveTabs'])->name('profile.save-tabs');
     Route::post('/api/ui/save-projects', [LegacyTreeController::class, 'projects']);
