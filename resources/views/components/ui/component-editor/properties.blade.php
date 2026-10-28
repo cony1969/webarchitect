@@ -58,9 +58,14 @@
                             </div>
                         </div>
                         <button type="button" :aria-label="'Odstrániť CSS riadok ' + (index + 1)" @click="removeStyleRow(index)" class="wa-css-remove">×</button>
+                        <div class="wa-css-pseudos" x-data="waCssPseudo(row)">
+                            <div class="wa-css-pseudo-heading"><span>Stav / pseudo</span><button type="button" @click="copyStyleRow(row)" title="Skopírovať vlastnosť pre iný stav" aria-label="Skopírovať CSS vlastnosť pre iný stav"><i class="fas fa-copy" aria-hidden="true"></i></button></div>
+                            <select x-ref="pseudo" :aria-label="'Pseudo stav pre ' + (row.name || 'novú vlastnosť')"></select>
+                        </div>
                     </div>
                 </template>
 
+                <p class="wa-project-muted wa-pseudo-help">Každý riadok platí pre jeden vybraný stav. Pre ďalší stav pridajte alebo skopírujte vlastnosť ikonou kopírovania. ::before a ::after vyžadujú aj vlastnosť content.</p>
                 <p class="wa-project-note">Riadok bez názvu vlastnosti sa neuloží. CSS sa pridá do štýlu vybraného prvku.</p>
             </fieldset>
         </div>

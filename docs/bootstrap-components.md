@@ -146,3 +146,26 @@ nie polohu samotného kontajnera.
 Zmeny CSS riadka aj JSON obnovia stav ikoniek. Pri inej platnej hodnote ako
 `start`, `end` či `inherit` sa zobrazí jej názov bez automatického prepísania.
 Prepínač má prístupné názvy, stav výberu a klávesové ovládanie šípkami/Home/End.
+
+## Pseudo stavy jednotlivých CSS vlastností
+
+Každý CSS riadok má jeden Select2 pre stav: Bežný stav, :hover, :focus,
+:focus-visible, :active, :disabled, :checked a ďalšie jednoduché stavy a pseudo
+prvky (30 možností spolu). Výber umožňuje hľadať podľa CSS názvu aj slovenského
+popisu. Funkčné selektory s parametrami, napríklad :nth-child() a :has(), zatiaľ
+nemajú grafický editor. Popisy sú v resources/data/css-pseudos.json.
+
+Bežný stav uloží deklaráciu do style. Vybraný pseudo stav sa uloží ako style_rules
+pri tom istom prvku: name, value, pseudos. Grafický editor používa jeden stav na
+riadok. Importované staršie pravidlo s viacerými stavmi rozdelí na samostatné
+riadky so zachovaním významu. Na inú hodnotu toho istého CSS názvu slúži kopírovanie riadka. Box a zarovnanie
+upravujú iba bežný stav a zachovávajú jeho pseudo varianty. JSON aj API overujú
+povolené selektory, názvy, hodnoty a limity aj pri priamom vložení JSON.
+
+Náhľad komponentu aj zloženej stránky vygeneruje izolované selektory pre každý
+výskyt prvku. Pri pseudo pravidlách sa bežný inline štýl prenesie do rovnakého
+stylesheetu, aby neblokoval pseudo pravidlo vyššou inline prioritou. Definícia
+v databáze sa tým nemení. Ostatné komponenty ani CMS tieto pravidlá neovplyvnia.
+::before a ::after potrebujú content; podporu a použiteľné vlastnosti jednotlivých
+stavov/prvkov určuje prehliadač. Hotový spoločný publikovaný CSS súbor domény
+zostáva samostatným ďalším krokom.

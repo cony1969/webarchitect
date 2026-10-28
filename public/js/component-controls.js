@@ -33,7 +33,7 @@
             return colon < 0 ? null : { name: value.slice(0, colon).replace(/\/\*[\s\S]*?\*\//g, '').trim(), value: value.slice(colon + 1).trim() };
         }).filter(row => row?.name);
     };
-    const serializeStyles = rows => rows.filter(row => String(row.name || '').trim()).map(row => String(row.name).trim() + ': ' + String(row.value || '').trim() + ';').join(' ');
+    const serializeStyles = rows => rows.filter(row => String(row.name || '').trim() && !row.pseudos?.length).map(row => String(row.name).trim() + ': ' + String(row.value || '').trim() + ';').join(' ');
     const fieldOptions = (field, breakpoint) => field.options[breakpoint || ''] || [];
     const replaceField = (classes, field, breakpoint, value) => {
         const allowed = fieldOptions(field, breakpoint);
@@ -84,7 +84,7 @@
     const cssSearchResults = (query, rows) => cssCatalog(rows).filter(property => cssMatches(query, property));
     const cssCustomProperty = value => /^--[a-zA-Z0-9_-]+$/.test(value);
     const state = () => ({ tab: 'basic', search: '', rootIndex: 0, rootOptions: [], editable: false, breakpoint: '', extraFields: [], allFields: false, allClasses: false, classTokens: [], styleRows: [], stylesTouched: false });
-    const blankRow = () => ({ id: crypto.randomUUID(), name: '', value: '' });
+    const blankRow = () => ({ id: crypto.randomUUID(), name: '', value: '', pseudos: [] });
     const sync = (draft, source) => {
         const ui = draft.controls ||= state();
         const items = roots(source);
@@ -94,7 +94,7 @@
         ui.editable = !!node && typeof node === 'object' && node.type !== 'cms-component';
         ui.classTokens = tokens(attribute(node, 'class'));
         ui.stylesTouched = false;
-        ui.styleRows = styleRows(String(attribute(node, 'style'))).map(row => ({ id: crypto.randomUUID(), ...row }));
+        ui.styleRows = [...styleRows(String(attribute(node, 'style'))), ...(window.waPseudoStyles?.rules(node) || []).flatMap(row => row.pseudos.map(pseudo => ({...row, pseudos: [pseudo]})))].map(row => ({ id: crypto.randomUUID(), pseudos: [], ...row }));
         if (!ui.styleRows.length) ui.styleRows.push(blankRow());
     };
     window.waComponentControls = { tokens, roots, attribute, setAttribute, styleRows, serializeStyles, fieldOptions, replaceField, state, blankRow, sync, normalizeSearch, matchesSearch, visibleFields, cssSearchResults, cssCatalog, cssMatches, cssCustomProperty };
@@ -118,6 +118,7 @@
                     if (select && window.jQuery(select).data('select2')) window.jQuery(select).select2('open');
                 }));
             },
+            copyStyleRow(row) { this.ui.styleRows.push({ ...row, id: crypto.randomUUID(), pseudos: [...(row.pseudos || [])] }); this.store.stylesChanged(this.key); },
             colorOnly(row) { return window.waColors.colorOnly(row); },
             colorsFor(row) { return window.waColors.rowColors(row); },
             setRowColor(row, index, value) {
@@ -127,6 +128,36 @@
                 this.store.stylesChanged(this.key);
             },
             removeStyleRow(index) { this.ui.styleRows.splice(index, 1); this.store.stylesChanged(this.key); },
+        }));
+        Alpine.data('waCssPseudo', row => ({
+            row, widget: null,
+            get draft() { return this.$store.componentEditor.current; },
+            init() {
+                this.$nextTick(() => {
+                    const select = this.$refs.pseudo;
+                    select.append(new Option('Bežný stav', ''));
+                    for (const [label, common] of [['Bežné stavy', true], ['Ďalšie stavy a pseudo prvky', false]]) {
+                        const group = document.createElement('optgroup'); group.label = label;
+                        for (const item of window.waCssPseudos.filter(item => item.common === common)) group.append(new Option(item.value + ' — ' + item.label, item.value));
+                        select.append(group);
+                    }
+                    this.widget = window.jQuery(select).select2({width: '100%', minimumResultsForSearch: 0, dropdownCssClass: 'wa-project-type-dropdown wa-pseudo-dropdown', language: {noResults: () => 'Žiadny stav nezodpovedá vyhľadávaniu.'}});
+                    this.widget.on('change.waPseudo', () => {
+                        if (!this.draft?.controls.editable || this.draft.loading || this.draft.saving || this.draft.codeError) return;
+                        const value = this.widget.val() || '';
+                        this.row.pseudos = value ? [value] : [];
+                        this.$store.componentEditor.stylesChanged(this.$store.componentEditor.activeKey);
+                    });
+                    for (const expression of ['row.pseudos', 'row.name', 'draft?.saving', 'draft?.loading', 'draft?.codeError']) this.$watch(expression, () => this.sync());
+                    this.sync();
+                });
+            },
+            sync() {
+                if (!this.widget || !this.draft) return;
+                this.widget.prop('disabled', !this.draft.loaded || this.draft.loading || this.draft.saving || !!this.draft.codeError || !this.draft.controls.editable).val(this.row.pseudos?.[0] || '').trigger('change.select2');
+                this.widget.next('.select2').find('[role=combobox]').attr('aria-label', 'Pseudo stav pre ' + (this.row.name || 'novú vlastnosť'));
+            },
+            destroy() { if (this.widget?.data('select2')) this.widget.off('.waPseudo').select2('destroy'); this.widget = null; },
         }));
         Alpine.data('waCssProperty', row => ({
             row, widget: null,

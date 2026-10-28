@@ -87,6 +87,9 @@ final class DocumentData
             if (! is_array($node['attributes'] ?? null) || ! is_array($node['children'] ?? null) || ! array_is_list($node['children'])) {
                 $fail();
             }
+            if (array_key_exists('style_rules', $node['attributes'])) {
+                app(ComponentStyleRows::class)->normalizeRows($node['attributes']['style_rules'], true);
+            }
             $ids[$node['id']] = true;
             foreach ($node['children'] as $child) {
                 $walk($child, $depth + 1);

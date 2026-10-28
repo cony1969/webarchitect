@@ -81,3 +81,35 @@ it('persists icon alignment choices without changing Bootstrap classes or other 
     expect($saved['class'])->toBe('container text-md-start')->and($saved['style'])->toBe('padding-top: 16px; text-align: center !important;');
     $this->get('/dashboard')->assertOk()->assertSee('js/alignment-controls.js', false)->assertSee('Grafické zarovnanie textu')->assertSee('Zarovnanie textu: Na stred')->assertSee('fa-align-justify');
 });
+
+it('stores pseudo states separately from inline CSS and returns them to the editor', function () {
+    $rows = [['name'=>'color','value'=>'red'], ['name'=>'color','value'=>'blue','pseudos'=>[':hover',':focus',':hover']], ['name'=>'content','value'=>'"→"','pseudos'=>['::before']], ['name'=>'','value'=>'ignored','pseudos'=>[':active']]];
+    $response = $this->postJson('/ui/components/editor', array_replace($this->payload, ['style_rows'=>$rows]))->assertOk();
+    $attributes = $this->component->fresh()->document['nodes'][0]['attributes'];
+    expect($attributes['style'])->toBe('color: red;')->and($attributes['style_rules'])->toHaveCount(2)->and($attributes['style_rules'][0]['pseudos'])->toBe([':hover',':focus']);
+    $source = json_decode($response->json('data.content'), true);
+    expect($source['objects']['style_rules'])->toBe($attributes['style_rules']);
+    $this->get('/dashboard')->assertOk()->assertSee('js/pseudo-styles.js', false)->assertSee('Stav / pseudo')->assertSee('waCssPseudo(row)', false);
+});
+
+it('validates pseudo selectors through both row submissions and raw JSON without writing', function () {
+    foreach ([[':hover, body'], [':not(*)'], ['::made-up'], 'hover'] as $pseudos) {
+        $this->postJson('/ui/components/editor', array_replace($this->payload, ['style_rows'=>[['name'=>'color','value'=>'red','pseudos'=>$pseudos]]]))->assertUnprocessable();
+        $source = $this->source;
+        $source['objects']['style_rules'] = [['name'=>'color','value'=>'red','pseudos'=>$pseudos]];
+        $this->postJson('/ui/components/editor', array_replace($this->payload, ['json_content'=>json_encode($source)]))->assertUnprocessable();
+    }
+    $source = $this->source;
+    $source['objects']['style_rules'] = [['name'=>'color','value'=>'red; display:none','pseudos'=>[':hover']]];
+    $this->postJson('/ui/components/editor', array_replace($this->payload, ['json_content'=>json_encode($source)]))->assertUnprocessable();
+    expect($this->component->fresh()->revision)->toBe(1);
+});
+
+it('preserves nested pseudo rules through document round trips and page composition', function () {
+    $source = ['type'=>'div','attributes'=>['style'=>'color:red;', 'style_rules'=>[['name'=>'color','value'=>'blue','pseudos'=>[':hover']]]],'content'=>[['type'=>'span','content'=>'Text']]];
+    $document = \App\Services\Cms\DocumentData::fromLegacy($source);
+    $legacy = \App\Services\Cms\DocumentData::toLegacy($document);
+    expect($legacy['style_rules'])->toBe($source['attributes']['style_rules']);
+    $composed = app(\App\Services\Cms\PageComposition::class)->resolve($this->user,$document,null);
+    expect($composed['preview']['objects']['style_rules'])->toBe($source['attributes']['style_rules']);
+});

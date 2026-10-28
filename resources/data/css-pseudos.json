@@ -1,0 +1,152 @@
+[
+  {
+    "value": ":hover",
+    "label": "Po prejdení myšou",
+    "common": true
+  },
+  {
+    "value": ":focus",
+    "label": "Pri zameraní",
+    "common": true
+  },
+  {
+    "value": ":focus-visible",
+    "label": "Pri zameraní klávesnicou",
+    "common": true
+  },
+  {
+    "value": ":active",
+    "label": "Pri stlačení",
+    "common": true
+  },
+  {
+    "value": ":disabled",
+    "label": "Zakázané",
+    "common": true
+  },
+  {
+    "value": ":checked",
+    "label": "Zaškrtnuté",
+    "common": true
+  },
+  {
+    "value": ":focus-within",
+    "label": "Zameraný vnorený prvok",
+    "common": false
+  },
+  {
+    "value": ":enabled",
+    "label": "Povolené",
+    "common": false
+  },
+  {
+    "value": ":required",
+    "label": "Povinné",
+    "common": false
+  },
+  {
+    "value": ":optional",
+    "label": "Nepovinné",
+    "common": false
+  },
+  {
+    "value": ":valid",
+    "label": "Platné",
+    "common": false
+  },
+  {
+    "value": ":invalid",
+    "label": "Neplatné",
+    "common": false
+  },
+  {
+    "value": ":read-only",
+    "label": "Len na čítanie",
+    "common": false
+  },
+  {
+    "value": ":read-write",
+    "label": "Upraviteľné",
+    "common": false
+  },
+  {
+    "value": ":placeholder-shown",
+    "label": "Zobrazený placeholder",
+    "common": false
+  },
+  {
+    "value": ":indeterminate",
+    "label": "Neurčitý stav",
+    "common": false
+  },
+  {
+    "value": ":link",
+    "label": "Nenavštívený odkaz",
+    "common": false
+  },
+  {
+    "value": ":visited",
+    "label": "Navštívený odkaz",
+    "common": false
+  },
+  {
+    "value": ":target",
+    "label": "Cieľ odkazu",
+    "common": false
+  },
+  {
+    "value": ":first-child",
+    "label": "Prvý súrodenec",
+    "common": false
+  },
+  {
+    "value": ":last-child",
+    "label": "Posledný súrodenec",
+    "common": false
+  },
+  {
+    "value": ":only-child",
+    "label": "Jediný súrodenec",
+    "common": false
+  },
+  {
+    "value": ":empty",
+    "label": "Prázdny prvok",
+    "common": false
+  },
+  {
+    "value": "::before",
+    "label": "Pred obsahom (vyžaduje content)",
+    "common": false
+  },
+  {
+    "value": "::after",
+    "label": "Za obsahom (vyžaduje content)",
+    "common": false
+  },
+  {
+    "value": "::placeholder",
+    "label": "Text placeholdera",
+    "common": false
+  },
+  {
+    "value": "::selection",
+    "label": "Označený text",
+    "common": false
+  },
+  {
+    "value": "::first-letter",
+    "label": "Prvé písmeno",
+    "common": false
+  },
+  {
+    "value": "::first-line",
+    "label": "Prvý riadok",
+    "common": false
+  },
+  {
+    "value": "::marker",
+    "label": "Značka zoznamu",
+    "common": false
+  }
+]

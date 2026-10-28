@@ -8,7 +8,7 @@
     ];
     function write(rows, value, classes = []) {
         if (!options.some(option => option.value === value)) return false;
-        const important = rows.some(row => row.name.toLowerCase() === 'text-align' && /!important\s*$/i.test(row.value)) || classes.some(token => /^text-(?:(?:sm|md|lg|xl|xxl)-)?(?:start|end|left|right|center|justify)$/.test(token));
+        const important = rows.some(row => !row.pseudos?.length && row.name.toLowerCase() === 'text-align' && /!important\s*$/i.test(row.value)) || classes.some(token => /^text-(?:(?:sm|md|lg|xl|xxl)-)?(?:start|end|left|right|center|justify)$/.test(token));
         window.waBoxModel.upsert(rows, 'text-align', value, important);
         return true;
     }

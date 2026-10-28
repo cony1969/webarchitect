@@ -32,6 +32,7 @@
 <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 
+    <script>window.waCssPseudos = @js(json_decode(file_get_contents(resource_path('data/css-pseudos.json')), true));</script>
     <script>window.waComponentPropertyConfig = @js(app(\App\Services\Cms\ComponentPropertyCatalog::class)->data());</script>
     <script>window.waProjectEditorConfig = @js(array_merge(config('domain-editor'), ['csrf' => csrf_token()]));</script>
     <link rel="stylesheet" href="{{ asset('assets/libs/select2/css/select2.min.css') }}">
@@ -45,10 +46,11 @@
     <script defer src="{{ asset('assets/libs/ace/ace.js') }}"></script>
     <script defer src="{{ asset('assets/libs/ace/mode-json.js') }}"></script>
     <script defer src="{{ asset('assets/libs/ace/theme-tomorrow_night.js') }}"></script>
-    <script defer src="{{ asset('js/component-controls.js') }}?v=20261028-box1"></script>
-    <script defer src="{{ asset('js/box-model.js') }}?v=20261028-box2"></script>
-    <script defer src="{{ asset('js/alignment-controls.js') }}?v=20261028-alignment1"></script>
-    <script defer src="{{ asset('js/component-editor.js') }}?v=20261028-css-select2"></script>
+    <script defer src="{{ asset('js/pseudo-styles.js') }}?v=20261028-pseudo2"></script>
+    <script defer src="{{ asset('js/component-controls.js') }}?v=20261028-pseudo2"></script>
+    <script defer src="{{ asset('js/box-model.js') }}?v=20261028-pseudo2"></script>
+    <script defer src="{{ asset('js/alignment-controls.js') }}?v=20261028-pseudo2"></script>
+    <script defer src="{{ asset('js/component-editor.js') }}?v=20261028-pseudo2"></script>
     <script defer src="{{ asset('js/page-preview.js') }}?v=20261028-css-select2"></script>
     <!-- Stabilné, oficiálne načítanie AlpineJS a HTMX -->
     <script defer src="{{ asset('js/alpine.min.js') }}"></script>
@@ -59,7 +61,7 @@
 
     <x-ui.styles />
     <x-ui.theme />
-    <link rel="stylesheet" href="{{ asset('css/project-editor.css') }}?v=20261028-alignment1">
+    <link rel="stylesheet" href="{{ asset('css/project-editor.css') }}?v=20261028-pseudo2">
 </head>
 <body>
 

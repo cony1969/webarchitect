@@ -9,18 +9,18 @@
     }
     function important(rows, name, classes = []) {
         const family = name.split('-')[0];
-        const inherited = rows.some(row => (row.name.toLowerCase() === family || row.name.toLowerCase().startsWith(family + '-')) && /!important\s*$/i.test(row.value));
+        const inherited = rows.some(row => !row.pseudos?.length && (row.name.toLowerCase() === family || row.name.toLowerCase().startsWith(family + '-')) && /!important\s*$/i.test(row.value));
         const utility = classes.some(token => family === 'border' ? /^border(?:-|$)/.test(token) : new RegExp('^' + family[0] + '[trblxyse]?-(?:(?:sm|md|lg|xl|xxl)-)?(?:[0-5]|auto)$').test(token));
         return inherited || utility;
     }
     function upsert(rows, name, value, priority = false) {
-        const existing = rows.find(row => row.name.toLowerCase() === name);
-        const retained = rows.filter(row => row.name.toLowerCase() !== name);
+        const existing = rows.find(row => !row.pseudos?.length && row.name.toLowerCase() === name);
+        const retained = rows.filter(row => row.pseudos?.length || row.name.toLowerCase() !== name);
         if (value) retained.push({id: existing?.id || crypto.randomUUID(), name, value: value + (priority && !/!important\s*$/i.test(value) ? ' !important' : '')});
         rows.splice(0, rows.length, ...retained);
     }
     function hasBorderStyle(rows, side) {
-        return rows.some(row => ['border', 'border-style', `border-${side}`, `border-${side}-style`].includes(row.name.toLowerCase()) && row.value.trim());
+        return rows.some(row => !row.pseudos?.length && ['border', 'border-style', `border-${side}`, `border-${side}-style`].includes(row.name.toLowerCase()) && row.value.trim());
     }
     function read(rows) {
         const style = document.createElement('div').style;

@@ -10,6 +10,7 @@
         const root = document.createElement('main');
         const allowed = new Set('div section article main header footer nav aside span p h1 h2 h3 h4 h5 h6 a button ul ol li dl dt dd strong em b i small label input select option textarea form table thead tbody tfoot tr td th img figure figcaption hr br pre code blockquote'.split(' '));
         let count = 0;
+        const pseudoCss = [];
         const render = (value, depth = 0) => {
             if (++count > 5000 || depth > 48) throw new Error('Komponent prekračuje limit náhľadu.');
             if (typeof value === 'string') return document.createTextNode(value);
@@ -18,6 +19,16 @@
             if (!allowed.has(type)) return document.createTextNode('');
             const element = document.createElement(type);
             const attributes = { ...value, ...(value.attributes || {}) };
+            const pseudoRules = window.waPseudoStyles.rules(value);
+            if (pseudoRules.length) {
+                const scope = 'wa-state-' + count;
+                attributes.class = String(attributes.class || '') + ' ' + scope + (pseudoRules.some(row => row.pseudos.includes('::before') || row.pseudos.includes('::after')) ? ' wa-custom-pseudo' : '');
+                // Base styles must share the stylesheet cascade so pseudo rules can override them.
+                const base = document.createElement('div').style; base.cssText = String(attributes.style || '');
+                pseudoCss.push(window.waPseudoStyles.css('.' + scope, base.cssText, pseudoRules));
+                delete attributes.style;
+            }
+            delete attributes.style_rules;
             delete attributes.content; delete attributes.type; delete attributes.attributes;
             for (const [key, attr] of Object.entries(attributes)) {
                 if (/^(class|id|style|title|role|placeholder|value|name|alt|colspan|rowspan|width|height|aria-[a-z-]+|data-[a-z-]+)$/.test(key) && ['string', 'number', 'boolean'].includes(typeof attr)) element.setAttribute(key, String(attr));
@@ -33,9 +44,9 @@
             child.classList.add('wa-preview-root');
             child.setAttribute('data-wa-label', child.classList.contains('container') ? 'Kontajner · .container' : child.classList.contains('container-fluid') ? 'Kontajner · .container-fluid' : child.tagName.toLowerCase());
         }
-        const css = String(source.css || '').replaceAll('<', '\\3c ');
+        const css = (String(source.css || '') + '\n' + pseudoCss.join('\n')).replaceAll('<', '\\3c ');
         const bootstrap = location.origin + '/css/bootstrap.min.css';
-        return '<!doctype html><html lang="sk"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="' + escape("default-src 'none'; style-src 'unsafe-inline' " + bootstrap + "; img-src data:; base-uri 'none'; form-action 'none'; script-src 'none'") + '"><link rel="stylesheet" href="' + escape(bootstrap) + '"><style>body{margin:0;padding:42px 20px;background:#fff;background-image:linear-gradient(#3bc0c31c 1px,transparent 1px),linear-gradient(90deg,#3bc0c31c 1px,transparent 1px);background-size:20px 20px} .wa-preview-root{position:relative;min-height:200px;outline:2px dashed #0a969b;outline-offset:-2px} .wa-preview-root:empty:before{content:attr(data-wa-label);position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#08777c;font:14px system-ui} ' + css + '</style></head><body>' + root.outerHTML + '</body></html>';
+        return '<!doctype html><html lang="sk"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="' + escape("default-src 'none'; style-src 'unsafe-inline' " + bootstrap + "; img-src data:; base-uri 'none'; form-action 'none'; script-src 'none'") + '"><link rel="stylesheet" href="' + escape(bootstrap) + '"><style>body{margin:0;padding:42px 20px;background:#fff;background-image:linear-gradient(#3bc0c31c 1px,transparent 1px),linear-gradient(90deg,#3bc0c31c 1px,transparent 1px);background-size:20px 20px} .wa-preview-root{position:relative;min-height:200px;outline:2px dashed #0a969b;outline-offset:-2px} .wa-preview-root:not(.wa-custom-pseudo):empty:before{content:attr(data-wa-label);position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#08777c;font:14px system-ui} ' + css + '</style></head><body>' + root.outerHTML + '</body></html>';
     };
 
     document.addEventListener('alpine:init', () => {
@@ -122,6 +133,8 @@
                 const source = this.parsed(draft), node = controls.roots(source)[draft.controls.rootIndex];
                 draft.controls.stylesTouched = true;
                 controls.setAttribute(node, 'style', controls.serializeStyles(draft.controls.styleRows));
+                const rules = draft.controls.styleRows.filter(row => row.name.trim() && row.pseudos?.length).map(row => ({name: row.name, value: row.value, pseudos: window.waPseudoStyles.states(row)}));
+                controls.setAttribute(node, 'style_rules', rules.length ? rules : '');
                 this.writeControlSource(key, source);
             },
             propertiesChanged(key) {
@@ -171,7 +184,7 @@
                 if (draft.codeError) { draft.view = 'json'; return; }
                 draft.saving = true; draft.error = ''; draft.errors = {}; draft.notice = '';
                 try {
-                    const result = await this.request('/ui/components/editor', { ...draft.form, component_id: draft.id, revision: draft.revision, as_new: false, name: draft.form.name, slug: draft.form.slug, json_content: draft.code, ...(draft.controls.editable && draft.controls.stylesTouched ? { style_root: Number(draft.controls.rootIndex), style_rows: draft.controls.styleRows.map(row => ({ name: row.name, value: row.value })) } : {}) });
+                    const result = await this.request('/ui/components/editor', { ...draft.form, component_id: draft.id, revision: draft.revision, as_new: false, name: draft.form.name, slug: draft.form.slug, json_content: draft.code, ...(draft.controls.editable && draft.controls.stylesTouched ? { style_root: Number(draft.controls.rootIndex), style_rows: draft.controls.styleRows.map(row => ({ name: row.name, value: row.value, pseudos: row.pseudos || [] })) } : {}) });
                     this.apply(key, result.data);
                     draft.notice = 'Zmeny sú uložené.';
                     emit('component-document-saved', { key, document: result.data, asNew: false });

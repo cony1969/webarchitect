@@ -33,6 +33,8 @@ class ComponentEditorController extends Controller
             'style_rows' => ['sometimes', 'array', 'max:200'],
             'style_rows.*.name' => ['nullable', 'string', 'max:128'],
             'style_rows.*.value' => ['nullable', 'string', 'max:20000'],
+            'style_rows.*.pseudos' => ['sometimes', 'array', 'max:30'],
+            'style_rows.*.pseudos.*' => ['string', 'max:40'],
             'json_content' => ['required', 'string', 'max:2000000'],
         ]);
         $source = json_decode($data['json_content'], true);
