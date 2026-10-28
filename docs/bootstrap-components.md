@@ -132,3 +132,17 @@ validuje hodnotu pred zápisom. Vymazanie odstráni iba daný longhand a môže 
 pôvodný shorthand. Zmena strany sa zaradí za pôvodné deklarácie; dôležité inline
 štýly a prítomné Bootstrap utility zachovajú účinok cez `!important`. Ostatné
 triedy, korene a štýly komponentu sa nemenia.
+
+## Grafické zarovnanie textu
+
+V CSS záložke komponentu je ikonkový prepínač pre `text-align`: nenastavené,
+vľavo, na stred, vpravo a do bloku. Výber vytvorí alebo upraví jediný CSS riadok;
+Nenastavené odstráni iba explicitný `text-align`. Triedy a ostatné štýly ostávajú
+zachované. Pri existujúcej Bootstrap textovej utilite alebo dôležitom inline
+zarovnaní sa zapíše `!important`, aby bol nový výber účinný. Nenastavené obnoví
+správanie pôvodných tried alebo dedenie. Toto nastavenie zarovnáva text v prvku,
+nie polohu samotného kontajnera.
+
+Zmeny CSS riadka aj JSON obnovia stav ikoniek. Pri inej platnej hodnote ako
+`start`, `end` či `inherit` sa zobrazí jej názov bez automatického prepísania.
+Prepínač má prístupné názvy, stav výberu a klávesové ovládanie šípkami/Home/End.

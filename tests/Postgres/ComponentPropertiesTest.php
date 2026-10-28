@@ -72,3 +72,12 @@ it('persists box model longhands alongside shorthands and Bootstrap classes', fu
     expect($saved['class'])->toBe('container p-3')->and($saved['style'])->toBe('padding: 10px 20px; padding-top: 24px !important; border-left-width: 2px; border-left-style: solid; border-left-color: #008080;');
     $this->get('/dashboard')->assertOk()->assertSee('js/box-model.js', false)->assertSee('Box model')->assertSee('margin hore')->assertSee('padding vľavo')->assertSee('Farba okraja');
 });
+
+it('persists icon alignment choices without changing Bootstrap classes or other styles', function () {
+    $this->source['objects']['class'] = 'container text-md-start';
+    $rows = [['name'=>'padding-top','value'=>'16px'], ['name'=>'text-align','value'=>'center !important']];
+    $this->postJson('/ui/components/editor', array_replace($this->payload, ['json_content'=>json_encode($this->source), 'style_rows'=>$rows]))->assertOk();
+    $saved = $this->component->fresh()->document['nodes'][0]['attributes'];
+    expect($saved['class'])->toBe('container text-md-start')->and($saved['style'])->toBe('padding-top: 16px; text-align: center !important;');
+    $this->get('/dashboard')->assertOk()->assertSee('js/alignment-controls.js', false)->assertSee('Grafické zarovnanie textu')->assertSee('Zarovnanie textu: Na stred')->assertSee('fa-align-justify');
+});

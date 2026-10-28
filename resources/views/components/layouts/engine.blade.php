@@ -47,6 +47,7 @@
     <script defer src="{{ asset('assets/libs/ace/theme-tomorrow_night.js') }}"></script>
     <script defer src="{{ asset('js/component-controls.js') }}?v=20261028-box1"></script>
     <script defer src="{{ asset('js/box-model.js') }}?v=20261028-box2"></script>
+    <script defer src="{{ asset('js/alignment-controls.js') }}?v=20261028-alignment1"></script>
     <script defer src="{{ asset('js/component-editor.js') }}?v=20261028-css-select2"></script>
     <script defer src="{{ asset('js/page-preview.js') }}?v=20261028-css-select2"></script>
     <!-- Stabilné, oficiálne načítanie AlpineJS a HTMX -->
@@ -58,7 +59,7 @@
 
     <x-ui.styles />
     <x-ui.theme />
-    <link rel="stylesheet" href="{{ asset('css/project-editor.css') }}?v=20261028-box1">
+    <link rel="stylesheet" href="{{ asset('css/project-editor.css') }}?v=20261028-alignment1">
 </head>
 <body>
 
