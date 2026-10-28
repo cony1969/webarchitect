@@ -4,6 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{ config('app.name', 'Web Architect') }} - Engine</title>
+    <x-ui.favicon />
     
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.bunny.net">
@@ -12,7 +13,7 @@
     <style>
         body {
             font-family: 'Figtree', sans-serif;
-            background-color: #151922;
+            background-color: var(--wa-surface-deep);
             color: #ffffff;
             margin: 0;
             padding: 0;
@@ -25,8 +26,8 @@
             justify-content: space-between;
             align-items: center;
             padding: 20px 40px;
-            background: #1e222d;
-            border-bottom: 1px solid #2d3446;
+            background: var(--wa-surface-base);
+            border-bottom: 1px solid var(--wa-border);
         }
         .brand {
             font-size: 20px;
@@ -73,10 +74,10 @@
             margin-bottom: 40px;
         }
         .feature-card {
-            background: #1e222d;
+            background: var(--wa-surface-base);
             padding: 30px;
             border-radius: 10px;
-            border: 1px solid #2d3446;
+            border: 1px solid var(--wa-border);
             transition: transform 0.2s, border-color 0.2s;
         }
         .feature-card:hover {
@@ -120,21 +121,22 @@
         .btn-secondary {
             background-color: transparent;
             color: #a4b1cd;
-            border: 1px solid #4e566d;
+            border: 1px solid var(--wa-border-strong);
         }
         .btn-secondary:hover {
-            background-color: #2d3446;
+            background-color: var(--wa-border);
             color: #ffffff;
         }
         .footer {
             text-align: center;
             padding: 25px;
-            color: #4e566d;
+            color: var(--wa-border-strong);
             font-size: 13px;
-            border-top: 1px solid #1e222d;
-            background: #151922;
+            border-top: 1px solid var(--wa-surface-base);
+            background: var(--wa-surface-deep);
         }
     </style>
+    <x-ui.theme />
 </head>
 <body>
 

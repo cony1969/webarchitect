@@ -5,7 +5,7 @@
     <div>Používateľ: {{ $app['appAuthor'] ?? 'Neznámy autor' }}</div>
 </header>
 
-<nav style="background: #2a3042; color: white; padding: 12px 20px; display: flex; gap: 20px; align-items: center;">
+<nav style="background: var(--wa-surface-base); color: white; padding: 12px 20px; display: flex; gap: 20px; align-items: center;">
     <a href="#" style="color: white; text-decoration: none; font-weight: bold;">🏠 Dashboard</a>
     <a href="#" style="color: #a6b0cf; text-decoration: none;">📦 Produkty</a>
     <span style="margin-left: auto; font-size: 12px; color: #6f768e;">Licencia: {{ $app['appLicense'] ?? 'Neznáma' }} | Téma: {{ $layout['theme'] ?? 'Základná' }}</span>

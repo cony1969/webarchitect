@@ -1,7 +1,7 @@
-@props(['layout' => [], 'blockRightTopHeight' => 400])
+@props(['layout' => []])
 
-<section class="sidebar-block"
-         :style="{ height: blockRightTopHeight + 'px', flex: 'none' }"
+<section class="sidebar-block" :class="{ 'is-open': activeSection === 'properties' }"
+
          x-data="{
              selectedObjectType: null,
              selectedProjectObj: null,
@@ -177,14 +177,14 @@
                  window.dispatchEvent(new CustomEvent('project-properties-save'));
              }
          }">
-    <div class="block-header" x-text="headerTitle()"></div>
-    <div class="block-content" style="padding: 0 15px; height: calc(100% - 40px); overflow-y: auto; color: #fff;">
+    <x-ui.accordion-header section="properties" title="Vlastnosti" dynamic-title="headerTitle()" />
+    <div class="block-content sidebar-accordion-content" id="accordion-properties-content" role="region" aria-labelledby="accordion-properties-toggle" x-show="activeSection === 'properties'" x-cloak style="padding: 0 15px; overflow-y: auto; color: #fff;">
         <x-ui.sidebar-right.properties.project />
         <x-ui.sidebar-right.properties.domain />
         <x-ui.sidebar-right.properties.page />
 
         <template x-if="selectedObjectType === null">
-            <div style="color: #4e566d; text-align: center; padding-top: 20px; font-style: italic;">
+            <div style="color: var(--wa-border-strong); text-align: center; padding-top: 20px; font-style: italic;">
                 Klikni na objekt v ľavom paneli pre zobrazenie vlastností.
             </div>
         </template>

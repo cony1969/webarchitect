@@ -16,6 +16,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ config('ui.app.appName', 'Web Architect') }} - Dashboard</title>
+    <x-ui.favicon />
     
     <!-- Spoločné skripty pre celú aplikáciu -->
     <script defer src="https://jsdelivr.net"></script>
@@ -24,6 +25,7 @@
     <style>
         body { margin: 0; font-family: Arial, sans-serif; background-color: #f4f5f8; }
     </style>
+    <x-ui.theme />
 </head>
 <body>
 

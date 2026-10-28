@@ -193,9 +193,9 @@
         <div style="position: fixed; inset: 0; z-index: 1300; background: rgba(0, 0, 0, 0.58); display: flex; align-items: center; justify-content: center;"
              @click="close()"
              @keydown.escape.window="close()">
-            <div style="width: min(860px, calc(100vw - 40px)); max-height: calc(100vh - 60px); background: #1e222d; border: 1px solid #323a50; border-radius: 8px; overflow: hidden; box-shadow: 0 18px 50px rgba(0,0,0,0.45); display: flex; flex-direction: column;"
+            <div style="width: min(860px, calc(100vw - 40px)); max-height: calc(100vh - 60px); background: var(--wa-surface-base); border: 1px solid var(--wa-border); border-radius: 8px; overflow: hidden; box-shadow: 0 18px 50px rgba(0,0,0,0.45); display: flex; flex-direction: column;"
                  @click.stop>
-                <div style="padding: 12px 16px; border-bottom: 1px solid #2d3345; display: flex; justify-content: space-between; align-items: center;">
+                <div style="padding: 12px 16px; border-bottom: 1px solid var(--wa-border); display: flex; justify-content: space-between; align-items: center;">
                     <h5 style="margin: 0; font-size: 14px; font-weight: 600; color: #3bc0c3;" x-text="@js($title)"></h5>
                     <button type="button"
                             @click="close()"
@@ -210,7 +210,7 @@
                                    x-model="componentName"
                                    @input="syncSlug()"
                                    placeholder="Napr. Hero Banner"
-                                   style="width: 100%; background: #151922; border: 1px solid #323a50; color: #eef2ff; border-radius: 4px; padding: 8px 10px; font-size: 13px;" />
+                                   style="width: 100%; background: var(--wa-surface-deep); border: 1px solid var(--wa-border); color: #eef2ff; border-radius: 4px; padding: 8px 10px; font-size: 13px;" />
                         </div>
 
                         <div>
@@ -218,7 +218,7 @@
                             <input type="text"
                                    x-model="componentSlug"
                                    readonly
-                                   style="width: 100%; background: #111520; border: 1px solid #323a50; color: #7fd7de; border-radius: 4px; padding: 8px 10px; font-size: 13px;" />
+                                   style="width: 100%; background: var(--wa-surface-deep); border: 1px solid var(--wa-border); color: #7fd7de; border-radius: 4px; padding: 8px 10px; font-size: 13px;" />
                         </div>
 
                         <div>
@@ -226,25 +226,25 @@
                             <input type="text"
                                    x-model="targetPath"
                                    readonly
-                                   style="width: 100%; background: #111520; border: 1px solid #323a50; color: #f7d46a; border-radius: 4px; padding: 8px 10px; font-size: 13px;" />
+                                   style="width: 100%; background: var(--wa-surface-deep); border: 1px solid var(--wa-border); color: #f7d46a; border-radius: 4px; padding: 8px 10px; font-size: 13px;" />
                         </div>
 
                         <div>
                             <label style="display: block; margin-bottom: 6px; font-size: 11px; color: #8a94ad; font-weight: 600; letter-spacing: 0.4px; text-transform: uppercase;" x-text="editorMode === 'json' ? 'JSON editor' : 'HTML editor'"></label>
                             <textarea x-model="componentHtml"
-                                      style="width: 100%; height: 290px; background: #151922; border: 1px solid #323a50; color: #eef2ff; border-radius: 4px; padding: 10px; font-size: 12px; font-family: monospace; resize: vertical;"></textarea>
+                                      style="width: 100%; height: 290px; background: var(--wa-surface-deep); border: 1px solid var(--wa-border); color: #eef2ff; border-radius: 4px; padding: 10px; font-size: 12px; font-family: monospace; resize: vertical;"></textarea>
                         </div>
                     </div>
                 </div>
 
-                <div style="padding: 12px 16px; border-top: 1px solid #2d3345; display: flex; justify-content: flex-end; gap: 10px;">
+                <div style="padding: 12px 16px; border-top: 1px solid var(--wa-border); display: flex; justify-content: flex-end; gap: 10px;">
                     <button type="button"
                             @click="close()"
-                            style="background: #31364a; border: 1px solid #4e566d; color: #fff; border-radius: 4px; font-size: 12px; padding: 6px 14px;">Zrusit</button>
+                            style="background: var(--wa-surface-hover); border: 1px solid var(--wa-border-strong); color: #fff; border-radius: 4px; font-size: 12px; padding: 6px 14px;">Zrusit</button>
                     <button type="button"
                             @click="save()"
                             :disabled="loading"
-                            style="background: #3bc0c3; border: none; color: #1e222d; font-weight: 700; border-radius: 4px; font-size: 12px; padding: 6px 14px;">Importovat</button>
+                            style="background: #3bc0c3; border: none; color: var(--wa-surface-base); font-weight: 700; border-radius: 4px; font-size: 12px; padding: 6px 14px;">Importovat</button>
                 </div>
             </div>
         </div>

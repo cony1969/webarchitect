@@ -7,11 +7,11 @@
 </header>
 
 <div style="display: flex; min-height: calc(100vh - 52px);" x-data="{ sidebarCollapsed: {{ !empty($layout['sidebar_collapsed']) ? 'true' : 'false' }} }">
-    <aside x-show="!sidebarCollapsed" x-transition style="width: 240px; background: #2a3042; color: #a6b0cf; padding: 20px; transition: all 0.3s;">
+    <aside x-show="!sidebarCollapsed" x-transition style="width: 240px; background: var(--wa-surface-base); color: #a6b0cf; padding: 20px; transition: all 0.3s;">
         <h3 style="color: white; margin-top: 0;">Upcube Bočné Menu</h3>
         <p style="font-size: 13px;">Licencia: {{ $app['appLicense'] ?? 'Neznáma' }}</p>
         <p style="font-size: 12px; color: #6f768e;">Téma: {{ $layout['theme'] ?? 'Základná' }}</p>
-        <hr style="border-color: #32394e;">
+        <hr style="border-color: var(--wa-surface-raised);">
         <div>[ Odkazy menu prídu sem ]</div>
     </aside>
 

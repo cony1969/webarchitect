@@ -89,7 +89,7 @@ Route::middleware('auth')->group(function () {
 
 Route::post('/api/ui/save-projects', function (\Illuminate\Http\Request $request) {
     try {
-        $baseDir = '/data/d/4/d4f1af97-73d7-4842-9f8a-d4679c7e0428/pokerclub.sk/sub/war/config/ui';
+        $baseDir = config_path('ui');
         $directoryPath = $baseDir . '/content';
         $filePath = $directoryPath . '/projects.json';
 
@@ -125,7 +125,7 @@ Route::post('/api/ui/save-projects', function (\Illuminate\Http\Request $request
 
 Route::post('/api/ui/save-layouts', function (\Illuminate\Http\Request $request) {
     try {
-        $baseDir = '/data/d/4/d4f1af97-73d7-4842-9f8a-d4679c7e0428/pokerclub.sk/sub/war/config/ui';
+        $baseDir = config_path('ui');
         $directoryPath = $baseDir . '/content';
         $filePath = $directoryPath . '/layouts.json';
 

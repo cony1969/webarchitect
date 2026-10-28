@@ -11,7 +11,7 @@ class ProjectConfigController extends Controller
     public function save(Request $request)
     {
         try {
-            $baseDir = '/data/d/4/d4f1af97-73d7-4842-9f8a-d4679c7e0428/pokerclub.sk/sub/war/config/ui';
+            $baseDir = config_path('ui');
             $directoryPath = "{$baseDir}/content";
             $filePath = "{$directoryPath}/projects.json";
 

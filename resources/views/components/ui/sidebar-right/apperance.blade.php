@@ -1,10 +1,10 @@
 @props(['layout' => []])
 
-<section class="sidebar-block" style="flex: 1; display: flex; flex-direction: column;" x-data="{ rightTab: 'templates' }">
-    <x-ui.block-header title="Vzhľad" click="alert('Možnosti vzhľadu')" />
+<section class="sidebar-block" :class="{ 'is-open': activeSection === 'appearance' }"  x-data="{ rightTab: 'templates' }">
+    <x-ui.accordion-header section="appearance" title="Vzhľad" action-label="Možnosti vzhľadu" action="alert('Možnosti vzhľadu')" />
     
-    <div class="block-content" style="padding: 0 15px; flex: 1; display: flex; flex-direction: column; overflow: hidden;">
-        <ul class="nav" style="border-bottom: 2px solid #4e566d; margin-bottom: 15px; display: flex; padding-left: 0; list-style: none; width: 100%; flex: 0 0 auto;">
+    <div class="block-content sidebar-accordion-content" id="accordion-appearance-content" role="region" aria-labelledby="accordion-appearance-toggle" x-show="activeSection === 'appearance'" x-cloak style="padding: 0 15px; flex: 1; display: flex; flex-direction: column; overflow: hidden;">
+        <ul class="nav" style="border-bottom: 2px solid var(--wa-border-strong); margin-bottom: 15px; display: flex; padding-left: 0; list-style: none; width: 100%; flex: 0 0 auto;">
             <li class="nav-item" style="flex: 1; text-align: center; margin-bottom: -2px;">
                 <button class="nav-link" 
                         @click.prevent="rightTab = 'templates'"

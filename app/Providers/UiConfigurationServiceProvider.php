@@ -15,7 +15,7 @@ class UiConfigurationServiceProvider extends ServiceProvider
     public function boot(): void
     {
         // Použitie 100% funkčnej a overenej absolútnej cesty z tvojho servera
-        $baseDir = '/data/d/4/d4f1af97-73d7-4842-9f8a-d4679c7e0428/pokerclub.sk/sub/war/config/ui';
+        $baseDir = config_path('ui');
 
         // 1. Načítanie globálnej aplikácie
         $appPath = "{$baseDir}/app.json";

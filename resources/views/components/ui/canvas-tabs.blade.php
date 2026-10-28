@@ -199,7 +199,7 @@ closeTab(tabId, e) {
     @add-new-tab.window="handleAddNewTab($event)"
 >
     <!-- 1. LIŠTA TABS -->
-    <div class="canvas-tabs-bar" style="background: #242936; padding: 0px; display: flex; align-items: center; gap: 15px; border-bottom: 2px solid #4e566d; flex: 0 0 auto;">
+    <div class="canvas-tabs-bar" style="background: var(--wa-surface-raised); padding: 0px; display: flex; align-items: center; gap: 15px; border-bottom: 2px solid var(--wa-border-strong); flex: 0 0 auto;">
         <template x-for="(tab, tabIndex) in tabs" :key="(tab.id || 'tab') + '-' + tabIndex">
 						<!-- Pôvodne tam bolo @click="activeTab = tab.id" -->
 						<div @click="setActiveTab(tab.id)"

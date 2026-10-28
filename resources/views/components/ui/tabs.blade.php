@@ -24,7 +24,7 @@
     >
 @endif
 
-<ul class="nav" style="border-bottom: 2px solid #4e566d; margin-bottom: {{ $scrollable ? '0' : '15px' }}; display: flex; flex-wrap: {{ $scrollable ? 'nowrap' : 'wrap' }}; padding-left: 0; list-style: none; width: {{ $scrollable ? 'max-content' : '100%' }}; min-width: {{ $scrollable ? '100%' : '0' }}; gap: 5px;">
+<ul class="nav" style="border-bottom: 2px solid var(--wa-border-strong); margin-bottom: {{ $scrollable ? '0' : '15px' }}; display: flex; flex-wrap: {{ $scrollable ? 'nowrap' : 'wrap' }}; padding-left: 0; list-style: none; width: {{ $scrollable ? 'max-content' : '100%' }}; min-width: {{ $scrollable ? '100%' : '0' }}; gap: 5px;">
     @foreach($tabs as $tab)
         @php
             $tabId = $tab['id'] ?? '';

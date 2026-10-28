@@ -1,7 +1,7 @@
 @props(['app' => [], 'layout' => [], 'components' => []])
 
 @php
-    $fixedPath = '/data/d/4/d4f1af97-73d7-4842-9f8a-d4679c7e0428/pokerclub.sk/sub/war/config/ui/content/components.json';
+    $fixedPath = config_path('ui/content/components.json');
     $loadedComponents = file_exists($fixedPath) ? json_decode(file_get_contents($fixedPath), true) : ['native' => [], 'bootstrap' => []];
 
     $userSettings = [];
@@ -163,10 +163,10 @@
                                 @endphp
                                 <div class="tree-item" draggable="true" data-id="{{ $itemId }}"
                                      @click="selectImportTarget('{{ $tabKey }}', '{{ addslashes($categoryName) }}', { id: '{{ addslashes($itemId) }}', name: '{{ addslashes($itemName) }}', path: '{{ addslashes((string)($item['path'] ?? '')) }}' })"
-                                     :style="selectedItemKey === '{{ addslashes($itemKey) }}' ? 'padding: 5px 8px; background: #31364a; color: #fff; border-radius: 3px; cursor: grab; font-size: 12px; border: 1px solid #3bc0c3; transition: all 0.2s; display: flex; align-items: center; justify-content: space-between; gap: 8px;' : 'padding: 5px 8px; background: #2a2e3d; color: #fff; border-radius: 3px; cursor: grab; font-size: 12px; border: 1px solid transparent; transition: all 0.2s; display: flex; align-items: center; justify-content: space-between; gap: 8px;'"
-                                     style="padding: 5px 8px; background: #2a2e3d; color: #fff; border-radius: 3px; cursor: grab; font-size: 12px; border: 1px solid transparent; transition: all 0.2s; display: flex; align-items: center; justify-content: space-between; gap: 8px;"
-                                     @mouseover="$el.style.borderColor='#4e566d'; $el.style.background='#31364a'"
-                                     @mouseout="$el.style.borderColor='transparent'; $el.style.background='#2a2e3d'">
+                                     :style="selectedItemKey === '{{ addslashes($itemKey) }}' ? 'padding: 5px 8px; background: var(--wa-surface-hover); color: #fff; border-radius: 3px; cursor: grab; font-size: 12px; border: 1px solid #3bc0c3; transition: all 0.2s; display: flex; align-items: center; justify-content: space-between; gap: 8px;' : 'padding: 5px 8px; background: var(--wa-surface-raised); color: #fff; border-radius: 3px; cursor: grab; font-size: 12px; border: 1px solid transparent; transition: all 0.2s; display: flex; align-items: center; justify-content: space-between; gap: 8px;'"
+                                     style="padding: 5px 8px; background: var(--wa-surface-raised); color: #fff; border-radius: 3px; cursor: grab; font-size: 12px; border: 1px solid transparent; transition: all 0.2s; display: flex; align-items: center; justify-content: space-between; gap: 8px;"
+                                     @mouseover="$el.style.borderColor='var(--wa-border-strong)'; $el.style.background='var(--wa-surface-hover)'"
+                                     @mouseout="$el.style.borderColor='transparent'; $el.style.background='var(--wa-surface-raised)'">
                                     <span style="display: inline-flex; align-items: center; gap: 6px; min-width: 0;">
                                         <span>{{ $tabIcon }}</span>
                                         <span>{{ $item['name'] ?? 'Položka' }}</span>

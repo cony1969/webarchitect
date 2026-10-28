@@ -5,6 +5,7 @@
         padding: 0;
         width: 100%;
         height: 100vh;
+        height: 100dvh;
         overflow: hidden;
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
         background-color: #f4f5f8;
@@ -15,21 +16,39 @@
         display: flex;
         flex-direction: column;
         height: 100vh;
+        height: 100dvh;
     }
 
     /* Fixný Topbar */
     .main-header {
         height: 55px;
-        background: #ffffff;
+        background: var(--wa-surface-base);
+        color: #f4f6f8;
         display: flex;
         align-items: center;
         justify-content: space-between;
         padding: 0 20px;
-        border-bottom: 1px solid #e9e9ef;
+        border-bottom: 1px solid var(--wa-border);
         z-index: 10;
         flex-shrink: 0;
     }
-    .brand { font-weight: bold; font-size: 16px; }
+    .main-header .brand {
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+        color: #f4f6f8;
+        font-weight: bold;
+        font-size: 16px;
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+    .main-header .brand-logo {
+        display: block;
+        width: 40px;
+        height: 40px;
+        object-fit: contain;
+        flex-shrink: 0;
+    }
     .top-nav { display: flex; gap: 20px; }
     .user-profile { font-size: 13px; color: #6f768e; }
 
@@ -37,21 +56,22 @@
     .workspace-wrapper {
         display: flex;
         flex: 1;
-        height: calc(100vh - 55px);
+        min-height: 0;
+        min-width: 0;
         overflow: hidden;
     }
 
         /* Pokročilý trojblokový sidebar */
     .advanced-sidebar {
-        background: #2a3042;
+        background: var(--wa-surface-base);
         color: #a6b0cf;
         display: flex;
         flex-direction: column;
         height: 100%;
         flex-shrink: 0;
-        /* Uvoľníme šírku pre plynulé ťahanie JavaScriptom */
-        min-width: 0px !important; 
-        max-width: 800px;
+        width: clamp(240px, 22vw, 320px);
+        min-height: 0;
+        min-width: 0;
     }
 
 
@@ -59,11 +79,12 @@
     .sidebar-block {
         display: flex;
         flex-direction: column;
-        flex: 1; /* Bloky berú rovnaký podiel, kým nenasadíme JS resizer */
+        flex: 0 0 auto;
+        min-height: 0;
         overflow: hidden;
     }
     .block-header {
-        background: #32394e;
+        background: var(--wa-surface-raised);
         color: #fff;
         padding: 8px 15px;
         font-size: 11px;
@@ -141,32 +162,11 @@
         background: transparent;
     }
 
-    /* Resizery (Línie pripravené na drag & drop) */
-    .sidebar-resizer-horizontal {
-        height: 4px;
-        background: #232938;
-        cursor: row-resize;
-        transition: background 0.2s;
-    }
-    .sidebar-resizer-horizontal:hover { background: #3bc0c3; }
-
-    .sidebar-resizer-vertical {
-        width: 4px;
-        background: #e9e9ef;
-        cursor: col-resize;
-        transition: background 0.2s;
-        flex-shrink: 0;
-    }
-    .sidebar-resizer-vertical:hover { background: #3bc0c3; }
-
     /* Hlavná pracovná plocha */
     .main-content {
         flex: 1;
         padding: 25px;
         overflow-y: auto;
-    }
-    .sidebar-resizer-vertical.is-dragging {
-        background: #3bc0c3 !important;
     }
 
 /* Nastavenie transparentného pozadia pre aktívny prvok Scrollspy */
@@ -213,8 +213,8 @@
 }
 .form-group-field {
     width: 100%;
-    background: #2a2e3d;
-    border: 1px solid #4e566d;
+    background: var(--wa-surface-raised);
+    border: 1px solid var(--wa-border-strong);
     color: #fff;
     font-size: 12px;
     padding: 6px 10px;
@@ -227,9 +227,9 @@
     border-color: #3bc0c3;
 }
 .form-group-field.field-readonly {
-    background: #202430;
+    background: var(--wa-surface-deep);
     color: #6c758d;
-    border-color: #383e52;
+    border-color: var(--wa-border);
     cursor: not-allowed;
 }
 

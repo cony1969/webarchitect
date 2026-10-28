@@ -1,7 +1,7 @@
 @props(['layout' => []])
 
-<section class="sidebar-block block-middle" 
-         :style="{ height: blockMiddleHeight + 'px' }" 
+<section class="sidebar-block block-middle" :class="{ 'is-open': activeSection === 'layouts' }"
+
          x-data="{
              layouts: window.sidebarLayoutsData || [],
              validationError: '',
@@ -98,10 +98,10 @@
              }
          }"
          @layout-modal-submit.window="handleInflow($event.detail.value)"
-         style="display: flex; flex-direction: column; overflow: hidden; flex: none !important;"
+
 >
-    <x-ui.block-header :title="$layout['blocks']['block_2']['title'] ?? 'Layouts'" click="triggerModal()" />
-    <div class="block-content" style="padding: 0 15px; flex: 1; overflow-y: auto; color: #fff;">
+    <x-ui.accordion-header section="layouts" :title="$layout['blocks']['block_2']['title'] ?? 'Layouts'" action-label="Pridať layout" action="triggerModal()" />
+    <div class="block-content sidebar-accordion-content" id="accordion-layouts-content" role="region" aria-labelledby="accordion-layouts-toggle" x-show="activeSection === 'layouts'" x-cloak style="padding: 0 15px; flex: 1; overflow-y: auto; color: #fff;">
         <template x-if="validationError !== ''">
             <div style="margin: 8px 0 10px 0; padding: 6px 8px; border: 1px solid #ef4444; background: rgba(239, 68, 68, 0.12); color: #fecaca; border-radius: 4px; font-size: 12px;"
                  x-text="validationError"></div>
@@ -109,7 +109,7 @@
 
         <template x-for="layoutItem in layouts" :key="layoutItem.id">
             <div style="margin-bottom: 6px;">
-                <div style="display: flex; align-items: center; gap: 8px; padding: 4px 6px; background: #2a2e3d; border-radius: 3px; font-size: 12px; color: #fff; cursor: pointer;"
+                <div style="display: flex; align-items: center; gap: 8px; padding: 4px 6px; background: var(--wa-surface-raised); border-radius: 3px; font-size: 12px; color: #fff; cursor: pointer;"
                      @click="openLayout(layoutItem)">
                     <span>📐</span>
                     <span x-text="layoutItem.name"></span>
@@ -127,7 +127,7 @@
         </template>
 
         <template x-if="layouts.length === 0">
-            <div style="color: #4e566d; text-align: center; padding-top: 20px; font-style: italic;">
+            <div style="color: var(--wa-border-strong); text-align: center; padding-top: 20px; font-style: italic;">
                 Kliknite na + pre vytvorenie layoutu.
             </div>
         </template>

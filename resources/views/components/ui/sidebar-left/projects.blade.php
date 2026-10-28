@@ -1,7 +1,7 @@
 @props(['layout' => [], 'projectsData' => []])
 {{-- @dd($projectsData, 'Projects data passed to sidebar-left/projects.blade.php'); --}}
-<section class="sidebar-block block-bottom" 
-         style="flex: 1; display: flex; flex-direction: column; overflow: hidden;"
+<section class="sidebar-block block-bottom" :class="{ 'is-open': activeSection === 'projects' }"
+
          x-data="{
              projects: window.sidebarProjectsData || [],
              selectedProject: window.sidebarProjectsTreeState && window.sidebarProjectsTreeState.selectedProject ? window.sidebarProjectsTreeState.selectedProject : null,
@@ -190,9 +190,9 @@
          @project-properties-save.window="saveToDb()"
 >
     <!-- Plusko plynule odpáli globálny vycentrovaný modal -->
-    <x-ui.block-header :title="$layout['blocks']['block_3']['title'] ?? 'Projekty'" click="triggerModal()" />
+    <x-ui.accordion-header section="projects" :title="$layout['blocks']['block_3']['title'] ?? 'Projekty'" action-label="Pridať projekt, doménu alebo stránku" action="triggerModal()" />
     
-    <div class="block-content" style="padding: 10px 15px; flex: 1; overflow-y: auto; color: #fff; font-size: 13px; user-select: none;">
+    <div class="block-content sidebar-accordion-content" id="accordion-projects-content" role="region" aria-labelledby="accordion-projects-toggle" x-show="activeSection === 'projects'" x-cloak style="padding: 10px 15px; flex: 1; overflow-y: auto; color: #fff; font-size: 13px; user-select: none;">
         <template x-for="project in projects" :key="project.id">
             <div style="margin-bottom: 8px;">
                 <!-- 1. ÚROVEŇ: PROJEKT -->
@@ -237,7 +237,7 @@
                             <!-- 3. ÚROVEŇ: STRÁNKY -->
                             <div x-show="selectedDomain === domain.id" style="padding-left: 18px; margin-top: 2px; display: flex; flex-direction: column; gap: 4px;">
                                 <template x-for="page in domain.pages" :key="page.id">
-                                    <div :style="{ background: selectedPage === page.id ? '#3b82f6' : '#2a2e3d' }"
+                                    <div :style="{ background: selectedPage === page.id ? '#3b82f6' : 'var(--wa-surface-raised)' }"
                                          style="display: flex; align-items: center; gap: 8px; padding: 3px 6px; border-radius: 3px; font-size: 12px; color: #fff; cursor: pointer;"
                                          @click="selectPage(page, domain, project, $event)"
                                     >
@@ -262,7 +262,7 @@
         </template>
 
         <template x-if="projects.length === 0">
-            <div style="color: #4e566d; text-align: center; padding-top: 20px; font-style: italic;">
+            <div style="color: var(--wa-border-strong); text-align: center; padding-top: 20px; font-style: italic;">
                 Kliknite na + pre vytvorenie projektu.
             </div>
         </template>

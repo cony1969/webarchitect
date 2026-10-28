@@ -6,13 +6,13 @@
             class="btn header-item waves-effect dropdown-toggle d-inline-flex align-items-center gap-2"
             data-bs-toggle="dropdown"
             aria-expanded="false"
-            style="color: #7885a0; font-size: 13px; font-weight: 500; background: transparent; border: none; box-shadow: none;">
+            style="color: #d1d8df; font-size: 13px; font-weight: 500; background: transparent; border: none; box-shadow: none;">
         <span>Prihlásený: {{ Auth::user()->name ?? 'Jozef Králik' }}</span>
     </button>
 
     <ul class="dropdown-menu dropdown-menu-end"
         aria-labelledby="topbar-profile-dropdown"
-        style="background: #1e222d; border: 1px solid #2d3446; border-radius: 6px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); min-width: 170px; padding: 4px 0;">
+        style="background: var(--wa-surface-base); border: 1px solid var(--wa-border); border-radius: 6px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); min-width: 170px; padding: 4px 0;">
 <li>
     <a href="{{ route('profile.edit') }}"
        data-route="{{ route('profile.edit') }}"
@@ -31,7 +31,7 @@
     </a>
 </li>
 						
-        <li><hr class="dropdown-divider" style="border-color: #2d3446;"></li>
+        <li><hr class="dropdown-divider" style="border-color: var(--wa-border);"></li>
 
         <li>
             <form method="POST" action="{{ route('logout') }}" style="margin: 0;">

@@ -1,0 +1,47 @@
+/* Shared anthracite palette for Web Architect's application interface. */
+:root {
+    --wa-surface-base: #282b2d;
+    --wa-surface-deep: #202325;
+    --wa-surface-raised: #303437;
+    --wa-surface-hover: #383d40;
+    --wa-border: #444b4f;
+    --wa-border-strong: #596267;
+}
+.bg-gray-700 { background-color: var(--wa-surface-hover); }
+.hover\:bg-gray-700:hover { background-color: var(--wa-surface-hover); }
+.focus\:bg-gray-700:focus { background-color: var(--wa-surface-hover); }
+.active\:bg-gray-700:active { background-color: var(--wa-surface-hover); }
+.border-gray-700 { border-color: var(--wa-border); }
+.bg-gray-800 { background-color: var(--wa-surface-base); }
+.hover\:bg-gray-800:hover { background-color: var(--wa-surface-base); }
+.focus\:bg-gray-800:focus { background-color: var(--wa-surface-base); }
+.active\:bg-gray-800:active { background-color: var(--wa-surface-base); }
+.border-gray-800 { border-color: var(--wa-border); }
+.bg-gray-900 { background-color: var(--wa-surface-deep); }
+.hover\:bg-gray-900:hover { background-color: var(--wa-surface-deep); }
+.focus\:bg-gray-900:focus { background-color: var(--wa-surface-deep); }
+.active\:bg-gray-900:active { background-color: var(--wa-surface-deep); }
+.border-gray-900 { border-color: var(--wa-border); }
+.text-gray-700 { color: var(--wa-surface-hover); }
+.text-gray-800 { color: var(--wa-surface-base); }
+.text-gray-900 { color: var(--wa-surface-deep); }
+@media (prefers-color-scheme: dark) {
+    .dark\:bg-gray-700 { background-color: var(--wa-surface-hover); }
+    .dark\:hover\:bg-gray-700:hover { background-color: var(--wa-surface-hover); }
+    .dark\:focus\:bg-gray-700:focus { background-color: var(--wa-surface-hover); }
+    .dark\:active\:bg-gray-700:active { background-color: var(--wa-surface-hover); }
+    .dark\:border-gray-700 { border-color: var(--wa-border); }
+    .dark\:bg-gray-800 { background-color: var(--wa-surface-base); }
+    .dark\:hover\:bg-gray-800:hover { background-color: var(--wa-surface-base); }
+    .dark\:focus\:bg-gray-800:focus { background-color: var(--wa-surface-base); }
+    .dark\:active\:bg-gray-800:active { background-color: var(--wa-surface-base); }
+    .dark\:border-gray-800 { border-color: var(--wa-border); }
+    .dark\:bg-gray-900 { background-color: var(--wa-surface-deep); }
+    .dark\:hover\:bg-gray-900:hover { background-color: var(--wa-surface-deep); }
+    .dark\:focus\:bg-gray-900:focus { background-color: var(--wa-surface-deep); }
+    .dark\:active\:bg-gray-900:active { background-color: var(--wa-surface-deep); }
+    .dark\:border-gray-900 { border-color: var(--wa-border); }
+    .dark\:text-gray-700 { color: var(--wa-surface-hover); }
+    .dark\:text-gray-800 { color: var(--wa-surface-base); }
+    .dark\:text-gray-900 { color: var(--wa-surface-deep); }
+}

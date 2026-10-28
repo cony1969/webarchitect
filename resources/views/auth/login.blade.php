@@ -31,8 +31,8 @@
 <script src="https://unpkg.com/htmx.org@1.9.2"></script>
 
 <x-guest-layout>
-    <div style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #151922; display: flex; align-items: center; justify-content: center; z-index: 9999; font-family: 'Figtree', sans-serif;">
-        <div style="background: #1e222d; padding: 40px; border-radius: 10px; border: 1px solid #2d3446; box-shadow: 0 12px 32px rgba(0,0,0,0.5); max-width: 400px; width: 100%; box-sizing: border-box;">
+    <div style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: var(--wa-surface-deep); display: flex; align-items: center; justify-content: center; z-index: 9999; font-family: 'Figtree', sans-serif;">
+        <div style="background: var(--wa-surface-base); padding: 40px; border-radius: 10px; border: 1px solid var(--wa-border); box-shadow: 0 12px 32px rgba(0,0,0,0.5); max-width: 400px; width: 100%; box-sizing: border-box;">
             
             <x-form-header title="Web Architect" subtitle="Prihlásenie do CMS systému" />
 
