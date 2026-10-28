@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Cms\DocumentController;
 use App\Http\Controllers\Cms\LegacyTreeController;
+use App\Http\Controllers\Cms\ProjectTreeController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\UI\ComponentImportController;
 use App\Models\UserSetting;
@@ -17,6 +18,7 @@ Route::get('/dashboard', function () {
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
+    Route::get('/api/ui/project-tree', ProjectTreeController::class);
     Route::post('/profile/save-tabs', [ProfileController::class, 'saveTabs'])->name('profile.save-tabs');
     Route::post('/api/ui/save-projects', [LegacyTreeController::class, 'projects']);
     Route::post('/api/ui/save-layouts', [LegacyTreeController::class, 'layouts']);

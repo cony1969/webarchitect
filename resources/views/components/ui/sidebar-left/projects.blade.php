@@ -5,6 +5,7 @@
          x-data="{
              projects: window.sidebarProjectsData || [],
              revision: window.sidebarProjectsRevision || 1,
+             projectIds: window.sidebarProjectIds || {},
              saving: false,
              saveAgain: false,
              selectedProject: window.sidebarProjectsTreeState && window.sidebarProjectsTreeState.selectedProject ? window.sidebarProjectsTreeState.selectedProject : null,
@@ -41,21 +42,32 @@
 
              // Zavolá globálny modal z engine.blade.php
              triggerModal() {
-                 let title = 'Pridat nový projekt';
-                 this.modalMode = 'project';
-
-                 if (this.selectedDomain !== null && this.selectedProject !== null) {
-                     title = 'Pridať novú stránku';
-                     this.modalMode = 'page';
-                 } else if (this.selectedProject !== null) {
-                     title = 'Pridať novú doménu';
-                     this.modalMode = 'domain';
+                 window.dispatchEvent(new CustomEvent('add-new-tab', { detail: { title: 'Nový projekt', mode: 'project' } }));
+             },
+             openProject(project) {
+                 const projectId = this.projectIds[project.id];
+                 if (!projectId) { alert('Obnovte zoznam projektov a skúste to znova.'); return; }
+                 window.dispatchEvent(new CustomEvent('add-new-tab', { detail: { title: project.name, mode: 'project', projectId } }));
+             },
+             triggerNodeModal(mode, project, domain = null) {
+                 this.modalMode = mode;
+                 this.selectedProject = project.id;
+                 this.selectedDomain = domain ? domain.id : null;
+                 this.selectedPage = null;
+                 this.saveTreePosition();
+                 window.dispatchEvent(new CustomEvent('open-engine-modal', { detail: { title: mode === 'domain' ? 'Pridať novú doménu' : 'Pridať novú stránku', callback: 'project-modal-submit' } }));
+             },
+             replaceTree(data) {
+                 this.projects = data.projects;
+                 this.revision = data.revision;
+                 this.projectIds = data.ids || this.projectIds;
+                 window.sidebarProjectsData = this.projects;
+                 window.sidebarProjectsRevision = this.revision;
+                 window.sidebarProjectIds = this.projectIds;
+                 if (data.focusProject && data.focusProject !== this.selectedProject) {
+                     this.selectedProject = data.focusProject; this.selectedDomain = null; this.selectedPage = null;
+                     this.saveTreePosition();
                  }
-
-                 // Vyvolanie globálnej udalosti, ktorú modal zachytí
-                 window.dispatchEvent(new CustomEvent('open-engine-modal', {
-                     detail: { title: title, callback: 'project-modal-submit' }
-                 }));
              },
 
              // Spracovanie dát po kliknutí na Uložiť v modale
@@ -84,6 +96,7 @@
 
                  // Nájdeme vybraný projekt podľa ID
                  const projectData = this.projects.find(p => p.id === id);
+                 if (this.selectedProject && projectData) this.openProject(projectData);
 
                  // Odoslanie udalosti pre panel vlastností (ak sa projekt zrušil, posielame null)
                  window.dispatchEvent(new CustomEvent('project-selected', {
@@ -176,6 +189,7 @@
                  if (this.saving) { this.saveAgain = true; return; }
                  this.saving = true;
                  this.projects = this.normalizeProjects(this.projects);
+                 const submittedTree = JSON.stringify(this.projects);
                  try {
                      const response = await fetch('/api/ui/save-projects', {
                          method: 'POST',
@@ -184,7 +198,13 @@
                      });
                      const data = await response.json();
                      if (!response.ok || !data.success) throw new Error(data.message || 'Uloženie sa nepodarilo.');
-                     this.revision = data.revision;
+                     if (this.saveAgain || JSON.stringify(this.projects) !== submittedTree) {
+                         this.revision = data.revision;
+                         this.projectIds = data.ids || this.projectIds;
+                         this.saveAgain = true;
+                     } else {
+                         this.replaceTree(data);
+                     }
                  } catch (error) {
                      this.saveAgain = false;
                      alert(error.message || 'Uloženie sa nepodarilo.');
@@ -196,9 +216,11 @@
          }"
          @project-modal-submit.window="handleInflow($event.detail.value)"
          @project-properties-save.window="saveToDb()"
+         @cms-project-tree-updated.window="replaceTree($event.detail)"
+         @project-editor-focused.window="if ($event.detail.projectId) { const legacy = Object.keys(projectIds).find(id => projectIds[id] === $event.detail.projectId); if (legacy && selectedProject !== legacy) { selectedProject = legacy; selectedDomain = null; selectedPage = null; saveTreePosition(); } }"
 >
     <!-- Plusko plynule odpáli globálny vycentrovaný modal -->
-    <x-ui.accordion-header section="projects" :title="$layout['blocks']['block_3']['title'] ?? 'Projekty'" action-label="Pridať projekt, doménu alebo stránku" action="triggerModal()" />
+    <x-ui.accordion-header section="projects" :title="$layout['blocks']['block_3']['title'] ?? 'Projekty'" action-label="Nový projekt" action="triggerModal()" />
     
     <div class="block-content sidebar-accordion-content" id="accordion-projects-content" role="region" aria-labelledby="accordion-projects-toggle" x-show="activeSection === 'projects'" x-cloak style="padding: 10px 15px; flex: 1; overflow-y: auto; color: #fff; font-size: 13px; user-select: none;">
         <template x-for="project in projects" :key="project.id">
@@ -210,6 +232,8 @@
                     <span x-text="selectedProject === project.id ? '▼' : '►'" style="font-size: 9px; width: 10px;"></span>
                     <span>📁</span>
                     <span x-text="project.name"></span>
+                    <button type="button" class="wa-tree-action" title="Otvoriť editor projektu" aria-label="Otvoriť editor projektu" @click.stop="openProject(project)"><i class="fas fa-pen" aria-hidden="true"></i></button>
+                    <button type="button" class="wa-tree-action" title="Pridať doménu" aria-label="Pridať doménu" @click.stop="triggerNodeModal('domain', project)">+</button>
                     <span title="Zmazat"
                           aria-label="Zmazat"
                           style="display: inline-flex; align-items: center; justify-content: center; width: 14px; height: 14px; opacity: 0.9; margin-left: auto; pointer-events: none; color: #ef4444;">
@@ -231,6 +255,7 @@
                                 <span x-text="selectedDomain === domain.id ? '▼' : '►'" style="font-size: 9px; width: 10px;"></span>
                                 <span>🌐</span>
                                 <span x-text="domain.name"></span>
+                                <button type="button" class="wa-tree-action" title="Pridať stránku" aria-label="Pridať stránku" @click.stop="triggerNodeModal('page', project, domain)">+</button>
                                 <span title="Zmazat"
                                       aria-label="Zmazat"
                                       style="display: inline-flex; align-items: center; justify-content: center; width: 14px; height: 14px; opacity: 0.9; margin-left: auto; pointer-events: none; color: #ef4444;">

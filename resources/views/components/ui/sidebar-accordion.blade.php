@@ -12,6 +12,9 @@
                      this.activeSection = saved || null;
                  }
              } catch (e) {}
+             this.$nextTick(() => {
+                 if (@js($id) === 'right' && this.$store.projectEditor.active) this.openSection('properties');
+             });
          },
          rememberSection() {
              try { window.localStorage.setItem(this.storageKey, this.activeSection || ''); } catch (e) {}
@@ -26,6 +29,7 @@
              this.rememberSection();
          }
      }"
+     @project-editor-focused.window="if (@js($id) === 'right') openSection('properties')"
      @sidebar-accordion-reset.window="openSection(@js($initial))">
     {{ $slot }}
 </div>

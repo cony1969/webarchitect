@@ -32,6 +32,11 @@
 <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 
+    <script>window.waProjectEditorConfig = @js(array_merge(config('project-editor'), ['csrf' => csrf_token()]));</script>
+    <link rel="stylesheet" href="{{ asset('assets/libs/select2/css/select2.min.css') }}">
+    <script defer src="{{ asset('assets/libs/jquery/jquery.min.js') }}"></script>
+    <script defer src="{{ asset('assets/libs/select2/js/select2.full.min.js') }}"></script>
+    <script defer src="{{ asset('js/project-editor.js') }}?v=20261028-4"></script>
     <!-- Stabilné, oficiálne načítanie AlpineJS a HTMX -->
     <script defer src="{{ asset('js/alpine.min.js') }}"></script>
     <script src="{{ asset('js/htmx.min.js') }}"></script>    
@@ -41,6 +46,7 @@
 
     <x-ui.styles />
     <x-ui.theme />
+    <link rel="stylesheet" href="{{ asset('css/project-editor.css') }}?v=20261028-4">
 </head>
 <body>
 

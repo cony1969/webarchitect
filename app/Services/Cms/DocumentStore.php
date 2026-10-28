@@ -59,7 +59,7 @@ class DocumentStore
             $this->uniqueSlug($class, $user, $attributes);
             $document = new $class(array_merge($attributes, [
                 'id' => $id, 'user_id' => $user->id, 'owner_key' => 'user:'.$user->id,
-                'legacy_id' => rtrim($kind, 's').'-'.$id, 'position' => 0,
+                'legacy_id' => rtrim($kind, 's').'-'.$id, 'position' => $kind === 'projects' ? (int) ($class::where('user_id', $user->id)->max('position') ?? -1) + 1 : 0,
                 'kind' => $kind === 'pages' ? 'page' : ($kind === 'sections' ? 'section' : rtrim($kind, 's')),
             ]));
             $saved = $this->save($document, $user->id);
@@ -108,7 +108,7 @@ class DocumentStore
         $attributes = [
             'name' => $data['name'], 'slug' => $data['slug'], 'status' => $data['status'] ?? 'draft',
             'document' => DocumentData::validate($data['document'] ?? DocumentData::empty()),
-            'settings' => $data['settings'] ?? [], 'scope_key' => '',
+            'settings' => $kind === 'projects' ? app(ProjectSettings::class)->normalize($data['settings'] ?? []) : ($data['settings'] ?? []), 'scope_key' => '',
         ];
         if ($kind !== 'projects') {
             $attributes['project_id'] = $data['project_id'] ?? null;

@@ -20,7 +20,7 @@ class LegacyTreeController extends Controller
         ]);
         $revision = $tree->replace($request->user(), $data['projects'], $data['revision']);
 
-        return response()->json(['success' => true, 'revision' => $revision]);
+        return response()->json(['success' => true] + ProjectTreeController::snapshot($request->user()));
     }
 
     public function layouts(Request $request, SectionLibrary $library)

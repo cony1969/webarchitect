@@ -35,6 +35,7 @@
 <script>
     window.sidebarProjectsRevision = @js($projectsRevision);
     window.sidebarLayoutsRevision = @js($layoutsRevision);
+    window.sidebarProjectIds = @js(\App\Models\Cms\Project::where('user_id', auth()->id())->pluck('id', 'legacy_id'));
     window.sidebarProjectsData = @js($projectsData);
     window.sidebarLayoutsData = @js($layoutsData);
     window.sidebarProjectsTreeState = @js($projectsTreeState);

@@ -6,7 +6,7 @@
 >
     <testsuites>
         <testsuite name="Feature">
-            <file>tests/Postgres/CmsFoundationTest.php</file>
+            <directory>tests/Postgres</directory>
         </testsuite>
     </testsuites>
     <source>

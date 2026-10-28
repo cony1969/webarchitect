@@ -23,17 +23,27 @@ class DocumentController extends Controller
 
     public function store(Request $request, string $kind)
     {
-        return response()->json(['data' => $this->store->create($kind, $request->user(), $this->validated($request))], 201);
+        return $this->saved($request, $kind, $this->store->create($kind, $request->user(), $this->validated($request)), 201);
     }
 
     public function update(Request $request, string $kind, string $id)
     {
-        return response()->json(['data' => $this->store->update($kind, $request->user(), $id, $this->validated($request, true))]);
+        return $this->saved($request, $kind, $this->store->update($kind, $request->user(), $id, $this->validated($request, true)));
     }
 
     public function copy(Request $request, string $kind, string $id)
     {
-        return response()->json(['data' => $this->store->copy($kind, $request->user(), $id, $this->validated($request))], 201);
+        return $this->saved($request, $kind, $this->store->copy($kind, $request->user(), $id, $this->validated($request)), 201);
+    }
+
+    private function saved(Request $request, string $kind, $document, int $status = 200)
+    {
+        $payload = ['data' => $document];
+        if ($kind === 'projects') {
+            $payload['project_tree'] = ProjectTreeController::snapshot($request->user());
+        }
+
+        return response()->json($payload, $status);
     }
 
     private function validated(Request $request, bool $updating = false): array
