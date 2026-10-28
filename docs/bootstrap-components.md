@@ -14,7 +14,7 @@ php artisan cms:install-bootstrap container --user=EMAIL
 
 Predloha sa objaví v Komponenty → Bootstrap → Základné rozloženie. Ceruzka otvorí existujúci JSON editor; uloženie upraví osobný komponent a zvýši jeho revíziu. Opätovné spustenie príkazu existujúci komponent vrátane používateľských úprav ponechá bez zmeny. Nevytvára duplicity a neobnovuje používateľom odstránenú predlohu.
 
-Zdroj v Gite je východisková definícia. Osobná upravená verzia sa ukladá v PostgreSQL. Táto etapa pridáva obsah knižnice; vizuálne skladanie plátna a samostatný editor komponentov v strednej karte zostávajú ďalšou prácou. JSON editor je aktuálna cesta úpravy.
+Zdroj v Gite je východisková definícia. Osobná upravená verzia sa ukladá v PostgreSQL. Úpravy prebiehajú v samostatnom editore komponentov v strednej karte; projektové použitia odkazujú na vlastnú definíciu projektu.
 
 Nasledujúce kroky po overení Containeru: riadok (`row`), stĺpec (`col`) a až potom zložené komponenty. Každý komponent vytvoríme a overíme samostatne.
 
@@ -46,3 +46,30 @@ verzia **ace-builds 1.45.2** z oficiálneho npm balíka. Súbory v `public/asset
 obsahujú jadro, režim JSON, JSON worker, tému tomorrow_night a searchbox vrátane BSD licencie.
 Inicializácia (`ace.edit`, `session.setMode`) a zrušenie inštancie sú v `public/js/component-editor.js`.
 Ace má samostatnú inštanciu pre každú otvorenú kartu a pri zmene rozmerov sa prispôsobí.
+
+## Záložky vlastností komponentu
+
+Pravý panel **iba Editora komponentov** má záložky Základné nastavenia, Bootstrap a CSS.
+Základné nastavenia zachovávajú metadáta a otvorenie Ace. Bootstrap ponúka bežné
+nastavenia, pridanie ďalšieho ovládača, zobrazenie všetkých nastavení a vyhľadateľný
+Select2 výber všetkých dostupných tried vrátane vlastných tried. Katalóg možností sa
+odvodzuje z nainštalovaného `public/css/bootstrap.min.css` (5.0.2).
+Voľba mení len príslušnú skupinu tried pre vybraný breakpoint; ostatné triedy zachová.
+
+CSS tvorí zoznam `vlastnosť: hodnota` s tlačidlom +. Riadky bez názvu vlastnosti
+sa pri ukladaní vynechajú aj na serveri. Hodnoty podporujú úvodzovky, funkcie,
+URL a `!important`; samostatný riadok nesmie obsahovať ďalšiu CSS deklaráciu.
+Pri viacerých koreňových prvkoch sa dá zvoliť upravovaný prvok. Tieto nastavenia
+menia jeho inline štýl, nie globálne pole CSS komponentu. Neupravené štýly sa pri
+uložení iného nastavenia neprepisujú.
+
+Zmeny vlastností sa premietajú do JSON a náhľadu, úpravy JSON zasa do ovládačov.
+Ukladanie používa existujúce oprávnenia a kontrolu revízie. Projektová verzia zostáva
+oddelená od knižnice; editory projektu a domény tieto záložky nemajú.
+
+Vyhľadávanie v záložkách Bootstrap a CSS rozpoznáva slovenské aj anglické názvy,
+bez ohľadu na veľké písmená, diakritiku či pomlčky. Bootstrap pri hľadaní prechádza
+aj rozšírené nastavenia; po vymazaní dotazu sa vráti pôvodný výber. Nastavenie
+upravené cez výsledky ostane medzi pridanými ovládačmi. CSS ponúka bežné vlastnosti
+aj vlastné názvy už použité v komponente. Kliknutie pridá riadok alebo zameria
+existujúci, bez vytvorenia duplicity; samotné vyhľadávanie definíciu nemení.

@@ -7,6 +7,7 @@
     'wheelScroll' => false,
     'dataAttrName' => null,
     'itemMinWidth' => null,
+    'accessiblePrefix' => null,
 ])
 
 <style>
@@ -24,7 +25,7 @@
     >
 @endif
 
-<ul class="nav" style="border-bottom: 2px solid var(--wa-border-strong); margin-bottom: {{ $scrollable ? '0' : '15px' }}; display: flex; flex-wrap: {{ $scrollable ? 'nowrap' : 'wrap' }}; padding-left: 0; list-style: none; width: {{ $scrollable ? 'max-content' : '100%' }}; min-width: {{ $scrollable ? '100%' : '0' }}; gap: 5px;">
+<ul @if($accessiblePrefix) role="tablist" aria-label="Vlastnosti komponentu" @endif class="nav" style="border-bottom: 2px solid var(--wa-border-strong); margin-bottom: {{ $scrollable ? '0' : '15px' }}; display: flex; flex-wrap: {{ $scrollable ? 'nowrap' : 'wrap' }}; padding-left: 0; list-style: none; width: {{ $scrollable ? 'max-content' : '100%' }}; min-width: {{ $scrollable ? '100%' : '0' }}; gap: 5px;">
     @foreach($tabs as $tab)
         @php
             $tabId = $tab['id'] ?? '';
@@ -33,6 +34,13 @@
         <li class="nav-item" style="{{ $itemMinWidth ? 'flex: 0 0 auto; min-width: ' . $itemMinWidth . ';' : 'flex: 1;' }} text-align: center; margin-bottom: -2px;">
             <button class="nav-link"
                     type="button"
+                    @if($accessiblePrefix)
+                    id="{{ $accessiblePrefix }}-tab-{{ $tabId }}" role="tab" aria-controls="{{ $accessiblePrefix }}-{{ $tabId }}"
+                    :aria-selected="{{ $activeVar }} === '{{ $tabId }}'"
+                    :tabindex="{{ $activeVar }} === '{{ $tabId }}' ? 0 : -1"
+                    @keydown.right.prevent="{{ $changeHandler }}('{{ $tabs[($loop->index + 1) % count($tabs)]['id'] }}'); $el.closest('[role=tablist]').querySelectorAll('[role=tab]')[{{ ($loop->index + 1) % count($tabs) }}].focus()"
+                    @keydown.left.prevent="{{ $changeHandler }}('{{ $tabs[($loop->index + count($tabs) - 1) % count($tabs)]['id'] }}'); $el.closest('[role=tablist]').querySelectorAll('[role=tab]')[{{ ($loop->index + count($tabs) - 1) % count($tabs) }}].focus()"
+                    @endif
                     @if($dataAttrName) {{ $dataAttrName }}="{{ $tabId }}" @endif
                     @click.prevent="if (typeof {{ $changeHandler }} === 'function') { {{ $changeHandler }}('{{ $tabId }}') } else { {{ $activeVar }} = '{{ $tabId }}' }"
                     :style="{

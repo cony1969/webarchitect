@@ -32,17 +32,19 @@
 <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 
+    <script>window.waComponentPropertyConfig = @js(app(\App\Services\Cms\ComponentPropertyCatalog::class)->data());</script>
     <script>window.waProjectEditorConfig = @js(array_merge(config('domain-editor'), ['csrf' => csrf_token()]));</script>
     <link rel="stylesheet" href="{{ asset('assets/libs/select2/css/select2.min.css') }}">
     <script defer src="{{ asset('assets/libs/jquery/jquery.min.js') }}"></script>
     <script defer src="{{ asset('assets/libs/select2/js/select2.full.min.js') }}"></script>
-    <script defer src="{{ asset('js/project-editor.js') }}?v=20261028-placement1"></script>
-    <script defer src="{{ asset('js/site-import.js') }}?v=20261028-placement1"></script>
+    <script defer src="{{ asset('js/project-editor.js') }}?v=20261028-properties-search1"></script>
+    <script defer src="{{ asset('js/site-import.js') }}?v=20261028-properties-search1"></script>
     <script defer src="{{ asset('assets/libs/ace/ace.js') }}"></script>
     <script defer src="{{ asset('assets/libs/ace/mode-json.js') }}"></script>
     <script defer src="{{ asset('assets/libs/ace/theme-tomorrow_night.js') }}"></script>
-    <script defer src="{{ asset('js/component-editor.js') }}?v=20261028-placement1"></script>
-    <script defer src="{{ asset('js/page-preview.js') }}?v=20261028-placement1"></script>
+    <script defer src="{{ asset('js/component-controls.js') }}?v=20261028-properties-search1"></script>
+    <script defer src="{{ asset('js/component-editor.js') }}?v=20261028-properties-search1"></script>
+    <script defer src="{{ asset('js/page-preview.js') }}?v=20261028-properties-search1"></script>
     <!-- Stabilné, oficiálne načítanie AlpineJS a HTMX -->
     <script defer src="{{ asset('js/alpine.min.js') }}"></script>
     <script src="{{ asset('js/htmx.min.js') }}"></script>    
@@ -52,7 +54,7 @@
 
     <x-ui.styles />
     <x-ui.theme />
-    <link rel="stylesheet" href="{{ asset('css/project-editor.css') }}?v=20261028-placement1">
+    <link rel="stylesheet" href="{{ asset('css/project-editor.css') }}?v=20261028-properties-search1">
 </head>
 <body>
 

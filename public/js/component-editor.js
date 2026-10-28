@@ -43,7 +43,7 @@
             drafts: {}, activeKey: null,
             get current() { return this.drafts[this.activeKey] || null; },
             ensure(key, path = null) {
-                if (!this.drafts[key]) this.drafts[key] = { id: null, path, revision: 1, shared: false, loaded: false, loading: false, saving: false, form: { name: '', slug: '', target_path: '', tab: 'bootstrap', category: '' }, code: '', baseline: '', view: 'preview', preview: '', codeError: '', error: '', errors: {}, notice: '', projectId: null, projectName: '', placement: null };
+                if (!this.drafts[key]) this.drafts[key] = { id: null, path, revision: 1, shared: false, loaded: false, loading: false, saving: false, form: { name: '', slug: '', target_path: '', tab: 'bootstrap', category: '' }, code: '', baseline: '', view: 'preview', preview: '', codeError: '', error: '', errors: {}, notice: '', projectId: null, projectName: '', placement: null, controls: window.waComponentControls.state() };
                 if (path && !this.drafts[key].path) this.drafts[key].path = path;
                 return this.drafts[key];
             },
@@ -87,14 +87,42 @@
                 for (const key of ['css', 'js']) if (value[key] !== undefined && typeof value[key] !== 'string') throw new Error('Položky css a js musia byť text.');
                 return value;
             },
-            updateDocument(key, syncMetadata = true) {
+            updateDocument(key, syncMetadata = true, syncControls = true) {
                 const draft = this.ensure(key);
                 try {
                     const source = this.parsed(draft);
                     const preview = window.waComponentPreview(source);
                     if (syncMetadata) for (const field of ['name', 'slug', 'tab']) if (typeof source[field] === 'string') draft.form[field] = source[field];
                     draft.preview = preview; draft.codeError = '';
+                    if (syncControls) window.waComponentControls.sync(draft, source);
                 } catch (error) { draft.codeError = 'Neplatný JSON: ' + error.message; }
+            },
+            writeControlSource(key, source) {
+                const draft = this.drafts[key]; draft.code = pretty(source); this.updateDocument(key, false, false);
+            },
+            selectPropertyRoot(key) { const draft = this.drafts[key]; window.waComponentControls.sync(draft, this.parsed(draft)); },
+            bootstrapChanged(key, field, value) {
+                const draft = this.drafts[key], controls = window.waComponentControls;
+                if (!draft?.controls.editable || draft.saving || draft.codeError) return;
+                if (!field.common && !draft.controls.extraFields.includes(field.id)) draft.controls.extraFields.push(field.id);
+                const classes = controls.replaceField(draft.controls.classTokens.join(' '), field, draft.controls.breakpoint, value);
+                this.classesChanged(key, classes);
+            },
+            classesChanged(key, classes) {
+                const draft = this.drafts[key], controls = window.waComponentControls;
+                if (!draft?.controls.editable || draft.saving || draft.codeError) return;
+                const source = this.parsed(draft), node = controls.roots(source)[draft.controls.rootIndex];
+                draft.controls.classTokens = controls.tokens(classes.join(' '));
+                controls.setAttribute(node, 'class', draft.controls.classTokens.join(' '));
+                this.writeControlSource(key, source);
+            },
+            stylesChanged(key) {
+                const draft = this.drafts[key], controls = window.waComponentControls;
+                if (!draft?.controls.editable || draft.saving || draft.codeError) return;
+                const source = this.parsed(draft), node = controls.roots(source)[draft.controls.rootIndex];
+                draft.controls.stylesTouched = true;
+                controls.setAttribute(node, 'style', controls.serializeStyles(draft.controls.styleRows));
+                this.writeControlSource(key, source);
             },
             propertiesChanged(key) {
                 const draft = this.drafts[key];
@@ -139,11 +167,11 @@
             async save(key) {
                 const draft = this.drafts[key];
                 if (!draft?.loaded || draft.saving || draft.loading) return;
-                this.updateDocument(key);
+                this.updateDocument(key, true, false);
                 if (draft.codeError) { draft.view = 'json'; return; }
                 draft.saving = true; draft.error = ''; draft.errors = {}; draft.notice = '';
                 try {
-                    const result = await this.request('/ui/components/editor', { ...draft.form, component_id: draft.id, revision: draft.revision, as_new: false, name: draft.form.name, slug: draft.form.slug, json_content: draft.code });
+                    const result = await this.request('/ui/components/editor', { ...draft.form, component_id: draft.id, revision: draft.revision, as_new: false, name: draft.form.name, slug: draft.form.slug, json_content: draft.code, ...(draft.controls.editable && draft.controls.stylesTouched ? { style_root: Number(draft.controls.rootIndex), style_rows: draft.controls.styleRows.map(row => ({ name: row.name, value: row.value })) } : {}) });
                     this.apply(key, result.data);
                     draft.notice = 'Zmeny sú uložené.';
                     emit('component-document-saved', { key, document: result.data, asNew: false });

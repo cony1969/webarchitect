@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Cms\Component;
 use App\Models\User;
 use App\Services\Cms\ComponentLibrary;
+use App\Services\Cms\ComponentStyleRows;
 use App\Services\Cms\DocumentStore;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -28,11 +29,21 @@ class ComponentEditorController extends Controller
             'slug' => ['required', 'string', 'max:160', 'regex:/^[a-z0-9]+(?:-[a-z0-9]+)*$/'],
             'target_path' => ['required', 'string', 'max:220', 'regex:#^[a-z0-9-]+(?:/[a-z0-9-]+)*$#'],
             'tab' => ['required', 'in:native,bootstrap,other'], 'category' => ['required', 'string', 'max:120'],
+            'style_root' => ['required_with:style_rows', 'integer', 'min:0', 'max:4999'],
+            'style_rows' => ['sometimes', 'array', 'max:200'],
+            'style_rows.*.name' => ['nullable', 'string', 'max:128'],
+            'style_rows.*.value' => ['nullable', 'string', 'max:20000'],
             'json_content' => ['required', 'string', 'max:2000000'],
         ]);
         $source = json_decode($data['json_content'], true);
         if (! is_array($source) || ! is_array($source['objects'] ?? null) || ! count($source['objects'])) {
             throw ValidationException::withMessages(['json_content' => 'JSON musí obsahovať platné objekty komponentu v položke objects.']);
+        }
+        if (array_key_exists('style_rows', $data)) {
+            if (! isset($data['style_root'])) {
+                throw ValidationException::withMessages(['style_root' => 'Vyberte prvok pre CSS vlastnosti.']);
+            }
+            $source = app(ComponentStyleRows::class)->apply($source, $data['style_root'], $data['style_rows']);
         }
         foreach (['css', 'js'] as $field) {
             if (isset($source[$field]) && ! is_string($source[$field])) {
