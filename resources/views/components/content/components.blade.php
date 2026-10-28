@@ -1,7 +1,7 @@
 @props(['app' => [], 'layout' => [], 'components' => []])
 
 @php
-    $loadedComponents = app(\App\Services\Cms\ComponentLibrary::class)->catalog(auth()->user());
+    $loadedComponents = app(\App\Services\Cms\ComponentLibrary::class)->catalog(auth()->user(), true);
 
     $userSettings = [];
     if (auth()->check()) {
@@ -26,6 +26,8 @@
 <div class="tab-content" 
      style="color: #fff; font-size: 13px;"
      x-data="{
+         catalog: @js($loadedComponents),
+         itemKey(tab, category, item) { return tab + '|' + category + '|' + item.id + '|' + item.name; },
          openCategory: @js($savedCategory),
          importContext: @js($savedImportContext),
          selectedItemKey: @js($savedImportContext['itemKey'] ?? ''),
@@ -86,8 +88,9 @@
              const fileSlug = this.slugify(fileName.replace(/\.json$/i, ''));
              const inferredSlug = fileSlug !== '' ? fileSlug : this.slugify(itemName);
 
-             window.dispatchEvent(new CustomEvent('open-modal-import', {
+             window.dispatchEvent(new CustomEvent(item.placeholder ? 'open-modal-import' : 'add-new-tab', {
                  detail: {
+                     mode: 'component', title: itemName, componentPath: itemPath,
                      tab: tabKey,
                      category: categoryName,
                      targetPath: this.importContext && this.importContext.targetPath ? this.importContext.targetPath : this.slugify(tabKey),
@@ -136,67 +139,29 @@
              }
          }
      }"
+     x-on:component-catalog-updated.window="catalog = $event.detail.catalog"
      x-init="init()"
 >
-    @foreach($loadedComponents as $tabKey => $tabCategories)
-        <div x-show="activeTab === '{{ $tabKey }}'" x-transition>
-            @if(!empty($tabCategories) && is_array($tabCategories))
-                @foreach($tabCategories as $category)
-                    @php
-                        $categoryName = (string) ($category['category'] ?? 'Kategória');
-                        $catId = $tabKey . '-' . Str::slug($categoryName);
-                        $tabIcon = $tabKey === 'native' ? '📄' : ($tabKey === 'bootstrap' ? '📦' : '🧩');
-                    @endphp
-                    <div style="margin-bottom: 10px;">
-                        <div @click="toggleCategory('{{ $catId }}', '{{ $tabKey }}', '{{ addslashes($categoryName) }}')" style="display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 4px 0; color: #3bc0c3; font-weight: 600; user-select: none;">
-                            <span x-text="openCategory === '{{ $catId }}' ? '▼' : '►'" style="font-size: 9px; width: 10px;"></span>
-                            <span>{{ $categoryName }}</span>
-                        </div>
-
-                        <div x-show="openCategory === '{{ $catId }}'" x-transition style="padding-left: 14px; display: flex; flex-direction: column; gap: 4px; margin-top: 2px;">
-                            @foreach(($category['items'] ?? []) as $item)
-                                @php
-                                    $itemId = (string) ($item['id'] ?? '');
-                                    $itemName = (string) ($item['name'] ?? 'Položka');
-                                    $itemKey = $tabKey . '|' . $categoryName . '|' . $itemId . '|' . $itemName;
-                                @endphp
-                                <div class="tree-item" draggable="true" data-id="{{ $itemId }}"
-                                     @click="selectImportTarget('{{ $tabKey }}', '{{ addslashes($categoryName) }}', { id: '{{ addslashes($itemId) }}', name: '{{ addslashes($itemName) }}', path: '{{ addslashes((string)($item['path'] ?? '')) }}' })"
-                                     :style="selectedItemKey === '{{ addslashes($itemKey) }}' ? 'padding: 5px 8px; background: var(--wa-surface-hover); color: #fff; border-radius: 3px; cursor: grab; font-size: 12px; border: 1px solid #3bc0c3; transition: all 0.2s; display: flex; align-items: center; justify-content: space-between; gap: 8px;' : 'padding: 5px 8px; background: var(--wa-surface-raised); color: #fff; border-radius: 3px; cursor: grab; font-size: 12px; border: 1px solid transparent; transition: all 0.2s; display: flex; align-items: center; justify-content: space-between; gap: 8px;'"
-                                     style="padding: 5px 8px; background: var(--wa-surface-raised); color: #fff; border-radius: 3px; cursor: grab; font-size: 12px; border: 1px solid transparent; transition: all 0.2s; display: flex; align-items: center; justify-content: space-between; gap: 8px;"
-                                     @mouseover="$el.style.borderColor='var(--wa-border-strong)'; $el.style.background='var(--wa-surface-hover)'"
-                                     @mouseout="$el.style.borderColor='transparent'; $el.style.background='var(--wa-surface-raised)'">
-                                    <span style="display: inline-flex; align-items: center; gap: 6px; min-width: 0;">
-                                        <span>{{ $tabIcon }}</span>
-                                        <span>{{ $item['name'] ?? 'Položka' }}</span>
-                                    </span>
-                                    <span style="display: inline-flex; align-items: center; gap: 8px; margin-left: auto;">
-                                        <span title="Upravit"
-                                              aria-label="Upravit"
-                                              @click.stop="openImportEditor('{{ $tabKey }}', '{{ addslashes($categoryName) }}', { id: '{{ addslashes($itemId) }}', name: '{{ addslashes($itemName) }}', path: '{{ addslashes((string)($item['path'] ?? '')) }}' })"
-                                                                                            style="display: inline-flex; align-items: center; justify-content: center; width: 14px; height: 14px; opacity: 0.9; cursor: pointer; color: #3bc0c3;">
-                                            <svg viewBox="0 0 16 16" width="12" height="12" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                                                <path d="M2 11.5V14H4.5L12 6.5L9.5 4L2 11.5Z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/>
-                                                <path d="M8.8 4.7L11.3 7.2" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
-                                            </svg>
-                                        </span>
-                                        <span title="Zmazat"
-                                              aria-label="Zmazat"
-                                                                                            style="display: inline-flex; align-items: center; justify-content: center; width: 14px; height: 14px; opacity: 0.9; pointer-events: none; color: #ef4444;">
-                                            <svg viewBox="0 0 16 16" width="12" height="12" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                                                <path d="M2.5 4H13.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
-                                                <path d="M6 2.8H10" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
-                                                <path d="M4 4.5L4.6 13H11.4L12 4.5" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/>
-                                            </svg>
-                                        </span>
-                                    </span>
-                                </div>
-                            @endforeach
-                        </div>
+    <template x-for="(categories, tabKey) in catalog" :key="tabKey">
+        <div x-show="activeTab === tabKey">
+            <template x-for="category in categories" :key="category.category">
+                <div style="margin-bottom:10px">
+                    <button type="button" @click="toggleCategory(tabKey + '-' + slugify(category.category), tabKey, category.category)" :aria-expanded="openCategory === tabKey + '-' + slugify(category.category)" style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:4px 0;color:#3bc0c3;font-weight:600;background:none;border:0;text-align:left;width:100%">
+                        <span x-text="openCategory === tabKey + '-' + slugify(category.category) ? '▼' : '►'" style="font-size:9px;width:10px"></span><span x-text="category.category"></span>
+                    </button>
+                    <div x-show="openCategory === tabKey + '-' + slugify(category.category)" style="padding-left:14px;display:flex;flex-direction:column;gap:4px;margin-top:2px">
+                        <template x-for="item in category.items" :key="item.path || item.id">
+                            <div class="tree-item" draggable="true" :data-id="item.id" @click="selectImportTarget(tabKey, category.category, item)" @dblclick="openImportEditor(tabKey, category.category, item)" :style="{ borderColor: selectedItemKey === itemKey(tabKey, category.category, item) ? '#3bc0c3' : 'transparent' }" style="padding:5px 8px;background:var(--wa-surface-raised);color:#fff;border-radius:3px;cursor:grab;font-size:12px;border:1px solid transparent;display:flex;align-items:center;justify-content:space-between;gap:8px">
+                                <span style="display:inline-flex;align-items:center;gap:6px;min-width:0"><span aria-hidden="true" x-text="tabKey === 'native' ? '📄' : tabKey === 'bootstrap' ? '📦' : '🧩'"></span><span x-text="item.name"></span></span>
+                                <span style="display:inline-flex;align-items:center;gap:8px;margin-left:auto">
+                                    <button type="button" class="wa-component-catalog-action" title="Upraviť komponent" :aria-label="'Upraviť ' + item.name" @click.stop="openImportEditor(tabKey, category.category, item)"><svg viewBox="0 0 16 16" width="12" height="12" fill="none" aria-hidden="true"><path d="M2 11.5V14H4.5L12 6.5L9.5 4L2 11.5Z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/><path d="M8.8 4.7L11.3 7.2" stroke="currentColor" stroke-width="1.2"/></svg></button>
+                                    <span title="Zmazať" style="display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;opacity:.9;pointer-events:none;color:#ef4444"><svg viewBox="0 0 16 16" width="12" height="12" fill="none" aria-hidden="true"><path d="M2.5 4H13.5M6 2.8H10M4 4.5L4.6 13H11.4L12 4.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                                </span>
+                            </div>
+                        </template>
                     </div>
-                @endforeach
-            @endif
+                </div>
+            </template>
         </div>
-    @endforeach
-
+    </template>
 </div>

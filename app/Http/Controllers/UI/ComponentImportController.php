@@ -23,6 +23,7 @@ class ComponentImportController extends Controller
         }
 
         return response()->json([
+            'data' => $this->library->editorData($component),
             'success' => true, 'exists' => true, 'component_id' => $component->id, 'revision' => $component->revision,
             'file' => 'config/ui/components/'.$path, 'name' => $component->name, 'slug' => $component->slug,
             'target_path' => trim(dirname($path), '/.'),

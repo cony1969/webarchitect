@@ -7,6 +7,7 @@ use App\Http\Controllers\Cms\ProjectTreeController;
 use App\Http\Controllers\Cms\SiteImportController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\UI\ComponentImportController;
+use App\Http\Controllers\UI\ComponentEditorController;
 use App\Models\UserSetting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -103,6 +104,9 @@ Route::middleware('auth')->group(function () {
 
         return response()->json(['status' => 'saved']);
     });
+
+    Route::get('/ui/components/catalog', [ComponentEditorController::class, 'catalog']);
+    Route::post('/ui/components/editor', [ComponentEditorController::class, 'save']);
 
     Route::post('/ui/components/import-html', [ComponentImportController::class, 'import'])
         ->name('ui.components.import-html');

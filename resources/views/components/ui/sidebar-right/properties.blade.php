@@ -13,6 +13,7 @@
              projectTab: 'basic',
 
              headerTitle() {
+                 if (this.$store.componentEditor.current) return 'VLASTNOSTI KOMPONENTU {' + (this.$store.componentEditor.current.form.name || 'Komponent') + '}';
                  if (this.$store.projectEditor.activeMode === 'import') return 'IMPORT Z ASUS-U';
                  if (this.$store.projectEditor.active) return (this.$store.projectEditor.isDomain ? 'VLASTNOSTI DOMÉNY {' : 'VLASTNOSTI PROJEKTU {') + (this.$store.projectEditor.current.form.name || 'Nový projekt') + '}';
                  if (this.selectedPageObj && this.selectedPageObj.name) {
@@ -181,12 +182,13 @@
          }">
     <x-ui.accordion-header section="properties" title="Vlastnosti" dynamic-title="headerTitle()" />
     <div class="block-content sidebar-accordion-content" id="accordion-properties-content" role="region" aria-labelledby="accordion-properties-toggle" x-show="activeSection === 'properties'" x-cloak style="padding: 0 15px; overflow-y: auto; color: #fff;">
+        <x-ui.component-editor.properties />
         <x-ui.project-editor.properties />
         <x-ui.domain-editor.properties />
         <div x-show="$store.projectEditor.activeMode === 'import'" class="wa-project-properties" style="padding:20px 0">
             <h3 class="wa-project-properties-title">Analýza webu</h3><p class="wa-project-muted">Vyberte zdroj v strednej karte a spustite analýzu. Zobrazí stránky, sekcie, súbory a dostupné subdomény.</p><p class="wa-project-muted">Tento krok iba číta. Pôvodný web ani projekty sa nemenia.</p>
         </div>
-        <div x-show="!$store.projectEditor.active && $store.projectEditor.activeMode !== 'import'">
+        <div x-show="!$store.componentEditor.current && !$store.projectEditor.active && $store.projectEditor.activeMode !== 'import'">
         <x-ui.sidebar-right.properties.project />
         <x-ui.sidebar-right.properties.domain />
         <x-ui.sidebar-right.properties.page />

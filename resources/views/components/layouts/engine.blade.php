@@ -36,8 +36,12 @@
     <link rel="stylesheet" href="{{ asset('assets/libs/select2/css/select2.min.css') }}">
     <script defer src="{{ asset('assets/libs/jquery/jquery.min.js') }}"></script>
     <script defer src="{{ asset('assets/libs/select2/js/select2.full.min.js') }}"></script>
-    <script defer src="{{ asset('js/project-editor.js') }}?v=20261028-import1"></script>
-    <script defer src="{{ asset('js/site-import.js') }}?v=20261028-import1"></script>
+    <script defer src="{{ asset('js/project-editor.js') }}?v=20261028-component1"></script>
+    <script defer src="{{ asset('js/site-import.js') }}?v=20261028-component1"></script>
+    <script defer src="{{ asset('assets/libs/ace/ace.js') }}"></script>
+    <script defer src="{{ asset('assets/libs/ace/mode-json.js') }}"></script>
+    <script defer src="{{ asset('assets/libs/ace/theme-tomorrow_night.js') }}"></script>
+    <script defer src="{{ asset('js/component-editor.js') }}?v=20261028-component1"></script>
     <!-- Stabilné, oficiálne načítanie AlpineJS a HTMX -->
     <script defer src="{{ asset('js/alpine.min.js') }}"></script>
     <script src="{{ asset('js/htmx.min.js') }}"></script>    
@@ -47,7 +51,7 @@
 
     <x-ui.styles />
     <x-ui.theme />
-    <link rel="stylesheet" href="{{ asset('css/project-editor.css') }}?v=20261028-tabs1">
+    <link rel="stylesheet" href="{{ asset('css/project-editor.css') }}?v=20261028-component1">
 </head>
 <body>
 

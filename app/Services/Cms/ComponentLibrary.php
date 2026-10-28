@@ -12,7 +12,7 @@ class ComponentLibrary
 {
     public function __construct(private DocumentStore $store) {}
 
-    public function catalog(User $user): array
+    public function catalog(User $user, bool $forEditor = false): array
     {
         $entries = ComponentEntry::with('component')->where(fn ($q) => $q->whereNull('user_id')->orWhere('user_id', $user->id))->orderBy('category_position')->orderBy('position')->get();
         $overrides = Component::where('user_id', $user->id)->whereNotNull('source_key')->get()->keyBy('source_key');
@@ -32,6 +32,9 @@ class ComponentLibrary
             $group = $tree[$entry->tab][$entry->category] ?? ['category' => $entry->category, 'items' => []];
             $item = $entry->source_payload;
             $item['name'] = $component->name;
+            if ($forEditor) {
+                $item['placeholder'] = (bool) ($component->settings['placeholder'] ?? false);
+            }
             $group['items'][] = $item;
             $tree[$entry->tab][$entry->category] = $group;
         }
@@ -60,6 +63,20 @@ class ComponentLibrary
     public function legacy(Component $component): array
     {
         return array_merge($component->source_payload ?? [], ['name' => $component->name, 'slug' => $component->slug, 'tab' => $component->settings['tab'] ?? null, 'objects' => DocumentData::toLegacy($component->document), 'css' => $component->document['css'], 'js' => $component->document['js']]);
+    }
+
+    public function editorData(Component $component): array
+    {
+        $entry = ComponentEntry::where('component_id', $component->id)->first();
+        $path = $component->source_key ?: 'cms/'.$component->id.'.json';
+
+        return [
+            'id' => $component->id, 'revision' => $component->revision, 'name' => $component->name,
+            'slug' => $component->slug, 'item_path' => $path, 'target_path' => trim(dirname($path), '/.'),
+            'tab' => $component->settings['tab'] ?? $entry?->tab ?? 'other',
+            'category' => $entry?->category ?? 'Importované', 'shared' => $component->user_id === null,
+            'content' => json_encode($this->legacy($component), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
+        ];
     }
 
     public function saveImport(User $user, array $data, array $objects, string $path): Component
