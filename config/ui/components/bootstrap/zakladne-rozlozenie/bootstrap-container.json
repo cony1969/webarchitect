@@ -1,0 +1,15 @@
+{
+    "name": "Kontajner (Container)",
+    "slug": "bootstrap-container",
+    "tab": "bootstrap",
+    "description": "Responzívny obal obsahu s predvolenou maximálnou šírkou Bootstrapu. Do kontajnera sa vkladajú riadky, stĺpce alebo ďalší obsah.",
+    "framework": "bootstrap-5",
+    "documentation_url": "https://getbootstrap.com/docs/5.3/layout/containers/",
+    "objects": {
+        "type": "div",
+        "class": "container",
+        "content": []
+    },
+    "css": "",
+    "js": ""
+}
