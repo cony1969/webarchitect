@@ -255,11 +255,7 @@
                         <button type="button" class="wa-tree-action" title="Pridať doménu" aria-label="Pridať doménu" @click.stop="triggerNodeModal('domain', project)">+</button>
                         <button type="button" class="wa-tree-action" title="Otvoriť editor projektu" aria-label="Otvoriť editor projektu" @click.stop="openProject(project)"><i class="fas fa-pen" aria-hidden="true"></i></button>
                         <span class="wa-tree-trash" title="Zmazat" aria-label="Zmazat">
-                            <svg viewBox="0 0 16 16" width="12" height="12" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                                <path d="M2.5 4H13.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
-                                <path d="M6 2.8H10" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
-                                <path d="M4 4.5L4.6 13H11.4L12 4.5" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/>
-                            </svg>
+                            <i class="fas fa-trash" style="font-size: 12px;" aria-hidden="true"></i>
                         </span>
                     </span>
                 </div>
@@ -278,11 +274,7 @@
                                     <button type="button" class="wa-tree-action" title="Pridať stránku" aria-label="Pridať stránku" @click.stop="triggerNodeModal('page', project, domain)">+</button>
                                     <button type="button" class="wa-tree-action" title="Otvoriť editor domény" aria-label="Otvoriť editor domény" @click.stop="openDomain(project, domain)"><i class="fas fa-pen" aria-hidden="true"></i></button>
                                     <span class="wa-tree-trash" title="Zmazat" aria-label="Zmazat">
-                                        <svg viewBox="0 0 16 16" width="12" height="12" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                                            <path d="M2.5 4H13.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
-                                            <path d="M6 2.8H10" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
-                                            <path d="M4 4.5L4.6 13H11.4L12 4.5" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/>
-                                        </svg>
+                                        <i class="fas fa-trash" style="font-size: 12px;" aria-hidden="true"></i>
                                     </span>
                                 </span>
                             </div>
@@ -298,11 +290,7 @@
                                         <span class="wa-tree-name" :title="page.name" x-text="page.name"></span>
                                         <span class="wa-tree-actions">
                                             <span class="wa-tree-trash" title="Zmazat" aria-label="Zmazat">
-                                                <svg viewBox="0 0 16 16" width="12" height="12" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                                                    <path d="M2.5 4H13.5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
-                                                    <path d="M6 2.8H10" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
-                                                    <path d="M4 4.5L4.6 13H11.4L12 4.5" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/>
-                                                </svg>
+                                                <i class="fas fa-trash" style="font-size: 12px;" aria-hidden="true"></i>
                                             </span>
                                         </span>
                                     </div>
