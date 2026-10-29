@@ -7,8 +7,15 @@
         height: 100vh;
         height: 100dvh;
         overflow: hidden;
+        overflow: clip;
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
         background-color: #f4f5f8;
+    }
+
+    /* Keep Safari focus/Select2 navigation from scrolling the whole CMS shell. */
+    body {
+        position: fixed;
+        inset: 0;
     }
 
     /* Hlavný kontajner drží fixnú výšku okna */
