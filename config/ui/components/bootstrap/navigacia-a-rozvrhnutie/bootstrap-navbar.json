@@ -1,0 +1,74 @@
+{
+    "name": "Hlavná lišta (Navbar)",
+    "slug": "bootstrap-navbar",
+    "tab": "bootstrap",
+    "framework": "bootstrap-5",
+    "description": "Horná navigácia s názvom webu, odkazmi a účtom.",
+    "objects": {
+        "type": "nav",
+        "class": "navbar navbar-expand wa-bs-navbar rounded px-3 py-2",
+        "aria-label": "Hlavná navigácia",
+        "content": [
+            {
+                "type": "div",
+                "class": "container-fluid flex-wrap gap-3 p-0",
+                "content": [
+                    {
+                        "type": "a",
+                        "class": "navbar-brand mb-0 fw-bold",
+                        "href": "#",
+                        "content": "Názov webu"
+                    },
+                    {
+                        "type": "ul",
+                        "class": "navbar-nav flex-row gap-2 flex-wrap",
+                        "content": [
+                            {
+                                "type": "li",
+                                "class": "nav-item",
+                                "content": {
+                                    "type": "a",
+                                    "class": "nav-link active",
+                                    "href": "#",
+                                    "content": "Prehľad"
+                                }
+                            },
+                            {
+                                "type": "li",
+                                "class": "nav-item",
+                                "content": {
+                                    "type": "a",
+                                    "class": "nav-link",
+                                    "href": "#",
+                                    "content": "Projekty"
+                                }
+                            },
+                            {
+                                "type": "li",
+                                "class": "nav-item",
+                                "content": {
+                                    "type": "a",
+                                    "class": "nav-link",
+                                    "href": "#",
+                                    "content": "Kontakt"
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "type": "div",
+                        "class": "ms-auto",
+                        "content": {
+                            "type": "a",
+                            "class": "btn btn-outline-light btn-sm",
+                            "href": "#",
+                            "content": "Môj účet"
+                        }
+                    }
+                ]
+            }
+        ]
+    },
+    "css": ".wa-bs-navbar{background:#282b2c;color:#fff}.wa-bs-navbar .navbar-brand,.wa-bs-navbar .nav-link{color:#e6ecec}.wa-bs-navbar .nav-link.active{color:#77d8da}.wa-bs-navbar .nav-link:hover{color:#fff}",
+    "js": ""
+}

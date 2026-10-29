@@ -18,11 +18,11 @@ class LayoutEditor
         $personal = DB::table('cms_collections')->where('user_id', $user->id)->where('name', 'layouts')->exists();
         $layouts = Section::where('owner_key', $personal ? 'user:'.$user->id : 'library')->where('kind', 'layout_template')->orderBy('position')->get();
         $components = Component::where(fn ($q) => $q->where('user_id', $user->id)->orWhereNull('user_id'))->whereNull('project_id')->orderBy('name')->get()
-            ->filter(fn ($c) => ! ($c->settings['placeholder'] ?? false) && count($c->document['nodes'] ?? []) === 1 && $this->isContainer($c->document['nodes'][0]));
+            ->filter(fn ($c) => ! ($c->settings['placeholder'] ?? false) && count($c->document['nodes'] ?? []) > 0);
 
         return ['layouts' => $layouts->map(fn ($s) => $s->only(['id', 'legacy_id', 'name', 'revision']))->values()->all(),
             'revision' => $this->library->revision($user),
-            'components' => $components->map(fn ($c) => ['id' => $c->id, 'name' => $c->name, 'revision' => $c->revision, 'content_target' => 'root'])->values()->all()];
+            'components' => $components->map(fn ($c) => ['id' => $c->id, 'name' => $c->name, 'revision' => $c->revision, 'item_path' => $c->source_key ?: 'cms/'.$c->id.'.json', 'is_container' => count($c->document['nodes']) === 1 && $this->isContainer($c->document['nodes'][0]), 'content_target' => count($c->document['nodes']) === 1 && in_array($c->document['nodes'][0]['type'] ?? '', ['div', 'section', 'main', 'header', 'footer', 'nav', 'article', 'aside']) ? 'root' : null])->values()->all()];
     }
 
     private function isContainer(mixed $node): bool

@@ -1,0 +1,304 @@
+{
+    "name": "Tabuľka (Table)",
+    "slug": "bootstrap-table",
+    "tab": "bootstrap",
+    "framework": "bootstrap-5",
+    "description": "Tabuľkový prehľad s filtrom, vyhľadávaním, akciami a stránkovaním. Obsahuje ukážkové údaje.",
+    "objects": {
+        "type": "section",
+        "class": "card shadow-sm wa-bs-table",
+        "content": [
+            {
+                "type": "div",
+                "class": "card-header d-flex align-items-center justify-content-between gap-2",
+                "content": [
+                    {
+                        "type": "h2",
+                        "class": "h5 mb-0",
+                        "content": "Prehľad záznamov"
+                    },
+                    {
+                        "type": "button",
+                        "class": "btn btn-primary btn-sm",
+                        "attributes": {
+                            "type": "button"
+                        },
+                        "content": "+ Nový záznam"
+                    }
+                ]
+            },
+            {
+                "type": "div",
+                "class": "card-body",
+                "content": [
+                    {
+                        "type": "div",
+                        "class": "d-flex flex-wrap align-items-end gap-2 mb-3",
+                        "content": [
+                            {
+                                "type": "label",
+                                "class": "form-label mb-0",
+                                "content": [
+                                    {
+                                        "type": "span",
+                                        "class": "d-block mb-1",
+                                        "content": "Zobraziť"
+                                    },
+                                    {
+                                        "type": "select",
+                                        "class": "form-select form-select-sm",
+                                        "name": "status",
+                                        "style": "width:155px",
+                                        "content": [
+                                            {
+                                                "type": "option",
+                                                "content": "Všetky záznamy"
+                                            },
+                                            {
+                                                "type": "option",
+                                                "content": "Aktívne"
+                                            }
+                                        ]
+                                    }
+                                ]
+                            },
+                            {
+                                "type": "div",
+                                "class": "ms-auto",
+                                "content": {
+                                    "type": "label",
+                                    "class": "form-label mb-0 w-100",
+                                    "content": [
+                                        {
+                                            "type": "span",
+                                            "class": "d-block mb-1",
+                                            "content": "Vyhľadať"
+                                        },
+                                        {
+                                            "type": "input",
+                                            "class": "form-control form-control-sm",
+                                            "name": "search",
+                                            "placeholder": "Názov alebo identifikátor",
+                                            "attributes": {
+                                                "type": "search"
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "type": "div",
+                        "class": "table-responsive",
+                        "content": {
+                            "type": "table",
+                            "class": "table table-hover align-middle mb-0",
+                            "content": [
+                                {
+                                    "type": "thead",
+                                    "class": "table-light",
+                                    "content": [
+                                        {
+                                            "type": "tr",
+                                            "content": [
+                                                {
+                                                    "type": "th",
+                                                    "class": "text-nowrap text-end",
+                                                    "scope": "col",
+                                                    "content": "ID"
+                                                },
+                                                {
+                                                    "type": "th",
+                                                    "class": "text-nowrap",
+                                                    "scope": "col",
+                                                    "content": "Názov"
+                                                },
+                                                {
+                                                    "type": "th",
+                                                    "class": "text-nowrap text-center",
+                                                    "scope": "col",
+                                                    "content": "Aktívny"
+                                                },
+                                                {
+                                                    "type": "th",
+                                                    "class": "text-nowrap text-end",
+                                                    "scope": "col",
+                                                    "content": "Akcie"
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                {
+                                    "type": "tbody",
+                                    "content": [
+                                        {
+                                            "type": "tr",
+                                            "content": [
+                                                {
+                                                    "type": "td",
+                                                    "class": "text-end",
+                                                    "content": "1"
+                                                },
+                                                {
+                                                    "type": "td",
+                                                    "content": "Úvodná stránka"
+                                                },
+                                                {
+                                                    "type": "td",
+                                                    "class": "text-center",
+                                                    "content": {
+                                                        "type": "span",
+                                                        "class": "text-success",
+                                                        "aria-label": "Aktívny",
+                                                        "content": "✓"
+                                                    }
+                                                },
+                                                {
+                                                    "type": "td",
+                                                    "class": "text-end",
+                                                    "content": {
+                                                        "type": "button",
+                                                        "class": "btn btn-outline-secondary btn-sm",
+                                                        "attributes": {
+                                                            "type": "button"
+                                                        },
+                                                        "content": "Upraviť"
+                                                    }
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "type": "tr",
+                                            "content": [
+                                                {
+                                                    "type": "td",
+                                                    "class": "text-end",
+                                                    "content": "2"
+                                                },
+                                                {
+                                                    "type": "td",
+                                                    "content": "Kontakt"
+                                                },
+                                                {
+                                                    "type": "td",
+                                                    "class": "text-center",
+                                                    "content": {
+                                                        "type": "span",
+                                                        "class": "text-success",
+                                                        "aria-label": "Aktívny",
+                                                        "content": "✓"
+                                                    }
+                                                },
+                                                {
+                                                    "type": "td",
+                                                    "class": "text-end",
+                                                    "content": {
+                                                        "type": "button",
+                                                        "class": "btn btn-outline-secondary btn-sm",
+                                                        "attributes": {
+                                                            "type": "button"
+                                                        },
+                                                        "content": "Upraviť"
+                                                    }
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "type": "tr",
+                                            "content": [
+                                                {
+                                                    "type": "td",
+                                                    "class": "text-end",
+                                                    "content": "3"
+                                                },
+                                                {
+                                                    "type": "td",
+                                                    "content": "Pracovný návrh"
+                                                },
+                                                {
+                                                    "type": "td",
+                                                    "class": "text-center",
+                                                    "content": {
+                                                        "type": "span",
+                                                        "class": "text-muted",
+                                                        "aria-label": "Neaktívny",
+                                                        "content": "—"
+                                                    }
+                                                },
+                                                {
+                                                    "type": "td",
+                                                    "class": "text-end",
+                                                    "content": {
+                                                        "type": "button",
+                                                        "class": "btn btn-outline-secondary btn-sm",
+                                                        "attributes": {
+                                                            "type": "button"
+                                                        },
+                                                        "content": "Upraviť"
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "type": "div",
+                        "class": "d-flex flex-wrap align-items-center justify-content-between gap-2 mt-3",
+                        "content": [
+                            {
+                                "type": "small",
+                                "class": "text-muted",
+                                "content": "Ukážkové údaje · 3 záznamy"
+                            },
+                            {
+                                "type": "nav",
+                                "aria-label": "Stránkovanie",
+                                "content": {
+                                    "type": "ul",
+                                    "class": "pagination pagination-sm mb-0",
+                                    "content": [
+                                        {
+                                            "type": "li",
+                                            "class": "page-item disabled",
+                                            "content": {
+                                                "type": "span",
+                                                "class": "page-link",
+                                                "content": "‹"
+                                            }
+                                        },
+                                        {
+                                            "type": "li",
+                                            "class": "page-item active",
+                                            "content": {
+                                                "type": "span",
+                                                "class": "page-link",
+                                                "aria-current": "page",
+                                                "content": "1"
+                                            }
+                                        },
+                                        {
+                                            "type": "li",
+                                            "class": "page-item disabled",
+                                            "content": {
+                                                "type": "span",
+                                                "class": "page-link",
+                                                "content": "›"
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    },
+    "css": "",
+    "js": ""
+}

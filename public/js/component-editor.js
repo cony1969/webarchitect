@@ -34,11 +34,12 @@
             for (const [key, attr] of Object.entries(attributes)) {
                 if (/^(class|id|style|title|role|placeholder|value|name|alt|colspan|rowspan|width|height|aria-[a-z-]+|data-[a-z-]+)$/.test(key) && ['string', 'number', 'boolean'].includes(typeof attr)) element.setAttribute(key, String(attr));
             }
-            if (options.nestedContainers && element.className.split(/\s+/).some(name => /^container(?:-(?:fluid|sm|md|lg|xl|xxl))?$/.test(name))) {
-                const containerClass = element.className.split(/\s+/).find(name => /^container(?:-(?:fluid|sm|md|lg|xl|xxl))?$/.test(name));
-                element.classList.add('wa-preview-container');
-                const label = (depth ? 'Vnorený kontajner' : 'Kontajner') + ' · .' + containerClass;
-                const placementId = element.getAttribute('data-wa-layout-node');
+            const placementId = element.getAttribute('data-wa-layout-node');
+            const containerClass = element.className.split(/\s+/).find(name => /^container(?:-(?:fluid|sm|md|lg|xl|xxl))?$/.test(name));
+            // Internal markup belongs to its component editor; layout guides mark placements only.
+            if (options.nestedContainers && placementId) {
+                element.classList.add('wa-preview-selectable', containerClass ? 'wa-preview-container' : 'wa-preview-region');
+                const label = containerClass ? (depth ? 'Vnorený kontajner' : 'Kontajner') + ' · .' + containerClass : (element.getAttribute('data-wa-layout-label') || type);
                 const caption = document.createElement(options.selectionToken && placementId ? 'button' : 'span');
                 caption.className = 'wa-preview-caption'; caption.textContent = label;
                 if (caption.tagName === 'BUTTON') {
@@ -59,10 +60,10 @@
         for (const object of objects) root.append(render(object));
         for (const child of root.children) {
             child.classList.add('wa-preview-root');
-            if (!child.classList.contains('wa-preview-container')) child.setAttribute('data-wa-label', child.classList.contains('container') ? 'Kontajner · .container' : child.classList.contains('container-fluid') ? 'Kontajner · .container-fluid' : child.tagName.toLowerCase());
+            if (!child.classList.contains('wa-preview-selectable')) child.setAttribute('data-wa-label', child.classList.contains('container') ? 'Kontajner · .container' : child.classList.contains('container-fluid') ? 'Kontajner · .container-fluid' : child.tagName.toLowerCase());
         }
         const css = (String(source.css || '') + '\n' + pseudoCss.join('\n')).replaceAll('<', '\\3c ');
-        const guides = options.nestedContainers ? '.wa-preview-container{position:relative;min-height:120px;outline:2px dashed #0a969b;outline-offset:-2px;padding:30px 20px 20px!important;margin-top:12px;margin-bottom:12px}.wa-preview-container>.wa-preview-caption{position:absolute!important;top:0!important;left:12px!important;transform:translateY(-50%);display:block!important;width:auto!important;max-width:calc(100% - 24px);min-height:0!important;height:auto!important;margin:0!important;border:0!important;border-radius:3px!important;color:#08777c!important;background:#fff!important;padding:2px 7px!important;font:12px system-ui!important;line-height:18px!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;z-index:1}.wa-preview-container>button.wa-preview-caption{cursor:pointer}.wa-preview-container>.wa-preview-caption:focus-visible{outline:2px solid #08777c;outline-offset:2px}.wa-preview-container.wa-preview-selected{outline:2px solid #08777c}.wa-preview-container.wa-preview-selected>.wa-preview-caption{background:#08777c!important;color:#fff!important}.wa-preview-root.wa-preview-container{min-height:200px}.wa-layout-preview-page{height:calc(100vh - 84px);min-height:200px}.wa-preview-container.h-100{min-height:0;margin-top:0;margin-bottom:0}' : '';
+        const guides = options.nestedContainers ? '.wa-preview-region{position:relative;outline:1px dashed #0a969b;outline-offset:-1px}.wa-preview-container{position:relative;min-height:120px;outline:2px dashed #0a969b;outline-offset:-2px;padding:30px 20px 20px!important;margin-top:12px;margin-bottom:12px}.wa-preview-selectable>.wa-preview-caption{position:absolute!important;top:0!important;left:12px!important;transform:translateY(-50%);display:block!important;width:auto!important;max-width:calc(100% - 24px);min-height:0!important;height:auto!important;margin:0!important;border:0!important;border-radius:3px!important;color:#08777c!important;background:#fff!important;padding:2px 7px!important;font:12px system-ui!important;line-height:18px!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;z-index:1}.wa-preview-selectable>button.wa-preview-caption{cursor:pointer}.wa-preview-selectable>.wa-preview-caption:focus-visible{outline:2px solid #08777c;outline-offset:2px}.wa-preview-selectable.wa-preview-selected{outline:2px solid #08777c}.wa-preview-selectable.wa-preview-selected>.wa-preview-caption{background:#08777c!important;color:#fff!important}.wa-preview-root.wa-preview-container{min-height:200px}.wa-layout-preview-page{height:calc(100vh - 84px);min-height:200px}.wa-preview-container.h-100{min-height:0;margin-top:0;margin-bottom:0}' : '';
         const interactive = options.selectionToken && typeof window.waLayoutPreviewScript === 'string';
         const nonce = interactive ? crypto.randomUUID() : '';
         const scriptPolicy = interactive ? "'nonce-" + nonce + "'" : "'none'";

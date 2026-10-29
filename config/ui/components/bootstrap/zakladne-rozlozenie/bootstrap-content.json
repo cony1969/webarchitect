@@ -1,0 +1,39 @@
+{
+    "name": "Obsah stránky (Content)",
+    "slug": "bootstrap-content",
+    "tab": "bootstrap",
+    "framework": "bootstrap-5",
+    "description": "Oblasť hlavného obsahu so základným nadpisom. Ďalší obsah sa vkladá do koreňovej oblasti.",
+    "objects": {
+        "type": "main",
+        "class": "card border shadow-sm p-4 wa-bs-content",
+        "content": [
+            {
+                "type": "span",
+                "class": "text-uppercase text-muted small fw-bold",
+                "content": "Hlavný obsah"
+            },
+            {
+                "type": "h1",
+                "class": "h4 mt-2 mb-3",
+                "content": "Obsah stránky"
+            },
+            {
+                "type": "p",
+                "class": "text-muted mb-3",
+                "content": "Sem vložte komponenty a sekcie konkrétnej stránky."
+            },
+            {
+                "type": "div",
+                "class": "rounded border p-3",
+                "content": {
+                    "type": "p",
+                    "class": "mb-0 small text-muted",
+                    "content": "Priestor pre vlastný obsah"
+                }
+            }
+        ]
+    },
+    "css": ".wa-bs-content{min-height:220px}",
+    "js": ""
+}

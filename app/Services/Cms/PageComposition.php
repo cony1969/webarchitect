@@ -104,6 +104,7 @@ class PageComposition
                     // Preview-only identity refers to this placement, never to the shared definition.
                     if ($forEditor && count($expanded) === 1 && is_array($expanded[0])) {
                         $expanded[0]['attributes']['data-wa-layout-node'] = $node['id'];
+                        $expanded[0]['attributes']['data-wa-layout-label'] = $component->name;
                     }
 
                     return $expanded;

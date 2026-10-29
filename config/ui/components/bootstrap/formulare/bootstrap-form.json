@@ -1,0 +1,143 @@
+{
+    "name": "Formulár (Form)",
+    "slug": "bootstrap-form",
+    "tab": "bootstrap",
+    "framework": "bootstrap-5",
+    "description": "Základný responzívny formulár. Spracovanie formulára sa pripája samostatne.",
+    "objects": {
+        "type": "section",
+        "class": "card shadow-sm wa-bs-form",
+        "content": [
+            {
+                "type": "div",
+                "class": "card-header",
+                "content": [
+                    {
+                        "type": "h2",
+                        "class": "h5 mb-0",
+                        "content": "Nový záznam"
+                    }
+                ]
+            },
+            {
+                "type": "div",
+                "class": "card-body",
+                "content": {
+                    "type": "form",
+                    "attributes": {
+                        "method": "post"
+                    },
+                    "content": [
+                        {
+                            "type": "p",
+                            "class": "text-muted small mb-3",
+                            "content": "Základný formulár pripravený na doplnenie vlastných polí."
+                        },
+                        {
+                            "type": "div",
+                            "class": "row g-3",
+                            "content": [
+                                {
+                                    "type": "div",
+                                    "class": "col-12 col-md-6",
+                                    "content": {
+                                        "type": "label",
+                                        "class": "form-label mb-0 w-100",
+                                        "content": [
+                                            {
+                                                "type": "span",
+                                                "class": "d-block mb-1",
+                                                "content": "Názov"
+                                            },
+                                            {
+                                                "type": "input",
+                                                "class": "form-control",
+                                                "name": "name",
+                                                "placeholder": "Názov záznamu",
+                                                "attributes": {
+                                                    "type": "text",
+                                                    "required": true
+                                                }
+                                            }
+                                        ]
+                                    }
+                                },
+                                {
+                                    "type": "div",
+                                    "class": "col-12 col-md-6",
+                                    "content": {
+                                        "type": "label",
+                                        "class": "form-label mb-0 w-100",
+                                        "content": [
+                                            {
+                                                "type": "span",
+                                                "class": "d-block mb-1",
+                                                "content": "E-mail"
+                                            },
+                                            {
+                                                "type": "input",
+                                                "class": "form-control",
+                                                "name": "email",
+                                                "placeholder": "meno@domena.sk",
+                                                "attributes": {
+                                                    "type": "email"
+                                                }
+                                            }
+                                        ]
+                                    }
+                                },
+                                {
+                                    "type": "div",
+                                    "class": "col-12",
+                                    "content": {
+                                        "type": "label",
+                                        "class": "form-label mb-0 w-100",
+                                        "content": [
+                                            {
+                                                "type": "span",
+                                                "class": "d-block mb-1",
+                                                "content": "Popis"
+                                            },
+                                            {
+                                                "type": "textarea",
+                                                "class": "form-control",
+                                                "name": "description",
+                                                "rows": 3,
+                                                "placeholder": "Doplňujúce informácie",
+                                                "content": ""
+                                            }
+                                        ]
+                                    }
+                                },
+                                {
+                                    "type": "div",
+                                    "class": "col-12 d-flex justify-content-end gap-2",
+                                    "content": [
+                                        {
+                                            "type": "button",
+                                            "class": "btn btn-outline-secondary",
+                                            "attributes": {
+                                                "type": "button"
+                                            },
+                                            "content": "Zrušiť"
+                                        },
+                                        {
+                                            "type": "button",
+                                            "class": "btn btn-primary",
+                                            "attributes": {
+                                                "type": "submit"
+                                            },
+                                            "content": "Uložiť"
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "css": "",
+    "js": ""
+}

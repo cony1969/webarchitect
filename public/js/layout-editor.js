@@ -7,7 +7,7 @@
     window.waLayoutPreviewScript = `(() => {
         const token = document.body.dataset.waPreviewToken;
         const select = nodeId => {
-            for (const container of document.querySelectorAll('.wa-preview-container')) {
+            for (const container of document.querySelectorAll('.wa-preview-selectable')) {
                 const selected = container.dataset.waLayoutNode === nodeId;
                 container.classList.toggle('wa-preview-selected', selected);
                 const caption = [...container.children].find(child => child.classList.contains('wa-preview-caption'));
@@ -28,6 +28,7 @@
     document.addEventListener('alpine:init', () => {
         Alpine.store('layoutEditor', {
             drafts: {}, activeKey: null, catalog: { layouts: [], components: [] }, catalogLoaded: false, catalogPending: null, catalogError: '',
+            get containers() { return this.catalog.components.filter(component => component.is_container !== false); },
             get current() { return this.activeKey ? this.drafts[this.activeKey] || null : null; },
             ensure(key, tab = {}) {
                 if (!this.drafts[key]) this.drafts[key] = { id: tab.layoutId || null, form: { name: tab.title || 'Nový layout', document: empty() }, revision: 1,
@@ -62,9 +63,10 @@
                 if (!this.catalogLoaded) await this.loadCatalog();
                 if (this.drafts[key] !== state) return;
                 // Reopen older saved cards that only stored a title.
-                if (!state.id && !tab.layoutNew && !this.dirty(key)) {
-                    const match = this.catalog.layouts.find(layout => layout.name === tab.title);
-                    if (match) { state.id = match.id; state.loaded = false; }
+                if (!tab.layoutNew && !this.dirty(key) && (!state.loaded || !state.id)) {
+                    const title = tab.title === 'tobbar + sidebar' ? 'topbar + sidebar' : tab.title;
+                    const match = this.catalog.layouts.find(layout => layout.name === title);
+                    if (match && state.id !== match.id) { state.id = match.id; state.loaded = false; }
                 }
                 if (state.id && !state.loaded && !state.loading) await this.load(key);
             },
@@ -118,12 +120,12 @@
             rows(key) {
                 const state = this.drafts[key], rows = [];
                 const walk = (nodes, depth = 0) => { for (const node of nodes) { if (typeof node === 'string') continue;
-                    rows.push({ id: node.id, depth, label: node.type === 'cms-component' ? (this.catalog.components.find(c => c.id === node.attributes.component_id)?.name || 'Komponent') : node.type === 'p' ? 'Text' : node.type }); walk(node.children, depth + 1); } };
+                    rows.push({ id: node.id, depth, label: node.attributes.editor_label || (node.type === 'cms-component' ? (this.catalog.components.find(c => c.id === node.attributes.component_id)?.name || 'Komponent') : node.type === 'p' ? 'Text' : node.type) }); walk(node.children, depth + 1); } };
                 if (state) walk(state.form.document.nodes); return rows;
             },
             addContainer(key, inside = false) {
                 const state = this.drafts[key]; if (!state?.loaded || state.loading || state.saving) return;
-                const source = this.catalog.components.find(c => c.id === state.componentId) || this.catalog.components[0];
+                const source = this.containers.find(c => c.id === state.componentId) || this.containers[0];
                 if (!source) { state.error = 'V knižnici zatiaľ nie je dostupný Kontajner.'; return; }
                 const parent = inside ? this.selected(key) : null;
                 if (inside && parent?.type !== 'cms-component') return;
@@ -139,6 +141,11 @@
             text(key) { return this.selected(key)?.children.filter(child => typeof child === 'string').join('') || ''; },
             setText(key, value) { const node = this.selected(key); if (node?.type !== 'p') return; node.children = [value]; this.changed(key); },
             toggleWidth(key) { const state = this.drafts[key], node = this.selected(key); if (state?.saving || node?.type !== 'cms-component') return; node.attributes.full_width = !node.attributes.full_width; this.changed(key); },
+            openComponent(key) {
+                const node = this.selected(key);
+                const component = this.catalog.components.find(item => item.id === node?.attributes.component_id);
+                if (component) emit('add-new-tab', { title: component.name, mode: 'component', componentId: component.id, componentPath: component.item_path || 'cms/' + component.id + '.json' });
+            },
             toggleHeight(key) {
                 const state = this.drafts[key], node = this.selected(key);
                 if (!state?.loaded || state.loading || state.saving || node?.type !== 'cms-component') return;

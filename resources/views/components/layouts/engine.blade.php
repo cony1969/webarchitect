@@ -43,7 +43,7 @@
     <link rel="stylesheet" href="{{ asset('assets/libs/spectrum-colorpicker2/spectrum.min.css') }}">
     <script defer src="{{ asset('assets/libs/spectrum-colorpicker2/spectrum.min.js') }}"></script>
     <script defer src="{{ asset('js/color-picker.js') }}?v=20261028-color-button3"></script>
-    <script defer src="{{ asset('js/project-editor.js') }}?v=20261029-layout-height1"></script>
+    <script defer src="{{ asset('js/project-editor.js') }}?v=20261029-starters3"></script>
     <script defer src="{{ asset('js/site-import.js') }}?v=20261028-css-select2"></script>
     <script defer src="{{ asset('assets/libs/ace/ace.js') }}"></script>
     <script defer src="{{ asset('assets/libs/ace/mode-json.js') }}"></script>
@@ -52,8 +52,8 @@
     <script defer src="{{ asset('js/component-controls.js') }}?v=20261029-session1"></script>
     <script defer src="{{ asset('js/box-model.js') }}?v=20261028-pseudo2"></script>
     <script defer src="{{ asset('js/alignment-controls.js') }}?v=20261028-pseudo2"></script>
-    <script defer src="{{ asset('js/component-editor.js') }}?v=20261029-layout-height1"></script>
-    <script defer src="{{ asset('js/layout-editor.js') }}?v=20261029-layout-height1"></script>
+    <script defer src="{{ asset('js/component-editor.js') }}?v=20261029-starters3"></script>
+    <script defer src="{{ asset('js/layout-editor.js') }}?v=20261029-starters3"></script>
     <script defer src="{{ asset('js/page-preview.js') }}?v=20261028-css-select2"></script>
     <!-- Stabilné, oficiálne načítanie AlpineJS a HTMX -->
     <script defer src="{{ asset('js/alpine.min.js') }}"></script>
@@ -64,7 +64,7 @@
 
     <x-ui.styles />
     <x-ui.theme />
-    <link rel="stylesheet" href="{{ asset('css/project-editor.css') }}?v=20261029-layout-height1">
+    <link rel="stylesheet" href="{{ asset('css/project-editor.css') }}?v=20261029-starters3">
 </head>
 <body>
     <div class="wa-project-message is-error m-2" role="alert" x-data="{ message: '' }" @wa-session-tabs-status.window="message = $event.detail.message" x-show="message" x-cloak>

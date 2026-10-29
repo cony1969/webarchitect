@@ -125,3 +125,24 @@ test('full height toggles only the selected instance and returns an older layout
     store.current.saving=true; store.toggleHeight('layout');
     assert.equal(child.attributes.full_height,undefined);
 });
+
+test('new non-container components cannot become the default source for Add Container and open in their own editor',async()=>{
+    const {store,events}=editor();
+    store.catalog.components.unshift({id:'navbar',name:'Horná lišta',is_container:false,content_target:'root',item_path:'bootstrap/navbar.json'});
+    await store.activate({id:'layout',mode:'layout',layoutNew:true,title:'Layout'});
+    store.current.componentId='navbar';store.addContainer('layout');
+    assert.equal(store.selected('layout').attributes.component_id,'container');
+    const node={id:'navigation',type:'cms-component',attributes:{component_id:'navbar',content_target:'root'},children:[]};
+    store.current.form.document.nodes.push(node);store.select('layout','navigation');store.openComponent('layout');
+    assert.equal(store.rows('layout').at(-1).label,'Horná lišta');
+    assert.deepEqual(plain(events.at(-1).detail),{title:'Horná lišta',mode:'component',componentId:'navbar',componentPath:'bootstrap/navbar.json'});
+});
+
+test('older combined-layout cards reopen the populated personal layout after its name is corrected',async()=>{
+    const {store}=editor();
+    store.catalog.layouts=[{id:'personal-combined',name:'topbar + sidebar'}];
+    const loaded=[];store.load=async key=>loaded.push(store.drafts[key].id);
+    await store.activate({id:'old-card',mode:'layout',title:'tobbar + sidebar',layoutId:'shared-empty'});
+    assert.deepEqual(loaded,['personal-combined']);
+    assert.equal(store.current.id,'personal-combined');
+});

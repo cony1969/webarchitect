@@ -1,0 +1,52 @@
+{
+    "name": "Bočný panel (Sidebar)",
+    "slug": "bootstrap-sidebar",
+    "tab": "bootstrap",
+    "framework": "bootstrap-5",
+    "description": "Bočná navigácia. Na menších obrazovkách sa rozloženie zloží nad hlavný obsah.",
+    "objects": {
+        "type": "aside",
+        "class": "wa-bs-sidebar rounded p-3 h-100",
+        "content": [
+            {
+                "type": "h2",
+                "class": "h6 text-uppercase mb-3",
+                "content": "Navigácia"
+            },
+            {
+                "type": "nav",
+                "class": "nav flex-column gap-1",
+                "aria-label": "Bočná navigácia",
+                "content": [
+                    {
+                        "type": "a",
+                        "class": "nav-link active rounded",
+                        "href": "#",
+                        "aria-current": "page",
+                        "content": "Prehľad"
+                    },
+                    {
+                        "type": "a",
+                        "class": "nav-link rounded",
+                        "href": "#",
+                        "content": "Stránky"
+                    },
+                    {
+                        "type": "a",
+                        "class": "nav-link rounded",
+                        "href": "#",
+                        "content": "Komponenty"
+                    },
+                    {
+                        "type": "a",
+                        "class": "nav-link rounded",
+                        "href": "#",
+                        "content": "Nastavenia"
+                    }
+                ]
+            }
+        ]
+    },
+    "css": ".wa-bs-sidebar{background:#282b2c;color:#fff;min-height:220px}.wa-bs-sidebar .nav-link{color:#d9e5e5;padding:.5rem .75rem}.wa-bs-sidebar .nav-link.active{background:#0b777c;color:#fff}.wa-bs-sidebar .nav-link:hover{background:#363c3d;color:#fff}",
+    "js": ""
+}
