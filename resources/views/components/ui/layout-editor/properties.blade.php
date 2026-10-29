@@ -9,6 +9,8 @@
             <template x-if="node?.type === 'cms-component'"><div>
                 <p x-text="store.catalog.components.find(c => c.id === node.attributes.component_id)?.name || 'Komponent'"></p>
                 <button type="button" class="btn wa-project-secondary w-100" :aria-pressed="!!node.attributes.full_width" :class="{ 'wa-layout-enabled': node.attributes.full_width }" @click="store.toggleWidth(store.activeKey)">↔ Roztiahnuť na celú šírku rodiča</button>
+                <button type="button" class="btn wa-project-secondary w-100 mt-2" :aria-pressed="!!node.attributes.full_height" :class="{ 'wa-layout-enabled': node.attributes.full_height }" @click="store.toggleHeight(store.activeKey)">↕ Roztiahnuť na celú výšku rodiča</button>
+                <p class="wa-project-muted mt-2">Celá výška sa prejaví, ak má rodič určenú výšku.</p>
                 <p class="wa-project-muted mt-2">Nastavenie aj vnorený obsah platia iba pre tento kontajner v layoute.</p>
             </div></template>
             <template x-if="node?.type === 'p'"><label class="wa-project-field">Text<textarea rows="4" :value="store.text(store.activeKey)" @input="store.setText(store.activeKey, $event.target.value)"></textarea></label></template>

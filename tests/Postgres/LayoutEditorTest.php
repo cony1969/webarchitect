@@ -109,3 +109,27 @@ it('maps repeated and nested preview containers to placement ids without saving 
     $rendered = app(PageComposition::class)->resolve($this->user, $document, null);
     expect(json_encode($rendered))->not->toContain('data-wa-layout-node');
 });
+
+it('persists full height per instance while restoring original sizing when disabled', function () {
+    $original = $this->container->document;
+    $original['nodes'][0]['attributes']['class'] = 'container h-50 py-3';
+    $this->container->update(['document' => $original]);
+    $inner = ($this->placement)();
+    $inner['attributes']['full_height'] = true;
+    $outer = ($this->placement)([$inner], true);
+    $outer['attributes']['full_height'] = true;
+    $document = DocumentData::empty();
+    $document['nodes'][] = $outer;
+    $response = $this->postJson('/api/cms/layouts', ['name' => 'Celá výška', 'document' => $document])->assertOk()
+        ->assertJsonPath('data.preview.objects.class', 'container-fluid py-3 h-100')
+        ->assertJsonPath('data.preview.objects.content.0.class', 'container py-3 h-100');
+    $id = $response->json('data.id');
+    $this->getJson('/api/cms/layouts/'.$id)->assertOk()->assertJsonPath('data.document.nodes.0.attributes.full_height', true);
+    unset($document['nodes'][0]['attributes']['full_height']);
+    $this->putJson('/api/cms/layouts/'.$id, ['name' => 'Celá výška', 'document' => $document, 'revision' => 1])->assertOk()
+        ->assertJsonPath('data.preview.objects.class', 'container-fluid h-50 py-3')
+        ->assertJsonPath('data.preview.objects.content.0.class', 'container py-3 h-100');
+    expect($this->container->fresh()->document)->toEqual($original);
+    $document['nodes'][0]['attributes']['full_height'] = '100%';
+    $this->postJson('/api/cms/layouts/preview', ['document' => $document])->assertUnprocessable();
+});

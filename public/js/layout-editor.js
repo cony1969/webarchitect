@@ -139,6 +139,13 @@
             text(key) { return this.selected(key)?.children.filter(child => typeof child === 'string').join('') || ''; },
             setText(key, value) { const node = this.selected(key); if (node?.type !== 'p') return; node.children = [value]; this.changed(key); },
             toggleWidth(key) { const state = this.drafts[key], node = this.selected(key); if (state?.saving || node?.type !== 'cms-component') return; node.attributes.full_width = !node.attributes.full_width; this.changed(key); },
+            toggleHeight(key) {
+                const state = this.drafts[key], node = this.selected(key);
+                if (!state?.loaded || state.loading || state.saving || node?.type !== 'cms-component') return;
+                if (node.attributes.full_height) delete node.attributes.full_height;
+                else node.attributes.full_height = true;
+                this.changed(key);
+            },
             remove(key) {
                 const state = this.drafts[key]; if (!state || state.saving) return;
                 const id = state.selectedId;

@@ -109,3 +109,19 @@ test('sandbox bridge synchronizes outline and caption state and only accepts the
     handlers.message({source:{},data:message}); assert.equal(outer.classList['wa-preview-selected'],true);
     handlers.message({source:parent,data:message}); assert.equal(inner.classList['wa-preview-selected'],true); assert.equal(outer.classList['wa-preview-selected'],false); assert.equal(caption['aria-pressed'],'true');
 });
+
+test('full height toggles only the selected instance and returns an older layout to a clean state',async()=>{
+    const {store}=editor();
+    await store.activate({id:'layout',mode:'layout',layoutNew:true,title:'Layout'});
+    store.addContainer('layout'); const parent=store.selected('layout');
+    store.addContainer('layout',true); const child=store.selected('layout');
+    const before=JSON.stringify(store.current.form);
+    store.current.baseline=before;
+    store.toggleHeight('layout');
+    assert.equal(child.attributes.full_height,true); assert.equal(parent.attributes.full_height,undefined);
+    assert.equal(store.dirty('layout'),true);
+    store.toggleHeight('layout');
+    assert.equal(JSON.stringify(store.current.form),before); assert.equal(store.dirty('layout'),false);
+    store.current.saving=true; store.toggleHeight('layout');
+    assert.equal(child.attributes.full_height,undefined);
+});

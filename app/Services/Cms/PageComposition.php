@@ -57,11 +57,12 @@ class PageComposition
                     $target = $node['attributes']['content_target'] ?? null;
                     $targetId = $target === 'root' && count($template['nodes']) === 1 ? ($template['nodes'][0]['id'] ?? null) : null;
                     $fullWidth = $node['attributes']['full_width'] ?? false;
-                    if (! is_bool($fullWidth) || ($target !== null && $target !== 'root')) {
+                    $fullHeight = $node['attributes']['full_height'] ?? false;
+                    if (! is_bool($fullWidth) || ! is_bool($fullHeight) || ($target !== null && $target !== 'root')) {
                         throw ValidationException::withMessages(['document' => 'Neplatné nastavenie inštancie komponentu.']);
                     }
                     $targetFound = false;
-                    $prepare = function (array &$nodes) use (&$prepare, $targetId, $fullWidth, &$targetFound) {
+                    $prepare = function (array &$nodes) use (&$prepare, $targetId, $fullWidth, $fullHeight, &$targetFound) {
                         foreach ($nodes as &$item) {
                             if (! is_array($item)) {
                                 continue;
@@ -72,6 +73,12 @@ class PageComposition
                                     throw ValidationException::withMessages(['document' => 'Tento prvok nemôže prijímať vnorený obsah.']);
                                 }
                                 $targetFound = true;
+                                if ($fullHeight) {
+                                    // Height belongs to this instance; disabling restores the definition unchanged.
+                                    $class = $item['attributes']['class'] ?? '';
+                                    $class = preg_replace('/(?<!\S)(?:h-(?:25|50|75|100|auto)|vh-100)(?!\S)/', '', $class);
+                                    $item['attributes']['class'] = trim(preg_replace('/\s+/', ' ', $class).' h-100');
+                                }
                                 if ($fullWidth) {
                                     $class = $item['attributes']['class'] ?? '';
                                     if (! preg_match('/(?:^|\s)container(?:-(?:fluid|sm|md|lg|xl|xxl))?(?:\s|$)/', $class)) {
@@ -84,7 +91,7 @@ class PageComposition
                         }
                     };
                     $prepare($template['nodes']);
-                    if (($target !== null || $node['children'] || $fullWidth) && ! $targetFound) {
+                    if (($target !== null || $node['children'] || $fullWidth || $fullHeight) && ! $targetFound) {
                         throw ValidationException::withMessages(['document' => 'Cieľ vnoreného obsahu už v komponente neexistuje. Vyberte aktuálny kontajner.']);
                     }
                     $content = [];
