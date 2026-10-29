@@ -121,15 +121,31 @@ it('persists full height per instance while restoring original sizing when disab
     $document = DocumentData::empty();
     $document['nodes'][] = $outer;
     $response = $this->postJson('/api/cms/layouts', ['name' => 'Celá výška', 'document' => $document])->assertOk()
-        ->assertJsonPath('data.preview.objects.class', 'container-fluid py-3 h-100')
-        ->assertJsonPath('data.preview.objects.content.0.class', 'container py-3 h-100');
+        ->assertJsonPath('data.preview.objects.class', 'container-fluid py-3 h-100 wa-fill-height wa-height-parent')
+        ->assertJsonPath('data.preview.objects.content.0.class', 'container py-3 h-100 wa-fill-height');
     $id = $response->json('data.id');
     $this->getJson('/api/cms/layouts/'.$id)->assertOk()->assertJsonPath('data.document.nodes.0.attributes.full_height', true);
     unset($document['nodes'][0]['attributes']['full_height']);
     $this->putJson('/api/cms/layouts/'.$id, ['name' => 'Celá výška', 'document' => $document, 'revision' => 1])->assertOk()
-        ->assertJsonPath('data.preview.objects.class', 'container-fluid h-50 py-3')
-        ->assertJsonPath('data.preview.objects.content.0.class', 'container py-3 h-100');
+        ->assertJsonPath('data.preview.objects.class', 'container-fluid h-50 py-3 wa-height-parent')
+        ->assertJsonPath('data.preview.objects.content.0.class', 'container py-3 h-100 wa-fill-height');
     expect($this->container->fresh()->document)->toEqual($original);
     $document['nodes'][0]['attributes']['full_height'] = '100%';
     $this->postJson('/api/cms/layouts/preview', ['document' => $document])->assertUnprocessable();
+});
+
+it('provides a flex height context for an automatic-height parent and removes it when disabled', function () {
+    $inner = ($this->placement)();
+    $inner['attributes']['full_height'] = true;
+    $document = DocumentData::empty();
+    $document['nodes'][] = ($this->placement)([$inner]);
+    $result = $this->postJson('/api/cms/layouts/preview', ['document' => $document])->assertOk()
+        ->assertJsonPath('data.preview.objects.class', 'container wa-height-parent')
+        ->assertJsonPath('data.preview.objects.content.0.class', 'container h-100 wa-fill-height');
+    expect($result->json('data.preview.css'))->toContain('.wa-height-parent{display:flex!important;flex-direction:column!important}', 'flex:1 1 0!important;height:auto!important');
+    unset($document['nodes'][0]['children'][0]['attributes']['full_height']);
+    $result = $this->postJson('/api/cms/layouts/preview', ['document' => $document])->assertOk()
+        ->assertJsonPath('data.preview.objects.class', 'container')->assertJsonPath('data.preview.objects.content.0.class', 'container');
+    expect($result->json('data.preview.css'))->not->toContain('wa-height-parent');
+    expect($this->container->fresh()->document['nodes'][0]['attributes']['class'])->toBe('container');
 });

@@ -77,7 +77,7 @@ class PageComposition
                                     // Height belongs to this instance; disabling restores the definition unchanged.
                                     $class = $item['attributes']['class'] ?? '';
                                     $class = preg_replace('/(?<!\S)(?:h-(?:25|50|75|100|auto)|vh-100)(?!\S)/', '', $class);
-                                    $item['attributes']['class'] = trim(preg_replace('/\s+/', ' ', $class).' h-100');
+                                    $item['attributes']['class'] = trim(preg_replace('/\s+/', ' ', $class).' h-100 wa-fill-height');
                                 }
                                 if ($fullWidth) {
                                     $class = $item['attributes']['class'] ?? '';
@@ -118,6 +118,9 @@ class PageComposition
                     array_push($children, ...$slotContent);
                 }
                 $node['children'] = $children;
+                if (array_any($children, fn ($child) => is_array($child) && preg_match('/(?:^|\s)wa-fill-height(?:\s|$)/', $child['attributes']['class'] ?? ''))) {
+                    $node['attributes']['class'] = trim(($node['attributes']['class'] ?? '').' wa-height-parent');
+                }
 
                 return [$node];
             };
@@ -129,6 +132,22 @@ class PageComposition
             return $nodes;
         };
         $nodes = $expand($document);
+        $heightCss = '.wa-height-parent{display:flex!important;flex-direction:column!important}.wa-height-parent>.wa-fill-height{flex:1 1 0!important;height:auto!important;min-height:0}';
+        $hasHeight = function (array $nodes) use (&$hasHeight): bool {
+            foreach ($nodes as $node) {
+                if (! is_array($node)) {
+                    continue;
+                }
+                if (preg_match('/(?:^|\s)wa-fill-height(?:\s|$)/', $node['attributes']['class'] ?? '') || $hasHeight($node['children'])) {
+                    return true;
+                }
+            }
+
+            return false;
+        };
+        if ($hasHeight($nodes)) {
+            $css[hash('sha256', $heightCss)] = $heightCss;
+        }
         $resolved = DocumentData::validate(['schema_version' => 1, 'nodes' => $nodes, 'css' => implode("\n", array_unique($css)), 'js' => implode("\n", array_unique($js))]);
 
         return ['preview' => ['objects' => DocumentData::toLegacy($resolved), 'css' => $resolved['css'], 'js' => $resolved['js']], 'components' => array_values($used)];
