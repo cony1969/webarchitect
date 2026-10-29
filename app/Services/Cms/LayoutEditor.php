@@ -37,7 +37,7 @@ class LayoutEditor
 
     public function data(User $user, Section $layout): array
     {
-        return array_merge($layout->only(['id', 'legacy_id', 'name', 'revision', 'document']), ['shared' => $layout->user_id === null], $this->composition->resolve($user, $layout->document, null));
+        return array_merge($layout->only(['id', 'legacy_id', 'name', 'revision', 'document']), ['shared' => $layout->user_id === null], $this->composition->resolve($user, $layout->document, null, true));
     }
 
     public function save(User $user, array $data, ?string $id = null): Section

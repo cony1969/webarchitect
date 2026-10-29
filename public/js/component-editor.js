@@ -36,7 +36,18 @@
             if (options.nestedContainers && element.className.split(/\s+/).some(name => /^container(?:-(?:fluid|sm|md|lg|xl|xxl))?$/.test(name))) {
                 const containerClass = element.className.split(/\s+/).find(name => /^container(?:-(?:fluid|sm|md|lg|xl|xxl))?$/.test(name));
                 element.classList.add('wa-preview-container');
-                element.setAttribute('data-wa-label', (depth ? 'Vnorený kontajner' : 'Kontajner') + ' · .' + containerClass);
+                const label = (depth ? 'Vnorený kontajner' : 'Kontajner') + ' · .' + containerClass;
+                const placementId = element.getAttribute('data-wa-layout-node');
+                const caption = document.createElement(options.selectionToken && placementId ? 'button' : 'span');
+                caption.className = 'wa-preview-caption'; caption.textContent = label;
+                if (caption.tagName === 'BUTTON') {
+                    caption.setAttribute('type', 'button');
+                    caption.setAttribute('data-wa-select-node', placementId);
+                    caption.setAttribute('aria-label', 'Vybrať ' + label);
+                    caption.setAttribute('aria-pressed', String(placementId === options.selectedId));
+                }
+                if (placementId && placementId === options.selectedId) element.classList.add('wa-preview-selected');
+                element.append(caption);
             }
             if (['input', 'button', 'select', 'textarea'].includes(type)) element.setAttribute('disabled', '');
             const children = value.content === undefined ? [] : (Array.isArray(value.content) ? value.content : [value.content]);
@@ -50,9 +61,15 @@
             if (!child.classList.contains('wa-preview-container')) child.setAttribute('data-wa-label', child.classList.contains('container') ? 'Kontajner · .container' : child.classList.contains('container-fluid') ? 'Kontajner · .container-fluid' : child.tagName.toLowerCase());
         }
         const css = (String(source.css || '') + '\n' + pseudoCss.join('\n')).replaceAll('<', '\\3c ');
-        const guides = options.nestedContainers ? '.wa-preview-container{position:relative;min-height:120px;outline:2px dashed #0a969b;outline-offset:-2px;padding:36px 20px 20px!important;margin-top:12px;margin-bottom:12px}.wa-preview-container:not(.wa-custom-pseudo):before{content:attr(data-wa-label);position:absolute;top:8px;left:10px;color:#08777c;background:#ffffffdf;padding:1px 5px;font:12px system-ui;line-height:18px;pointer-events:none}.wa-preview-root.wa-preview-container{min-height:200px}' : '';
+        const guides = options.nestedContainers ? '.wa-preview-container{position:relative;min-height:120px;outline:2px dashed #0a969b;outline-offset:-2px;padding:30px 20px 20px!important;margin-top:12px;margin-bottom:12px}.wa-preview-container>.wa-preview-caption{position:absolute!important;top:0!important;left:12px!important;transform:translateY(-50%);display:block!important;width:auto!important;max-width:calc(100% - 24px);min-height:0!important;height:auto!important;margin:0!important;border:0!important;border-radius:3px!important;color:#08777c!important;background:#fff!important;padding:2px 7px!important;font:12px system-ui!important;line-height:18px!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;z-index:1}.wa-preview-container>button.wa-preview-caption{cursor:pointer}.wa-preview-container>.wa-preview-caption:focus-visible{outline:2px solid #08777c;outline-offset:2px}.wa-preview-container.wa-preview-selected{outline:2px solid #08777c}.wa-preview-container.wa-preview-selected>.wa-preview-caption{background:#08777c!important;color:#fff!important}.wa-preview-root.wa-preview-container{min-height:200px}' : '';
+        const interactive = options.selectionToken && typeof window.waLayoutPreviewScript === 'string';
+        const nonce = interactive ? crypto.randomUUID() : '';
+        const scriptPolicy = interactive ? "'nonce-" + nonce + "'" : "'none'";
+        const bridge = interactive ? '<script nonce="' + escape(nonce) + '">' + window.waLayoutPreviewScript + '</script>' : '';
+        const bodyAttributes = interactive ? ' data-wa-preview-token="' + escape(options.selectionToken) + '" data-wa-selected-node="' + escape(options.selectedId || '') + '"' : '';
+
         const bootstrap = location.origin + '/css/bootstrap.min.css';
-        return '<!doctype html><html lang="sk"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="' + escape("default-src 'none'; style-src 'unsafe-inline' " + bootstrap + "; img-src data:; base-uri 'none'; form-action 'none'; script-src 'none'") + '"><link rel="stylesheet" href="' + escape(bootstrap) + '"><style>body{margin:0;padding:42px 0;background:#fff;background-image:linear-gradient(#3bc0c31c 1px,transparent 1px),linear-gradient(90deg,#3bc0c31c 1px,transparent 1px);background-size:20px 20px} .wa-preview-root{position:relative;min-height:200px;outline:2px dashed #0a969b;outline-offset:-2px} .wa-preview-root:not(.wa-preview-container):not(.wa-custom-pseudo):empty:before{content:attr(data-wa-label);position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#08777c;font:14px system-ui} ' + css + guides + '</style></head><body>' + root.outerHTML + '</body></html>';
+        return '<!doctype html><html lang="sk"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="' + escape("default-src 'none'; style-src 'unsafe-inline' " + bootstrap + "; img-src data:; base-uri 'none'; form-action 'none'; script-src " + scriptPolicy) + '"><link rel="stylesheet" href="' + escape(bootstrap) + '"><style>body{margin:0;padding:42px 0;background:#fff;background-image:linear-gradient(#3bc0c31c 1px,transparent 1px),linear-gradient(90deg,#3bc0c31c 1px,transparent 1px);background-size:20px 20px} .wa-preview-root{position:relative;min-height:200px;outline:2px dashed #0a969b;outline-offset:-2px} .wa-preview-root:not(.wa-preview-container):not(.wa-custom-pseudo):empty:before{content:attr(data-wa-label);position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#08777c;font:14px system-ui} ' + css + guides + '</style></head><body' + bodyAttributes + '>' + root.outerHTML + bridge + '</body></html>';
     };
 
     document.addEventListener('alpine:init', () => {

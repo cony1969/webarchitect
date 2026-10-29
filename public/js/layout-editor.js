@@ -3,6 +3,28 @@
     const clone = value => JSON.parse(JSON.stringify(value));
     const empty = () => ({ schema_version: 1, nodes: [], css: '', js: '' });
     const emit = (name, detail) => window.dispatchEvent(new CustomEvent(name, { detail }));
+    // The sandbox runs only this editor bridge; component JavaScript stays disabled.
+    window.waLayoutPreviewScript = `(() => {
+        const token = document.body.dataset.waPreviewToken;
+        const select = nodeId => {
+            for (const container of document.querySelectorAll('.wa-preview-container')) {
+                const selected = container.dataset.waLayoutNode === nodeId;
+                container.classList.toggle('wa-preview-selected', selected);
+                const caption = [...container.children].find(child => child.classList.contains('wa-preview-caption'));
+                if (caption?.tagName === 'BUTTON') caption.setAttribute('aria-pressed', String(selected));
+            }
+        };
+        document.addEventListener('click', event => {
+            const caption = event.target.closest('button.wa-preview-caption[data-wa-select-node]');
+            if (!caption) return;
+            event.preventDefault(); event.stopPropagation();
+            parent.postMessage({ type: 'wa-layout-select', token, nodeId: caption.dataset.waSelectNode }, '*');
+        });
+        window.addEventListener('message', event => {
+            if (event.source === parent && event.data?.type === 'wa-layout-selection' && event.data.token === token) select(event.data.nodeId);
+        });
+        select(document.body.dataset.waSelectedNode);
+    })();`;
     document.addEventListener('alpine:init', () => {
         Alpine.store('layoutEditor', {
             drafts: {}, activeKey: null, catalog: { layouts: [], components: [] }, catalogLoaded: false, catalogPending: null, catalogError: '',
@@ -10,10 +32,10 @@
             ensure(key, tab = {}) {
                 if (!this.drafts[key]) this.drafts[key] = { id: tab.layoutId || null, form: { name: tab.title || 'Nový layout', document: empty() }, revision: 1,
                     baseline: '', loaded: !tab.layoutId, loading: false, saving: false, shared: false, error: '', notice: '', previewError: '', preview: '',
-                    selectedId: null, componentId: '', sequence: 0, timer: null, reloadOpen: false };
+                    previewToken: crypto.randomUUID(), selectedId: null, componentId: '', sequence: 0, timer: null, reloadOpen: false };
                 const state = this.drafts[key];
                 if (!state.baseline) state.baseline = JSON.stringify(state.form);
-                if (!state.preview) state.preview = window.waComponentPreview({ objects: [], css: '', js: '' }, { nestedContainers: true });
+                if (!state.preview) state.preview = window.waComponentPreview({ objects: [], css: '', js: '' }, { nestedContainers: true, selectionToken: state.previewToken, selectedId: state.selectedId });
                 return state;
             },
             dirty(key) { const state = this.drafts[key]; return !!state && JSON.stringify(state.form) !== state.baseline; },
@@ -52,7 +74,7 @@
                 state.id = data.id; state.revision = data.revision; state.shared = data.shared;
                 state.form = { name: data.name, document: clone(data.document) };
                 state.baseline = JSON.stringify(state.form); state.loaded = true; state.error = ''; state.previewError = '';
-                state.preview = window.waComponentPreview(data.preview, { nestedContainers: true });
+                state.preview = window.waComponentPreview(data.preview, { nestedContainers: true, selectionToken: state.previewToken, selectedId: state.selectedId });
                 if (!this.find(state, state.selectedId)) state.selectedId = null;
             },
             async load(key) {
@@ -73,12 +95,24 @@
                 try {
                     const result = await this.request('/api/cms/layouts/preview', { method: 'POST', body: JSON.stringify({ document: state.form.document }) });
                     if (this.drafts[key] !== state || state.sequence !== sequence) return;
-                    state.preview = window.waComponentPreview(result.data.preview, { nestedContainers: true }); state.previewError = '';
+                    state.preview = window.waComponentPreview(result.data.preview, { nestedContainers: true, selectionToken: state.previewToken, selectedId: state.selectedId }); state.previewError = '';
                 } catch (error) { if (this.drafts[key] === state && state.sequence === sequence) state.previewError = error.message; }
             },
             find(state, id) {
                 const walk = nodes => { for (const node of nodes) { if (typeof node === 'string') continue; if (node.id === id) return node; const found = walk(node.children); if (found) return found; } return null; };
                 return state ? walk(state.form.document.nodes) : null;
+            },
+            select(key, id) {
+                const state = this.drafts[key];
+                if (!state || key !== this.activeKey || state.loading || state.saving || !this.find(state, id)) return false;
+                state.selectedId = id;
+                emit('project-editor-focused', {});
+                return true;
+            },
+            previewSelected(key, message) {
+                const state = this.drafts[key];
+                if (!state || message?.type !== 'wa-layout-select' || message.token !== state.previewToken || typeof message.nodeId !== 'string') return false;
+                return this.select(key, message.nodeId);
             },
             selected(key) { const state = this.drafts[key]; return this.find(state, state?.selectedId); },
             rows(key) {
@@ -125,7 +159,23 @@
             },
             discard(key) { const state = this.drafts[key]; if (state) { clearTimeout(state.timer); state.sequence++; delete this.drafts[key]; } },
         });
-        Alpine.data('waLayoutForm', (key, tab) => ({ key, get store() { return this.$store.layoutEditor; }, get draft() { return this.store.ensure(key, tab); } }));
+        Alpine.data('waLayoutForm', (key, tab) => ({
+            key, messageHandler: null,
+            get store() { return this.$store.layoutEditor; },
+            get draft() { return this.store.ensure(key, tab); },
+            init() {
+                this.messageHandler = event => {
+                    if (event.source !== this.$refs.preview?.contentWindow || event.origin !== 'null') return;
+                    this.store.previewSelected(key, event.data);
+                };
+                window.addEventListener('message', this.messageHandler);
+                this.$watch('draft.selectedId', () => this.syncSelection());
+            },
+            syncSelection() {
+                this.$refs.preview?.contentWindow?.postMessage({ type: 'wa-layout-selection', token: this.draft.previewToken, nodeId: this.draft.selectedId }, '*');
+            },
+            destroy() { window.removeEventListener('message', this.messageHandler); },
+        }));
         Alpine.data('waLayoutProperties', () => ({ get store() { return this.$store.layoutEditor; }, get draft() { return this.store.current; }, get node() { return this.store.selected(this.store.activeKey); } }));
         window.addEventListener('component-document-saved', () => Alpine.store('layoutEditor').loadCatalog());
     });

@@ -18,14 +18,14 @@ class PageComposition
             ->where(fn ($q) => $q->whereNull('project_id')->orWhere('project_id', $projectId))->findOrFail($id);
     }
 
-    public function resolve(User $user, array $document, ?string $projectId): array
+    public function resolve(User $user, array $document, ?string $projectId, bool $forEditor = false): array
     {
         $css = [];
         $js = [];
         $used = [];
         $count = 0;
         $bytes = 0;
-        $expand = function (array $doc, array $stack = [], int $depth = 0, ?string $slotId = null, array $slotContent = []) use (&$expand, &$css, &$js, &$used, &$count, &$bytes, $user, $projectId) {
+        $expand = function (array $doc, array $stack = [], int $depth = 0, ?string $slotId = null, array $slotContent = []) use (&$expand, &$css, &$js, &$used, &$count, &$bytes, $user, $projectId, $forEditor) {
             DocumentData::validate($doc);
             foreach (['css', 'js'] as $field) {
                 $hash = hash('sha256', $doc[$field]);
@@ -37,7 +37,7 @@ class PageComposition
                     ${$field}[$hash] = $doc[$field];
                 }
             }
-            $walk = function ($node, int $level) use (&$walk, &$expand, &$used, &$count, $user, $projectId, $stack, $slotId, $slotContent) {
+            $walk = function ($node, int $level) use (&$walk, &$expand, &$used, &$count, $user, $projectId, $stack, $slotId, $slotContent, $forEditor) {
                 if (++$count > 5000 || $level > 48) {
                     throw ValidationException::withMessages(['document' => 'Stránka prekračuje limit obsahu alebo vnorenia.']);
                 }
@@ -93,7 +93,13 @@ class PageComposition
                         array_push($content, ...$walk($child, $level + 1));
                     }
 
-                    return $expand($template, [...$stack, $id], $level + 1, $targetId, $content);
+                    $expanded = $expand($template, [...$stack, $id], $level + 1, $targetId, $content);
+                    // Preview-only identity refers to this placement, never to the shared definition.
+                    if ($forEditor && count($expanded) === 1 && is_array($expanded[0])) {
+                        $expanded[0]['attributes']['data-wa-layout-node'] = $node['id'];
+                    }
+
+                    return $expanded;
                 }
                 $originalId = $node['id'];
                 $node['id'] = (string) Str::uuid();

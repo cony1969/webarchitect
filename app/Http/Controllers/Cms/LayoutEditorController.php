@@ -24,7 +24,7 @@ class LayoutEditorController extends Controller
     {
         $data = $request->validate(['document' => ['required', 'array'], 'user_id' => ['prohibited']]);
 
-        return response()->json(['data' => $composition->resolve($request->user(), $data['document'], null)]);
+        return response()->json(['data' => $composition->resolve($request->user(), $data['document'], null, true)]);
     }
 
     public function save(Request $request, LayoutEditor $editor, ?string $id = null): JsonResponse

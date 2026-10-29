@@ -5,6 +5,7 @@ use App\Models\Cms\Section;
 use App\Models\User;
 use App\Services\Cms\DocumentData;
 use App\Services\Cms\DocumentStore;
+use App\Services\Cms\PageComposition;
 use App\Services\Cms\SectionLibrary;
 use Illuminate\Support\Str;
 
@@ -92,4 +93,19 @@ it('deduplicates component styles across instances and keeps contents separate',
     $document['nodes'] = [($this->placement)(['Prvý']), ($this->placement)(['Druhý'])];
     $result = $this->postJson('/api/cms/layouts/preview', ['document' => $document])->assertOk()->assertJsonPath('data.preview.objects.0.content', 'Prvý')->assertJsonPath('data.preview.objects.1.content', 'Druhý');
     expect(substr_count($result->json('data.preview.css'), '.container { color: teal; }'))->toBe(1);
+});
+
+it('maps repeated and nested preview containers to placement ids without saving editor markers', function () {
+    $inner = ($this->placement)();
+    $outer = ($this->placement)([$inner]);
+    $second = ($this->placement)();
+    $document = DocumentData::empty();
+    $document['nodes'] = [$outer, $second];
+    $result = $this->postJson('/api/cms/layouts', ['name' => 'Výber inštancií', 'document' => $document])->assertOk()
+        ->assertJsonPath('data.preview.objects.0.data-wa-layout-node', $outer['id'])
+        ->assertJsonPath('data.preview.objects.0.content.0.data-wa-layout-node', $inner['id'])
+        ->assertJsonPath('data.preview.objects.1.data-wa-layout-node', $second['id']);
+    expect(Section::find($result->json('data.id'))->document)->toEqual($document);
+    $rendered = app(PageComposition::class)->resolve($this->user, $document, null);
+    expect(json_encode($rendered))->not->toContain('data-wa-layout-node');
 });

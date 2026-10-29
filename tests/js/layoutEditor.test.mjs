@@ -6,15 +6,15 @@ import {randomUUID} from 'node:crypto';
 const plain = value => JSON.parse(JSON.stringify(value));
 function editor() {
     let store;
-    const events = [], requests = [];
-    const context = {window: {waProjectEditorConfig: {csrf:'token'}, waComponentPreview: source => JSON.stringify(source), dispatchEvent:event => events.push(event), addEventListener(){}},
-        document: {addEventListener: (name, handler) => handler()}, Alpine:{store:(name, value) => value ? store = value : store, data(){}},
+    const events = [], requests = [], factories = {}, listeners = new Map();
+    const context = {window: {waProjectEditorConfig: {csrf:'token'}, waComponentPreview: source => JSON.stringify(source), dispatchEvent:event => events.push(event), addEventListener:(type, handler)=>listeners.set(type,handler), removeEventListener:(type,handler)=>{if(listeners.get(type)===handler)listeners.delete(type);}},
+        document: {addEventListener: (name, handler) => handler()}, Alpine:{store:(name, value) => value ? store = value : store, data:(name, factory)=>factories[name]=factory},
         CustomEvent:class {constructor(type, options) {this.type=type;Object.assign(this,options);}}, crypto:{randomUUID}, setTimeout:()=>1, clearTimeout(){},
         fetch: async (url, options) => {requests.push({url,...options}); return {ok:true,json: async()=>({data: {preview:{objects:{type:'div'},css:'',js:''}}})};}};
     vm.runInNewContext(readFileSync(new URL('../../public/js/layout-editor.js',import.meta.url),'utf8'), context);
     store.catalogLoaded = true;
     store.catalog = {layouts:[], components:[{id:'container',name:'Kontajner',content_target:'root'}]};
-    return {store,context,events,requests};
+    return {store,context,events,requests,factories,listeners};
 }
 test('keeps nested content and width per instance and restores the complete saved layout', async () => {
     const {store,context,requests,events} = editor();
@@ -71,4 +71,41 @@ test('an outdated preview response cannot replace a newer preview or a closed dr
     store.current.sequence=3; const third=store.preview('layout',3); store.discard('layout');
     pending[2](response('closed')); await third;
     assert.equal(store.drafts.layout,undefined);
+});
+
+test('preview captions select the exact instance without modifying the layout and reject other frames',async()=>{
+    const {store,factories,listeners}=editor();
+    await store.activate({id:'layout',mode:'layout',layoutNew:true,title:'Layout'});
+    store.addContainer('layout'); const outer=store.selected('layout');
+    store.addContainer('layout',true); const inner=store.selected('layout');
+    const before=JSON.stringify(store.current.form), preview=store.current.preview, baseline=store.current.baseline;
+    const posts=[], frame={postMessage:(...args)=>posts.push(args)}, watchers=[];
+    const form=factories.waLayoutForm('layout',{});
+    Object.assign(form,{$store:{layoutEditor:store},$refs:{preview:{contentWindow:frame}},$watch:(name,callback)=>watchers.push(callback)});
+    form.init();
+    const event=(nodeId,source=frame,token=store.drafts.layout.previewToken)=>({source,origin:'null',data:{type:'wa-layout-select',token,nodeId}});
+    const handler=listeners.get('message');
+    handler(event(outer.id,{})); assert.equal(store.current.selectedId,inner.id);
+    handler(event(outer.id,frame,'wrong')); assert.equal(store.current.selectedId,inner.id);
+    handler(event(outer.id)); assert.equal(store.current.selectedId,outer.id);
+    handler(event('missing')); assert.equal(store.current.selectedId,outer.id);
+    handler(event(inner.id)); assert.equal(store.current.selectedId,inner.id);
+    assert.equal(JSON.stringify(store.current.form),before); assert.equal(store.current.preview,preview); assert.equal(store.current.baseline,baseline);
+    watchers[0](); assert.equal(posts.at(-1)[0].nodeId,inner.id);
+    store.activeKey=null; handler(event(outer.id)); assert.equal(store.drafts.layout.selectedId,inner.id);
+    form.destroy(); assert.equal(listeners.has('message'),false);
+});
+test('sandbox bridge synchronizes outline and caption state and only accepts the parent channel',()=>{
+    const {context}=editor(), handlers={}, posts=[];
+    const caption={tagName:'BUTTON',classList:{contains:name=>name==='wa-preview-caption'},dataset:{waSelectNode:'inner'},setAttribute(name,value){this[name]=value;}};
+    const container=id=>({dataset:{waLayoutNode:id},children:id==='inner'?[caption]:[],classList:{toggle(name,value){this[name]=value;}}});
+    const outer=container('outer'), inner=container('inner'), parent={postMessage:(...args)=>posts.push(args)};
+    const bridgeContext={parent, document:{body:{dataset:{waPreviewToken:'channel',waSelectedNode:'outer'}},querySelectorAll:()=>[outer,inner],addEventListener:(type,handler)=>handlers[type]=handler},window:{addEventListener:(type,handler)=>handlers[type]=handler}};
+    vm.runInNewContext(context.window.waLayoutPreviewScript,bridgeContext);
+    assert.equal(outer.classList['wa-preview-selected'],true); assert.equal(caption['aria-pressed'],'false');
+    handlers.click({target:{closest:()=>caption},preventDefault(){},stopPropagation(){}});
+    assert.deepEqual(plain(posts[0][0]),{type:'wa-layout-select',token:'channel',nodeId:'inner'});
+    const message={type:'wa-layout-selection',token:'channel',nodeId:'inner'};
+    handlers.message({source:{},data:message}); assert.equal(outer.classList['wa-preview-selected'],true);
+    handlers.message({source:parent,data:message}); assert.equal(inner.classList['wa-preview-selected'],true); assert.equal(outer.classList['wa-preview-selected'],false); assert.equal(caption['aria-pressed'],'true');
 });
