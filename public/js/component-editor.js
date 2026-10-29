@@ -6,7 +6,7 @@
     const escape = value => String(value).replaceAll('&', '&amp;').replaceAll('"', '&quot;').replaceAll('<', '&lt;').replaceAll('>', '&gt;');
 
     // Preview documents never run component JavaScript or access the parent CMS.
-    window.waComponentPreview = source => {
+    window.waComponentPreview = (source, options = {}) => {
         const root = document.createElement('main');
         const allowed = new Set('div section article main header footer nav aside span p h1 h2 h3 h4 h5 h6 a button ul ol li dl dt dd strong em b i small label input select option textarea form table thead tbody tfoot tr td th img figure figcaption hr br pre code blockquote'.split(' '));
         let count = 0;
@@ -33,6 +33,11 @@
             for (const [key, attr] of Object.entries(attributes)) {
                 if (/^(class|id|style|title|role|placeholder|value|name|alt|colspan|rowspan|width|height|aria-[a-z-]+|data-[a-z-]+)$/.test(key) && ['string', 'number', 'boolean'].includes(typeof attr)) element.setAttribute(key, String(attr));
             }
+            if (options.nestedContainers && element.className.split(/\s+/).some(name => /^container(?:-(?:fluid|sm|md|lg|xl|xxl))?$/.test(name))) {
+                const containerClass = element.className.split(/\s+/).find(name => /^container(?:-(?:fluid|sm|md|lg|xl|xxl))?$/.test(name));
+                element.classList.add('wa-preview-container');
+                element.setAttribute('data-wa-label', (depth ? 'Vnorený kontajner' : 'Kontajner') + ' · .' + containerClass);
+            }
             if (['input', 'button', 'select', 'textarea'].includes(type)) element.setAttribute('disabled', '');
             const children = value.content === undefined ? [] : (Array.isArray(value.content) ? value.content : [value.content]);
             for (const child of children) element.append(render(child, depth + 1));
@@ -42,11 +47,12 @@
         for (const object of objects) root.append(render(object));
         for (const child of root.children) {
             child.classList.add('wa-preview-root');
-            child.setAttribute('data-wa-label', child.classList.contains('container') ? 'Kontajner · .container' : child.classList.contains('container-fluid') ? 'Kontajner · .container-fluid' : child.tagName.toLowerCase());
+            if (!child.classList.contains('wa-preview-container')) child.setAttribute('data-wa-label', child.classList.contains('container') ? 'Kontajner · .container' : child.classList.contains('container-fluid') ? 'Kontajner · .container-fluid' : child.tagName.toLowerCase());
         }
         const css = (String(source.css || '') + '\n' + pseudoCss.join('\n')).replaceAll('<', '\\3c ');
+        const guides = options.nestedContainers ? '.wa-preview-container{position:relative;min-height:120px;outline:2px dashed #0a969b;outline-offset:-2px;padding:36px 20px 20px!important;margin-top:12px;margin-bottom:12px}.wa-preview-container:not(.wa-custom-pseudo):before{content:attr(data-wa-label);position:absolute;top:8px;left:10px;color:#08777c;background:#ffffffdf;padding:1px 5px;font:12px system-ui;line-height:18px;pointer-events:none}.wa-preview-root.wa-preview-container{min-height:200px}' : '';
         const bootstrap = location.origin + '/css/bootstrap.min.css';
-        return '<!doctype html><html lang="sk"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="' + escape("default-src 'none'; style-src 'unsafe-inline' " + bootstrap + "; img-src data:; base-uri 'none'; form-action 'none'; script-src 'none'") + '"><link rel="stylesheet" href="' + escape(bootstrap) + '"><style>body{margin:0;padding:42px 0;background:#fff;background-image:linear-gradient(#3bc0c31c 1px,transparent 1px),linear-gradient(90deg,#3bc0c31c 1px,transparent 1px);background-size:20px 20px} .wa-preview-root{position:relative;min-height:200px;outline:2px dashed #0a969b;outline-offset:-2px} .wa-preview-root:not(.wa-custom-pseudo):empty:before{content:attr(data-wa-label);position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#08777c;font:14px system-ui} ' + css + '</style></head><body>' + root.outerHTML + '</body></html>';
+        return '<!doctype html><html lang="sk"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="' + escape("default-src 'none'; style-src 'unsafe-inline' " + bootstrap + "; img-src data:; base-uri 'none'; form-action 'none'; script-src 'none'") + '"><link rel="stylesheet" href="' + escape(bootstrap) + '"><style>body{margin:0;padding:42px 0;background:#fff;background-image:linear-gradient(#3bc0c31c 1px,transparent 1px),linear-gradient(90deg,#3bc0c31c 1px,transparent 1px);background-size:20px 20px} .wa-preview-root{position:relative;min-height:200px;outline:2px dashed #0a969b;outline-offset:-2px} .wa-preview-root:not(.wa-preview-container):not(.wa-custom-pseudo):empty:before{content:attr(data-wa-label);position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#08777c;font:14px system-ui} ' + css + guides + '</style></head><body>' + root.outerHTML + '</body></html>';
     };
 
     document.addEventListener('alpine:init', () => {

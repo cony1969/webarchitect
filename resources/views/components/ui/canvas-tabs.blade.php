@@ -35,6 +35,8 @@
      x-on:component-document-loaded.window="componentLoaded($event.detail)"
      x-on:component-document-saved.window="componentSaved($event.detail)"
      @project-document-saved.window="projectSaved($event.detail)"
+     @layout-document-loaded.window="layoutLoaded($event.detail)"
+     @layout-document-saved.window="layoutLoaded($event.detail)"
      @project-document-loaded.window="projectLoaded($event.detail)"
      @keydown.window="saveShortcut($event)">
     <div x-show="tabSaveError" class="wa-project-message is-error m-2" role="alert"><span x-text="tabSaveError"></span> <button type="button" @click="persistTabs()">Skúsiť znova</button></div>
@@ -54,7 +56,7 @@
     <!-- 2. PLÁTNO (CANVAS) -->
     <div class="canvas-scroll-container p-0" 
          style="flex: 1; overflow: auto; display: flex; align-items: flex-start; justify-content: center; background: #eaedf1;"
-         :style="{ background: (['project', 'domain', 'import', 'component'].includes(currentMode) || !!pages.current) ? 'var(--wa-surface-base)' : '#eaedf1' }"
+         :style="{ background: (['project', 'domain', 'import', 'component', 'layout'].includes(currentMode) || !!pages.current) ? 'var(--wa-surface-base)' : '#eaedf1' }"
          @mousemove="updateInspector($event)"
     >
         <template x-for="(tab, tabIndex) in tabs" :key="tab.id + '-canvas'">
@@ -62,12 +64,12 @@
                  :id="'canvas-' + tab.id"
                  class="editor-canvas shadow-sm"
                  :style="{
-                     backgroundImage: (['project', 'domain', 'import', 'component'].includes(tab.mode) || (tab.mode === 'page' && tab.pageId)) ? 'none' : 'linear-gradient(rgba(59, 192, 195, 0.15) 1px, transparent 1px), linear-gradient(90deg, rgba(59, 192, 195, 0.15) 1px, transparent 1px)',
-                     backgroundColor: (['project', 'domain', 'import', 'component'].includes(tab.mode) || (tab.mode === 'page' && tab.pageId)) ? 'var(--wa-surface-base)' : '#ffffff',
-                     maxWidth: (['project', 'domain', 'import', 'component'].includes(tab.mode) || (tab.mode === 'page' && tab.pageId)) ? 'none' : '1200px',
+                     backgroundImage: (['project', 'domain', 'import', 'component', 'layout'].includes(tab.mode) || (tab.mode === 'page' && tab.pageId)) ? 'none' : 'linear-gradient(rgba(59, 192, 195, 0.15) 1px, transparent 1px), linear-gradient(90deg, rgba(59, 192, 195, 0.15) 1px, transparent 1px)',
+                     backgroundColor: (['project', 'domain', 'import', 'component', 'layout'].includes(tab.mode) || (tab.mode === 'page' && tab.pageId)) ? 'var(--wa-surface-base)' : '#ffffff',
+                     maxWidth: (['project', 'domain', 'import', 'component', 'layout'].includes(tab.mode) || (tab.mode === 'page' && tab.pageId)) ? 'none' : '1200px',
                      minHeight: 'calc(100vh - 190px)',
-                     padding: (['project', 'domain', 'import', 'component'].includes(tab.mode) || (tab.mode === 'page' && tab.pageId)) || tab.route ? '0px' : '30px',
-                     marginTop: (['project', 'domain', 'import', 'component'].includes(tab.mode) || (tab.mode === 'page' && tab.pageId)) ? '0px' : '20px'
+                     padding: (['project', 'domain', 'import', 'component', 'layout'].includes(tab.mode) || (tab.mode === 'page' && tab.pageId)) || tab.route ? '0px' : '30px',
+                     marginTop: (['project', 'domain', 'import', 'component', 'layout'].includes(tab.mode) || (tab.mode === 'page' && tab.pageId)) ? '0px' : '20px'
                  }"
                  style="width: 100%; background-size: 20px 20px; border-radius: 4px; box-sizing: border-box; position: relative; transition: all 0.3s ease; margin-top: 20px;"
             >
@@ -76,6 +78,7 @@
                     <x-ui.component-editor.form />
                 </template>
 
+                <template x-if="tab.mode === 'layout'"><x-ui.layout-editor.form /></template>
                 <template x-if="tab.mode === 'project'">
                     <x-ui.project-editor.form />
                 </template>
@@ -92,13 +95,13 @@
                     <div x-html="document.getElementById('html-profile-tab-template')?.innerHTML" style="width: 100%;"></div>
                 </template>
 
-                <template x-if="tab.mode !== 'profile' && !(['project', 'domain', 'import', 'component'].includes(tab.mode) || (tab.mode === 'page' && tab.pageId)) && tab.route">
+                <template x-if="tab.mode !== 'profile' && !(['project', 'domain', 'import', 'component', 'layout'].includes(tab.mode) || (tab.mode === 'page' && tab.pageId)) && tab.route">
                     <iframe :src="tab.route" 
                             style="width: 100%; height: calc(100vh - 250px); border: none; background: transparent; border-radius: 4px;">
                     </iframe>
                 </template>
 
-                <template x-if="tab.mode !== 'profile' && !(['project', 'domain', 'import', 'component'].includes(tab.mode) || (tab.mode === 'page' && tab.pageId)) && !tab.route">
+                <template x-if="tab.mode !== 'profile' && !(['project', 'domain', 'import', 'component', 'layout'].includes(tab.mode) || (tab.mode === 'page' && tab.pageId)) && !tab.route">
                     <div>
                         <div style="border: 2px dashed #cbd5e1; border-radius: 6px; padding: 40px; text-align: center; color: #94a3b8; font-family: sans-serif; font-size: 14px;">
                             <p style="margin: 0; font-weight: 600;">Režim: <span x-text="tab.mode.toUpperCase()" style="color: #3bc0c3;"></span> — <span x-text="tab.title + (dirty(tab.id) ? ' •' : '')"></span></p>
@@ -114,6 +117,8 @@
         </template>
     </div>
 
+    <template x-teleport="body"><div><x-ui.modal show="pendingClose !== null" title="'Zavrieť kartu'" submit="finishClose(pendingClose)" submit-label="Zahodiť zmeny a zavrieť" :danger="true" cancel="pendingClose = null" modal-id="canvas-close-modal"><p>Táto karta obsahuje neuložené zmeny. Chcete ich zahodiť?</p></x-ui.modal></div></template>
+    <template x-teleport="body"><div><x-ui.modal show="!!layouts.current?.reloadOpen" title="'Načítať uložený layout'" submit="layouts.load(layouts.activeKey)" submit-label="Načítať" :danger="true" cancel="layouts.current.reloadOpen = false" modal-id="layout-reload-modal"><p>Neuložené zmeny v tejto karte sa zahodia.</p></x-ui.modal></div></template>
     <!-- 3. INFORMAČNÝ INSPECTOR PANEL -->
     <x-ui.canvas-inspector hovered-element="hoveredElement" />
 </div>

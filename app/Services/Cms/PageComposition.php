@@ -25,7 +25,7 @@ class PageComposition
         $used = [];
         $count = 0;
         $bytes = 0;
-        $expand = function (array $doc, array $stack = [], int $depth = 0) use (&$expand, &$css, &$js, &$used, &$count, &$bytes, $user, $projectId) {
+        $expand = function (array $doc, array $stack = [], int $depth = 0, ?string $slotId = null, array $slotContent = []) use (&$expand, &$css, &$js, &$used, &$count, &$bytes, $user, $projectId) {
             DocumentData::validate($doc);
             foreach (['css', 'js'] as $field) {
                 $hash = hash('sha256', $doc[$field]);
@@ -37,7 +37,7 @@ class PageComposition
                     ${$field}[$hash] = $doc[$field];
                 }
             }
-            $walk = function ($node, int $level) use (&$walk, &$expand, &$used, &$count, $user, $projectId, $stack) {
+            $walk = function ($node, int $level) use (&$walk, &$expand, &$used, &$count, $user, $projectId, $stack, $slotId, $slotContent) {
                 if (++$count > 5000 || $level > 48) {
                     throw ValidationException::withMessages(['document' => 'Stránka prekračuje limit obsahu alebo vnorenia.']);
                 }
@@ -53,12 +53,56 @@ class PageComposition
                     abort_if($component->settings['placeholder'] ?? false, 422, 'Komponent zatiaľ nemá definíciu.');
                     $used[$id] = ['id' => $id, 'name' => $component->name, 'revision' => $component->revision, 'project_id' => $component->project_id];
 
-                    return $expand($component->document, [...$stack, $id], $level + 1);
+                    $template = $component->document;
+                    $target = $node['attributes']['content_target'] ?? null;
+                    $targetId = $target === 'root' && count($template['nodes']) === 1 ? ($template['nodes'][0]['id'] ?? null) : null;
+                    $fullWidth = $node['attributes']['full_width'] ?? false;
+                    if (! is_bool($fullWidth) || ($target !== null && $target !== 'root')) {
+                        throw ValidationException::withMessages(['document' => 'Neplatné nastavenie inštancie komponentu.']);
+                    }
+                    $targetFound = false;
+                    $prepare = function (array &$nodes) use (&$prepare, $targetId, $fullWidth, &$targetFound) {
+                        foreach ($nodes as &$item) {
+                            if (! is_array($item)) {
+                                continue;
+                            }
+                            if ($item['id'] === $targetId) {
+                                // Explicit insertion target avoids guessing with multi-root definitions.
+                                if (! in_array($item['type'], ['div', 'section', 'main', 'header', 'footer', 'nav', 'article', 'aside'])) {
+                                    throw ValidationException::withMessages(['document' => 'Tento prvok nemôže prijímať vnorený obsah.']);
+                                }
+                                $targetFound = true;
+                                if ($fullWidth) {
+                                    $class = $item['attributes']['class'] ?? '';
+                                    if (! preg_match('/(?:^|\s)container(?:-(?:fluid|sm|md|lg|xl|xxl))?(?:\s|$)/', $class)) {
+                                        throw ValidationException::withMessages(['document' => 'Celú šírku možno nastaviť len kontajneru.']);
+                                    }
+                                    $item['attributes']['class'] = trim(preg_replace('/(?<!\S)container(?:-(?:fluid|sm|md|lg|xl|xxl))?(?!\S)/', 'container-fluid', $class));
+                                }
+                            }
+                            $prepare($item['children']);
+                        }
+                    };
+                    $prepare($template['nodes']);
+                    if (($target !== null || $node['children'] || $fullWidth) && ! $targetFound) {
+                        throw ValidationException::withMessages(['document' => 'Cieľ vnoreného obsahu už v komponente neexistuje. Vyberte aktuálny kontajner.']);
+                    }
+                    $content = [];
+                    // Sibling uses of the same definition can be nested; only definition dependencies form cycles.
+                    foreach ($node['children'] as $child) {
+                        array_push($content, ...$walk($child, $level + 1));
+                    }
+
+                    return $expand($template, [...$stack, $id], $level + 1, $targetId, $content);
                 }
+                $originalId = $node['id'];
                 $node['id'] = (string) Str::uuid();
                 $children = [];
                 foreach ($node['children'] as $child) {
                     array_push($children, ...$walk($child, $level + 1));
+                }
+                if ($originalId === $slotId) {
+                    array_push($children, ...$slotContent);
                 }
                 $node['children'] = $children;
 

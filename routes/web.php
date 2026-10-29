@@ -23,6 +23,11 @@ Route::get('/dashboard', function () {
 
 Route::middleware('auth')->group(function () {
     Route::post('/api/ui/session-tab', \App\Http\Controllers\UI\SessionTabController::class)->block(10, 10);
+    Route::get('/api/cms/layouts', [\App\Http\Controllers\Cms\LayoutEditorController::class, 'index']);
+    Route::post('/api/cms/layouts/preview', [\App\Http\Controllers\Cms\LayoutEditorController::class, 'preview']);
+    Route::get('/api/cms/layouts/{id}', [\App\Http\Controllers\Cms\LayoutEditorController::class, 'show'])->whereUuid('id');
+    Route::post('/api/cms/layouts', [\App\Http\Controllers\Cms\LayoutEditorController::class, 'save']);
+    Route::put('/api/cms/layouts/{id}', [\App\Http\Controllers\Cms\LayoutEditorController::class, 'save'])->whereUuid('id');
     Route::get('/api/cms/component-placement/options', [ComponentPlacementController::class, 'options']);
     Route::post('/api/cms/component-placement', [ComponentPlacementController::class, 'insert']);
     Route::get('/api/cms/page-composition/{id}', [ComponentPlacementController::class, 'show'])->whereUuid('id');

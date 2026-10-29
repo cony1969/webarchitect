@@ -173,26 +173,29 @@
     });
 
     window.waCanvasTabs = (tabs, activeTab, csrf) => ({
-        tabs, activeTab, hoveredElement: 'Pracovná plocha (Canvas)', tabSaveError: '', persistTimer: null,
+        tabs, activeTab, hoveredElement: 'Pracovná plocha (Canvas)', tabSaveError: '', persistTimer: null, pendingClose: null,
         get editor() { return Alpine.store('projectEditor'); },
         get pages() { return Alpine.store('pagePreview'); },
+        get layouts() { return Alpine.store('layoutEditor'); },
         get components() { return Alpine.store('componentEditor'); },
-        dirty(id) { return this.editor.dirty(id) || this.components.dirty(id); },
-        saving(id) { return this.editor.drafts[id]?.saving || this.components.drafts[id]?.saving || this.components.drafts[id]?.placement?.saving; },
+        dirty(id) { return this.editor.dirty(id) || this.components.dirty(id) || !!this.layouts?.dirty(id); },
+        saving(id) { return this.editor.drafts[id]?.saving || this.components.drafts[id]?.saving || this.components.drafts[id]?.placement?.saving || this.layouts?.drafts[id]?.saving; },
         get currentMode() { return this.tabs.find(tab => tab.id === this.activeTab)?.mode || 'page'; },
         init() {
             if (!this.tabs.some(tab => tab.id === this.activeTab)) this.activeTab = this.tabs[0]?.id;
             this.editor.activate(this.tabs.find(tab => tab.id === this.activeTab));
             this.components.activate(this.tabs.find(tab => tab.id === this.activeTab));
             this.pages.activate(this.tabs.find(tab => tab.id === this.activeTab));
+            this.layouts?.activate(this.tabs.find(tab => tab.id === this.activeTab));
         },
         setActiveTab(id) {
             this.activeTab = id;
             const mode = this.tabs.find(tab => tab.id === id)?.mode;
-            this.hoveredElement = mode === 'import' ? 'Analýza webu' : mode === 'domain' ? 'Editor domény' : mode === 'project' ? 'Editor projektu' : mode === 'component' ? 'Editor komponentu' : 'Pracovná plocha (Canvas)';
+            this.hoveredElement = mode === 'import' ? 'Analýza webu' : mode === 'domain' ? 'Editor domény' : mode === 'project' ? 'Editor projektu' : mode === 'component' ? 'Editor komponentu' : mode === 'layout' ? 'Editor layoutu' : 'Pracovná plocha (Canvas)';
             this.editor.activate(this.tabs.find(tab => tab.id === id));
             this.components.activate(this.tabs.find(tab => tab.id === id));
             this.pages.activate(this.tabs.find(tab => tab.id === id));
+            this.layouts?.activate(this.tabs.find(tab => tab.id === id));
             this.persistTabs();
             this.$nextTick(() => {
                 const active = [...this.$el.querySelectorAll('[data-tab-id]')].find(element => element.dataset.tabId === id);
@@ -207,6 +210,7 @@
         buildContentKey(mode, route, title, detail) {
             if (mode === 'project') return detail?.projectId ? 'project:' + detail.projectId : 'project-draft:' + crypto.randomUUID();
             if (mode === 'domain') return detail?.domainId ? 'domain:' + detail.domainId : 'domain-draft:' + crypto.randomUUID();
+            if (mode === 'layout') return detail?.layoutId ? 'layout:' + detail.layoutId : 'layout-draft:' + crypto.randomUUID();
             if (mode === 'component') return 'component:' + (detail?.componentPath || detail?.componentId || crypto.randomUUID());
             if (mode === 'profile') return 'profile';
             if (mode === 'import') return 'site-import';
@@ -214,11 +218,11 @@
             return route ? 'route:' + route : 'mode:' + mode + '|title:' + title;
         },
         addTab(title = 'Nová stránka', mode = 'page', appendNumber = true, route = null, detail = {}) {
-            if (mode === 'profile' || ['project', 'domain', 'import', 'component'].includes(mode)) route = null;
+            if (mode === 'profile' || ['project', 'domain', 'import', 'component', 'layout'].includes(mode)) route = null;
             const contentKey = this.buildContentKey(mode, route, title, detail);
             const existing = this.tabs.find(tab => tab.contentKey === contentKey || (mode === 'project' && tab.mode === 'project' && detail.projectId && tab.projectId === detail.projectId) || (mode === 'profile' && tab.mode === mode) || (route && tab.route === route));
             if (existing) { if (mode === 'page' && detail.pageId) existing.pageId = detail.pageId; this.setActiveTab(existing.id); return existing; }
-            const tab = { id: 'tab-' + crypto.randomUUID(), title: appendNumber ? title + ' #' + (this.tabs.length + 1) : title, mode, route, contentKey, ...(['project', 'domain'].includes(mode) ? { projectId: detail.projectId || null, domainId: detail.domainId || null, projectName: detail.projectName || '' } : {}), ...(mode === 'page' ? { pageId: detail.pageId || null } : {}), ...(mode === 'component' ? { componentId: detail.componentId || null, componentPath: detail.componentPath || null } : {}) };
+            const tab = { id: 'tab-' + crypto.randomUUID(), title: appendNumber ? title + ' #' + (this.tabs.length + 1) : title, mode, route, contentKey, ...(['project', 'domain'].includes(mode) ? { projectId: detail.projectId || null, domainId: detail.domainId || null, projectName: detail.projectName || '' } : {}), ...(mode === 'page' ? { pageId: detail.pageId || null } : {}), ...(mode === 'layout' ? { layoutId: detail.layoutId || null, layoutNew: !!detail.layoutNew } : {}), ...(mode === 'component' ? { componentId: detail.componentId || null, componentPath: detail.componentPath || null } : {}) };
             if (['project', 'domain'].includes(mode) && detail.document) this.editor.apply(tab.id, detail.document);
             this.tabs.push(tab); this.setActiveTab(tab.id); return tab;
         },
@@ -247,6 +251,12 @@
             const data = detail.document;
             const tab = this.addTab(data.name, 'page', false, null, { pageId: data.id, page: { id: data.legacy_id }, project: { id: data.project_legacy_id }, domain: { id: data.domain_legacy_id } });
             this.pages.apply(tab.id, data);
+        },
+        layoutLoaded(detail) {
+            const tab = this.tabs.find(tab => tab.id === detail.key);
+            if (!tab) return;
+            tab.title = detail.document.name; tab.layoutId = detail.document.id; tab.layoutNew = false; tab.contentKey = 'layout:' + detail.document.id;
+            this.persistTabs();
         },
         componentLoaded(detail) {
             const tab = this.tabs.find(tab => tab.id === detail.key);
@@ -285,6 +295,7 @@
                 delete this.editor.drafts[id];
                 delete this.components.drafts[id];
                 delete this.pages.drafts[id];
+                this.layouts?.discard(id);
             }
             if (!this.tabs.length) this.addTab('Pracovná plocha', 'layout', false);
             else if (ids.has(this.activeTab)) this.setActiveTab(this.tabs[Math.min(index, this.tabs.length - 1)].id);
@@ -293,15 +304,21 @@
         },
         closeTab(id, event) {
             event.stopPropagation();
-            if (this.tabs.length <= 1) { alert('Editor musí mať otvorenú aspoň jednu pracovnú plochu.'); return; }
+            if (this.tabs.length <= 1) { this.tabSaveError = 'Editor musí mať otvorenú aspoň jednu pracovnú plochu.'; return; }
             if (this.saving(id)) return;
-            if (this.dirty(id) && !confirm('Zavrieť kartu a zahodiť jej neuložené zmeny?')) return;
+            if (this.dirty(id)) { this.pendingClose = id; return; }
+            this.finishClose(id);
+        },
+        finishClose(id) {
+            if (this.saving(id) || this.tabs.length <= 1 || !this.tabs.some(tab => tab.id === id)) { this.pendingClose = null; return; }
+            this.pendingClose = null;
             const previousTabs = this.tabs;
             const index = this.tabs.findIndex(tab => tab.id === id);
             this.tabs = this.tabs.filter(tab => tab.id !== id);
             delete this.editor.drafts[id];
             delete this.components.drafts[id];
             delete this.pages.drafts[id];
+            this.layouts?.discard(id);
             if (this.activeTab === id) this.setActiveTab(this.tabs[Math.min(index, this.tabs.length - 1)].id);
             this.persistTabs();
             this.repairMovedPreviews(previousTabs);
@@ -317,11 +334,11 @@
             }, 180);
         },
         saveShortcut(event) {
-            if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 's' && ['project', 'domain', 'component'].includes(this.currentMode)) { event.preventDefault(); (this.currentMode === 'component' ? this.components : this.editor).save(this.activeTab); }
+            if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 's' && ['project', 'domain', 'component', 'layout'].includes(this.currentMode)) { event.preventDefault(); (this.currentMode === 'component' ? this.components : this.currentMode === 'layout' ? this.layouts : this.editor).save(this.activeTab); }
         },
         updateInspector(event) {
             const target = event.target;
-            this.hoveredElement = this.currentMode === 'component' ? 'Editor komponentu' : this.currentMode === 'import' ? 'Analýza webu' : ['project', 'domain'].includes(this.currentMode) ? (this.currentMode === 'domain' ? 'Editor domény' : 'Editor projektu') : (target?.getAttribute('data-name') || target?.tagName?.toLowerCase() || 'Pracovná plocha (Canvas)');
+            this.hoveredElement = this.currentMode === 'component' ? 'Editor komponentu' : this.currentMode === 'layout' ? 'Editor layoutu' : this.currentMode === 'import' ? 'Analýza webu' : ['project', 'domain'].includes(this.currentMode) ? (this.currentMode === 'domain' ? 'Editor domény' : 'Editor projektu') : (target?.getAttribute('data-name') || target?.tagName?.toLowerCase() || 'Pracovná plocha (Canvas)');
         },
         destroy() { clearTimeout(this.persistTimer); },
     });

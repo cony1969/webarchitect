@@ -62,7 +62,7 @@ function workspace(tabs,activeTab) {
     const factories={};
     const drafts={editor:{drafts:{}},components:{drafts:{}},pages:{drafts:{}}};
     for(const tab of tabs) for(const store of Object.values(drafts))store.drafts[tab.id]={};
-    const context={window:{},document:{addEventListener(){}},Alpine:{data:(name,factory)=>factories[name]=factory}};
+    const context={window:{},document:{addEventListener(){}},Alpine:{store:()=>null,data:(name,factory)=>factories[name]=factory}};
     vm.runInNewContext(readFileSync(new URL('../../public/js/project-editor.js',import.meta.url),'utf8'),context);
     const state=context.window.waCanvasTabs(tabs,activeTab,'token');
     Object.defineProperties(state,{editor:{value:drafts.editor},components:{value:drafts.components},pages:{value:drafts.pages}});
@@ -134,4 +134,16 @@ test('deleting a later card leaves earlier preview documents alone and skips an 
     const unchanged=previewFrame('component','<html>Container</html>'), loading=previewFrame('loading','');
     state.frames=[unchanged,loading];state.pageDeleted({pageId:'uuid-1'});state.flushDom();
     assert.equal(unchanged.writes,0);assert.equal(loading.writes,0);
+});
+
+test('closing an unsaved editor waits for the shared modal and leaves drafts intact until accepted',()=>{
+    const state=workspace([{id:'layout',mode:'layout'},{id:'other',mode:'component'}],'layout');
+    state.saving=()=>false;state.dirty=()=>true;
+    state.closeTab('layout',{stopPropagation(){}});
+    assert.equal(state.pendingClose,'layout');
+    assert.equal(state.tabs.length,2);assert.ok(state.editor.drafts.layout);
+    state.pendingClose=null;
+    assert.equal(state.tabs.length,2);
+    state.closeTab('layout',{stopPropagation(){}});state.finishClose(state.pendingClose);
+    assert.equal(state.tabs.length,1);assert.equal(state.pendingClose,null);assert.equal(state.activeTab,'other');
 });

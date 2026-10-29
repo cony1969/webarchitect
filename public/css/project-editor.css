@@ -62,3 +62,12 @@
 #accordion-projects-content .wa-tree-page-delete:hover{background:rgba(239,68,68,.16);opacity:1}
 #accordion-projects-content .wa-tree-page-delete:disabled{cursor:wait;opacity:.4}
 #accordion-projects-content .wa-tree-page-open:focus-visible,#accordion-projects-content .wa-tree-page-delete:focus-visible{outline:2px solid #3bc0c3;outline-offset:-2px}
+
+/* Layout composition uses the same editor shell and component preview. */
+.wa-layout-insert { margin-bottom: 20px; }
+.wa-layout-insert .wa-project-field { margin-bottom: 12px; max-width: 380px; }
+.wa-layout-structure { margin-bottom: 20px; padding: 16px; }
+.wa-layout-node, .wa-layout-library-item { display:block; width:100%; text-align:left; padding:8px 12px; margin:4px 0; border:1px solid transparent; border-radius:4px; color:var(--wa-text, #e5e7eb); background:var(--wa-surface-raised); }
+.wa-layout-node[aria-pressed="true"], .wa-layout-library-item:focus-visible { border-color:#3bc0c3; }
+.wa-layout-node:hover, .wa-layout-library-item:hover { background:var(--wa-surface-base); }
+.wa-layout-enabled { background:#185559 !important; border-color:#3bc0c3 !important; color:#fff !important; }
