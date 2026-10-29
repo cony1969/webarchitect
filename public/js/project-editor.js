@@ -259,10 +259,25 @@
             } else this.componentLoaded(detail);
             this.persistTabs();
         },
+        repairMovedPreviews(previousTabs) {
+            const positions = new Map(previousTabs.map((tab, index) => [tab.id, index]));
+            const moved = new Set(this.tabs.filter((tab, index) => positions.has(tab.id) && positions.get(tab.id) !== index).map(tab => tab.id));
+            if (!moved.size) return;
+            // Moving an iframe during Alpine's keyed list update discards its document in Safari.
+            // Reapply its existing srcdoc after the DOM settles; leave editor drafts untouched.
+            this.$nextTick(() => {
+                for (const frame of this.$el.querySelectorAll('iframe[data-wa-preview]')) {
+                    if (!moved.has(frame.dataset.waPreview)) continue;
+                    const source = frame.getAttribute('srcdoc');
+                    if (source) frame.srcdoc = source;
+                }
+            });
+        },
         pageDeleted(detail) {
             const contentKey = 'page:' + [detail.projectLegacyId, detail.domainLegacyId, detail.pageLegacyId].join('|');
             const removed = this.tabs.filter(tab => tab.mode === 'page' && ((detail.pageId && tab.pageId === detail.pageId) || tab.contentKey === contentKey));
             if (!removed.length) return;
+            const previousTabs = this.tabs;
             const index = this.tabs.findIndex(tab => tab.id === this.activeTab);
             const ids = new Set(removed.map(tab => tab.id));
             this.tabs = this.tabs.filter(tab => !ids.has(tab.id));
@@ -274,12 +289,14 @@
             if (!this.tabs.length) this.addTab('Pracovná plocha', 'layout', false);
             else if (ids.has(this.activeTab)) this.setActiveTab(this.tabs[Math.min(index, this.tabs.length - 1)].id);
             this.persistTabs();
+            this.repairMovedPreviews(previousTabs);
         },
         closeTab(id, event) {
             event.stopPropagation();
             if (this.tabs.length <= 1) { alert('Editor musí mať otvorenú aspoň jednu pracovnú plochu.'); return; }
             if (this.saving(id)) return;
             if (this.dirty(id) && !confirm('Zavrieť kartu a zahodiť jej neuložené zmeny?')) return;
+            const previousTabs = this.tabs;
             const index = this.tabs.findIndex(tab => tab.id === id);
             this.tabs = this.tabs.filter(tab => tab.id !== id);
             delete this.editor.drafts[id];
@@ -287,6 +304,7 @@
             delete this.pages.drafts[id];
             if (this.activeTab === id) this.setActiveTab(this.tabs[Math.min(index, this.tabs.length - 1)].id);
             this.persistTabs();
+            this.repairMovedPreviews(previousTabs);
         },
         persistTabs() {
             clearTimeout(this.persistTimer);

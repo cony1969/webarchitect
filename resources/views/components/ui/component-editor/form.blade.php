@@ -32,7 +32,7 @@
         </div>
         <div x-show="draft.codeError" class="wa-project-message is-error" role="alert"><span x-text="draft.codeError"></span> Náhľad zobrazuje poslednú platnú verziu.</div>
         <div x-show="draft.view === 'preview'" class="wa-component-preview">
-            <iframe title="Náhľad komponentu" sandbox="" referrerpolicy="no-referrer" :srcdoc="draft.preview"></iframe>
+            <iframe :data-wa-preview="tab.id" title="Náhľad komponentu" sandbox="" referrerpolicy="no-referrer" :srcdoc="draft.preview"></iframe>
             <p class="wa-project-muted">Prázdny kontajner je označený prerušovaným rámom. Rám ani popis sa do komponentu neukladajú.</p>
         </div>
         <div x-show="draft.view === 'json'" class="wa-component-code"><div x-ref="ace" class="wa-component-ace" aria-label="JSON kód komponentu"></div></div>

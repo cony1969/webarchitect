@@ -66,6 +66,11 @@ function workspace(tabs,activeTab) {
     vm.runInNewContext(readFileSync(new URL('../../public/js/project-editor.js',import.meta.url),'utf8'),context);
     const state=context.window.waCanvasTabs(tabs,activeTab,'token');
     Object.defineProperties(state,{editor:{value:drafts.editor},components:{value:drafts.components},pages:{value:drafts.pages}});
+    state.ticks=[];
+    state.frames=[];
+    state.$nextTick=callback=>state.ticks.push(callback);
+    state.flushDom=()=>{while(state.ticks.length)state.ticks.shift()();};
+    state.$el={querySelectorAll:()=>state.frames};
     state.persistTabs=function(){this.persisted=true;};
     state.setActiveTab=function(id){this.activeTab=id;};
     state.addTab=function(title,mode){const tab={id:'replacement',title,mode};this.tabs.push(tab);this.activeTab=tab.id;};
@@ -86,4 +91,47 @@ test('deleting the last page tab leaves a usable workspace and inactive deletion
     const other=workspace([{id:'active',mode:'component'},{id:'page',mode:'page',pageId:'uuid-1'}],'active');
     other.pageDeleted({pageId:'uuid-1'});
     assert.equal(other.activeTab,'active');
+});
+
+function previewFrame(tabId, source) {
+    return {dataset:{waPreview:tabId}, rendered:source, writes:0,
+        getAttribute(name){return name==='srcdoc'?source:null;},
+        set srcdoc(value){this.rendered=value;this.writes++;},
+    };
+}
+test('deleting a page before the active component restores the moved frame after DOM update without losing unsaved code',()=>{
+    const state=workspace([{id:'stable',mode:'component'},{id:'page',mode:'page',pageId:'uuid-1'},{id:'component',mode:'component'}],'component');
+    const stable=previewFrame('stable','<html>Stable</html>');
+    const moved=previewFrame('component','<html><style>body{background:cyan}</style>Unsaved container</html>');
+    state.frames=[stable,moved];
+    state.components.drafts.component={code:'unsaved source',preview:moved.rendered,baseline:'saved source',revision:3};
+    const draft=state.components.drafts.component;
+    state.pageDeleted({pageId:'uuid-1'});
+    // Safari loses the document when the keyed list moves this iframe, retaining srcdoc.
+    moved.rendered='';
+    assert.equal(state.activeTab,'component');
+    assert.equal(moved.writes,0);
+    state.flushDom();
+    assert.equal(moved.rendered,draft.preview);
+    assert.equal(stable.writes,0);
+    assert.equal(state.components.drafts.component,draft);
+    assert.equal(draft.code,'unsaved source');assert.equal(draft.baseline,'saved source');assert.equal(draft.revision,3);
+});
+test('ordinary tab closing repairs moved component and page frames while preserving the selected properties',()=>{
+    const state=workspace([{id:'old',mode:'page',pageId:'uuid-1'},{id:'component',mode:'component'},{id:'page',mode:'page',pageId:'uuid-2'}],'component');
+    const component=previewFrame('component','<html>Container and grid</html>');
+    const page=previewFrame('page','<html>Composed page</html>');
+    state.frames=[component,page];state.saving=()=>false;state.dirty=()=>false;
+    state.components.drafts.component={controls:{tab:'css'}};
+    state.closeTab('old',{stopPropagation(){}});
+    component.rendered='';page.rendered='';state.flushDom();
+    assert.equal(component.rendered,'<html>Container and grid</html>');
+    assert.equal(page.rendered,'<html>Composed page</html>');
+    assert.equal(state.components.drafts.component.controls.tab,'css');
+});
+test('deleting a later card leaves earlier preview documents alone and skips an unloaded preview',()=>{
+    const state=workspace([{id:'component',mode:'component'},{id:'page',mode:'page',pageId:'uuid-1'},{id:'loading',mode:'component'}],'component');
+    const unchanged=previewFrame('component','<html>Container</html>'), loading=previewFrame('loading','');
+    state.frames=[unchanged,loading];state.pageDeleted({pageId:'uuid-1'});state.flushDom();
+    assert.equal(unchanged.writes,0);assert.equal(loading.writes,0);
 });
