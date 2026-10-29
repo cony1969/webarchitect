@@ -13,6 +13,9 @@
              selectedDomain: window.sidebarProjectsTreeState && window.sidebarProjectsTreeState.selectedDomain ? window.sidebarProjectsTreeState.selectedDomain : null,
              selectedPage: window.sidebarProjectsTreeState && window.sidebarProjectsTreeState.selectedPage ? window.sidebarProjectsTreeState.selectedPage : null,
              modalMode: 'project',
+             deleteDialogOpen: false,
+             pendingDeletion: null,
+             treeError: '',
 
              normalizeId(prefix, value) {
                  const raw = String(value ?? '').trim();
@@ -181,10 +184,26 @@
                  }));
              },
 
-             async deletePage(project, domain, page) {
+             deletePage(project, domain, page) {
+                 if (this.saving || this.deleteDialogOpen) return;
+                 this.pendingDeletion = { projectId: project.id, domainId: domain.id, pageId: page.id, name: page.name };
+                 this.treeError = '';
+                 this.deleteDialogOpen = true;
+                 this.$nextTick(() => document.getElementById('delete-project-page-modal')?.querySelector('[data-modal-cancel]')?.focus());
+             },
+             cancelPageDeletion() {
                  if (this.saving) return;
-                 const index = domain.pages.findIndex(item => item.id === page.id);
-                 if (index < 0 || !confirm('Odstrániť stránku „' + page.name + '“ z projektu?')) return;
+                 this.deleteDialogOpen = false;
+                 this.pendingDeletion = null;
+             },
+             async confirmPageDeletion() {
+                 if (this.saving || !this.deleteDialogOpen || !this.pendingDeletion) return;
+                 const pending = this.pendingDeletion;
+                 const project = this.projects.find(item => item.id === pending.projectId);
+                 const domain = project?.domains.find(item => item.id === pending.domainId);
+                 const index = domain?.pages.findIndex(item => item.id === pending.pageId) ?? -1;
+                 if (index < 0) { this.cancelPageDeletion(); return; }
+                 const page = domain.pages[index];
                  const pageId = (window.sidebarPageIds || {})[page.id] || null;
                  domain.pages.splice(index, 1);
                  if (!await this.saveToDb()) {
@@ -192,6 +211,8 @@
                      if (currentDomain && !currentDomain.pages.some(item => item.id === page.id)) currentDomain.pages.splice(Math.min(index, currentDomain.pages.length), 0, page);
                      return;
                  }
+                 this.deleteDialogOpen = false;
+                 this.pendingDeletion = null;
                  if (this.selectedPage === page.id) {
                      this.selectedPage = null;
                      this.saveTreePosition();
@@ -223,6 +244,7 @@
              async saveToDb() {
                  if (this.saving) { this.saveAgain = true; return false; }
                  this.saving = true;
+                 this.treeError = '';
                  this.projects = this.normalizeProjects(this.projects);
                  const submittedTree = JSON.stringify(this.projects);
                  try {
@@ -245,7 +267,7 @@
                      return true;
                  } catch (error) {
                      this.saveAgain = false;
-                     alert(error.message || 'Uloženie sa nepodarilo.');
+                     this.treeError = error.message || 'Uloženie sa nepodarilo.';
                      return false;
                  } finally {
                      this.saving = false;
@@ -265,6 +287,7 @@
         @if(in_array((int) auth()->id(), config('site-import.user_ids', []), true))
             <button type="button" class="btn wa-project-secondary mb-3" style="width:100%;font-size:12px" @click="$dispatch('add-new-tab', { title: 'Import z ASUS-u', mode: 'import' })">Načítať web z ASUS-u</button>
         @endif
+        <p class="wa-project-message is-error" role="alert" x-show="treeError && !deleteDialogOpen" x-text="treeError" x-cloak></p>
         <template x-for="project in projects" :key="project.id">
             <div style="margin-bottom: 8px;">
                 <!-- 1. ÚROVEŇ: PROJEKT -->
@@ -328,4 +351,13 @@
             </div>
         </template>
     </div>
+    <template x-teleport="body">
+        <div>
+            <x-ui.modal title="'Odstrániť stránku'" show="deleteDialogOpen" submit="confirmPageDeletion()" submit-label="Odstrániť stránku" :danger="true" busy="saving" modal-id="delete-project-page-modal" cancel="cancelPageDeletion()">
+                <p>Odstrániť stránku <strong x-text="pendingDeletion?.name || ''"></strong> z projektu?</p>
+                <p class="wa-project-muted mb-0">Stránka sa presunie do odstránených záznamov. Jej obsah zostane zachovaný a otvorená karta sa zatvorí.</p>
+                <p class="wa-project-message is-error mt-3 mb-0" role="alert" x-show="treeError" x-text="treeError"></p>
+            </x-ui.modal>
+        </div>
+    </template>
 </section>

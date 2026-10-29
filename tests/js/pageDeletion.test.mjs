@@ -7,20 +7,24 @@ function sidebar(response={ok:true,success:true}) {
     const events=[],requests=[],alerts=[];
     const projects=[{id:'project-1',name:'Project',domains:[{id:'domain-1',name:'example.test',pages:[{id:'page-1',name:'Home'},{id:'page-2',name:'Keep'}]}]}];
     const window={sidebarProjectsData:projects,sidebarPageIds:{'page-1':'uuid-1'},dispatchEvent:event=>events.push(event)};
-    const context={window,confirm:()=>true,alert:message=>alerts.push(message),CustomEvent:class{constructor(type,options){this.type=type;Object.assign(this,options);}},fetch:async(url,options)=>{
+    const context={window,confirm:()=>{throw Error('Native confirm is forbidden');},alert:message=>alerts.push(message),CustomEvent:class{constructor(type,options){this.type=type;Object.assign(this,options);}},fetch:async(url,options)=>{
         requests.push({url,...options});
         return {ok:response.ok,json:async()=>({...response,projects:plain(window.sidebarProjectsData),revision:2,page_ids:{'page-2':'uuid-2'}})};
     }};
     const blade=readFileSync(new URL('../../resources/views/components/ui/sidebar-left/projects.blade.php',import.meta.url),'utf8');
     const expression=blade.split('x-data="')[1].split('"\n         @project-modal-submit')[0];
     const state=vm.runInNewContext('('+expression+')',context);
+    state.$nextTick=()=>{};
     state.selectedProject='project-1';state.selectedDomain='domain-1';state.selectedPage='page-1';
     return {state,events,requests,alerts,context};
 }
 test('page trash uses the existing tree endpoint and emits deletion only after success',async()=>{
     const {state,events,requests}=sidebar();
     const project=state.projects[0],domain=project.domains[0];
-    await state.deletePage(project,domain,domain.pages[0]);
+    state.deletePage(project,domain,domain.pages[0]);
+    assert.equal(requests.length,0);
+    assert.equal(state.deleteDialogOpen,true);
+    await state.confirmPageDeletion();
     assert.deepEqual(plain(state.projects[0].domains[0].pages),[{id:'page-2',name:'Keep'}]);
     assert.equal(state.selectedPage,null);
     assert.equal(state.saving,false);
@@ -32,19 +36,26 @@ test('page trash uses the existing tree endpoint and emits deletion only after s
 test('failed or stale deletion restores the row and keeps its selection and editor open',async()=>{
     const {state,events,alerts}=sidebar({ok:false,success:false,message:'Projekty medzitým zmenilo iné okno.'});
     const project=state.projects[0],domain=project.domains[0];
-    await state.deletePage(project,domain,domain.pages[0]);
+    state.deletePage(project,domain,domain.pages[0]);
+    await state.confirmPageDeletion();
     assert.deepEqual(plain(state.projects[0].domains[0].pages).map(page=>page.id),['page-1','page-2']);
     assert.equal(state.selectedPage,'page-1');
     assert.equal(events.some(event=>event.type==='cms-page-deleted'),false);
-    assert.equal(alerts.length,1);
+    assert.equal(alerts.length,0);
+    assert.equal(state.deleteDialogOpen,true);
+    assert.match(state.treeError,/iné okno/);
 });
 test('cancelled and already busy deletions do not write or open a page',async()=>{
     const {state,events,requests,context}=sidebar();
     const project=state.projects[0],domain=project.domains[0];
-    context.confirm=()=>false;
-    await state.deletePage(project,domain,domain.pages[0]);
-    state.saving=true;context.confirm=()=>true;
-    await state.deletePage(project,domain,domain.pages[0]);
+    state.deletePage(project,domain,domain.pages[0]);
+    state.cancelPageDeletion();
+    await state.confirmPageDeletion();
+    assert.equal(state.pendingDeletion,null);
+    assert.equal(state.deleteDialogOpen,false);
+    state.saving=true;
+    state.deletePage(project,domain,domain.pages[0]);
+    await state.confirmPageDeletion();
     assert.equal(requests.length,0);assert.equal(events.length,0);assert.equal(domain.pages.length,2);
 });
 function workspace(tabs,activeTab) {
