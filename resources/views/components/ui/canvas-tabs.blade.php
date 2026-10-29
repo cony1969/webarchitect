@@ -31,6 +31,7 @@
      @add-new-component-tab.window="addTab('Komponent', 'component')"
      @add-new-tab.window="handleAddNewTab($event)"
      @cms-page-composed.window="pageComposed($event.detail)"
+     @cms-page-deleted.window="pageDeleted($event.detail)"
      x-on:component-document-loaded.window="componentLoaded($event.detail)"
      x-on:component-document-saved.window="componentSaved($event.detail)"
      @project-document-saved.window="projectSaved($event.detail)"

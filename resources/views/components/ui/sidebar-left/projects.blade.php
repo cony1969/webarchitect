@@ -181,6 +181,25 @@
                  }));
              },
 
+             async deletePage(project, domain, page) {
+                 if (this.saving) return;
+                 const index = domain.pages.findIndex(item => item.id === page.id);
+                 if (index < 0 || !confirm('Odstrániť stránku „' + page.name + '“ z projektu?')) return;
+                 const pageId = (window.sidebarPageIds || {})[page.id] || null;
+                 domain.pages.splice(index, 1);
+                 if (!await this.saveToDb()) {
+                     const currentDomain = this.projects.find(item => item.id === project.id)?.domains.find(item => item.id === domain.id);
+                     if (currentDomain && !currentDomain.pages.some(item => item.id === page.id)) currentDomain.pages.splice(Math.min(index, currentDomain.pages.length), 0, page);
+                     return;
+                 }
+                 if (this.selectedPage === page.id) {
+                     this.selectedPage = null;
+                     this.saveTreePosition();
+                     window.dispatchEvent(new CustomEvent('page-selected', { detail: null }));
+                 }
+                 window.dispatchEvent(new CustomEvent('cms-page-deleted', { detail: { pageId, pageLegacyId: page.id, domainLegacyId: domain.id, projectLegacyId: project.id } }));
+             },
+
              saveTreePosition() {
                  fetch('/sidebar/save-setting', {
                      method: 'POST',
@@ -202,7 +221,7 @@
              },
 
              async saveToDb() {
-                 if (this.saving) { this.saveAgain = true; return; }
+                 if (this.saving) { this.saveAgain = true; return false; }
                  this.saving = true;
                  this.projects = this.normalizeProjects(this.projects);
                  const submittedTree = JSON.stringify(this.projects);
@@ -223,9 +242,11 @@
                          this.replaceTree(data);
                          window.dispatchEvent(new CustomEvent('cms-project-overviews-refresh'));
                      }
+                     return true;
                  } catch (error) {
                      this.saveAgain = false;
                      alert(error.message || 'Uloženie sa nepodarilo.');
+                     return false;
                  } finally {
                      this.saving = false;
                      if (this.saveAgain) { this.saveAgain = false; this.saveToDb(); }
@@ -284,17 +305,14 @@
                             <!-- 3. ÚROVEŇ: STRÁNKY -->
                             <div x-show="selectedDomain === domain.id" style="padding-left: 18px; margin-top: 2px; display: flex; flex-direction: column; gap: 4px;">
                                 <template x-for="page in domain.pages" :key="page.id">
-                                    <div :style="{ background: selectedPage === page.id ? '#3b82f6' : 'var(--wa-surface-raised)' }"
-                                         style="display: flex; align-items: center; gap: 8px; padding: 3px 0 3px 6px; border-radius: 3px; font-size: 12px; color: #fff; cursor: pointer;"
-                                         @click="selectPage(page, domain, project, $event)"
-                                    >
-                                        <span>📄</span>
-                                        <span class="wa-tree-name" :title="page.name" x-text="page.name"></span>
-                                        <span class="wa-tree-actions">
-                                            <span class="wa-tree-trash" title="Zmazat" aria-label="Zmazat">
-                                                <i class="fas fa-trash" style="font-size: 12px;" aria-hidden="true"></i>
-                                            </span>
-                                        </span>
+                                    <div class="wa-tree-page-row" :style="{ background: selectedPage === page.id ? '#3b82f6' : 'var(--wa-surface-raised)' }">
+                                        <button type="button" class="wa-tree-page-open" :aria-label="'Otvoriť stránku ' + page.name" @click.stop="selectPage(page, domain, project, $event)">
+                                            <span aria-hidden="true">📄</span>
+                                            <span class="wa-tree-name" :title="page.name" x-text="page.name"></span>
+                                        </button>
+                                        <button type="button" class="wa-tree-trash wa-tree-page-delete" :title="'Odstrániť stránku ' + page.name" :aria-label="'Odstrániť stránku ' + page.name" :disabled="saving" @click.stop="deletePage(project, domain, page)">
+                                            <i class="fas fa-trash" style="font-size: 12px;" aria-hidden="true"></i>
+                                        </button>
                                     </div>
                                 </template>
                             </div>

@@ -164,3 +164,17 @@ it('keeps the account signed in when ownership prevents deleting its CMS data', 
     $this->assertAuthenticatedAs($this->alice);
     expect(User::find(1))->not->toBeNull();
 });
+
+it('soft deletes only the removed project page and keeps its document recoverable', function () {
+    $page = Page::where('user_id', $this->alice->id)->firstOrFail();
+    $document = $page->document;
+    $tree = $this->trees['user_1'];
+    $tree[0]['domains'][0]['pages'] = [];
+    $this->actingAs($this->alice)->postJson('/api/ui/save-projects', ['projects' => $tree, 'revision' => 1])
+        ->assertOk()->assertJsonCount(0, 'projects.0.domains.0.pages')->assertJsonPath('revision', 2);
+    expect(Page::find($page->id))->toBeNull();
+    expect(Page::withTrashed()->findOrFail($page->id)->document)->toEqual($document);
+    expect(app(ProjectTree::class)->read($this->bob))->toEqual($this->trees['user_2']);
+    expect(Project::find($page->project_id))->not->toBeNull();
+    $this->getJson('/api/cms/pages/'.$page->id)->assertNotFound();
+});

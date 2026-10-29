@@ -259,6 +259,22 @@
             } else this.componentLoaded(detail);
             this.persistTabs();
         },
+        pageDeleted(detail) {
+            const contentKey = 'page:' + [detail.projectLegacyId, detail.domainLegacyId, detail.pageLegacyId].join('|');
+            const removed = this.tabs.filter(tab => tab.mode === 'page' && ((detail.pageId && tab.pageId === detail.pageId) || tab.contentKey === contentKey));
+            if (!removed.length) return;
+            const index = this.tabs.findIndex(tab => tab.id === this.activeTab);
+            const ids = new Set(removed.map(tab => tab.id));
+            this.tabs = this.tabs.filter(tab => !ids.has(tab.id));
+            for (const id of ids) {
+                delete this.editor.drafts[id];
+                delete this.components.drafts[id];
+                delete this.pages.drafts[id];
+            }
+            if (!this.tabs.length) this.addTab('Pracovná plocha', 'layout', false);
+            else if (ids.has(this.activeTab)) this.setActiveTab(this.tabs[Math.min(index, this.tabs.length - 1)].id);
+            this.persistTabs();
+        },
         closeTab(id, event) {
             event.stopPropagation();
             if (this.tabs.length <= 1) { alert('Editor musí mať otvorenú aspoň jednu pracovnú plochu.'); return; }
