@@ -1,13 +1,13 @@
 @props(['layout' => []])
 
-<section class="sidebar-block" :class="{ 'is-open': activeSection === 'appearance' }"  x-data="{ rightTab: 'templates' }">
+<section class="sidebar-block" :class="{ 'is-open': activeSection === 'appearance' }"  x-data="{ rightTab: window.waSessionTabs.get('appearance', 'templates'), changeRightTab(tab) { this.rightTab = tab; window.waSessionTabs.set('appearance', tab); } }">
     <x-ui.accordion-header section="appearance" title="Vzhľad" action-label="Možnosti vzhľadu" action="alert('Možnosti vzhľadu')" />
     
     <div class="block-content sidebar-accordion-content" id="accordion-appearance-content" role="region" aria-labelledby="accordion-appearance-toggle" x-show="activeSection === 'appearance'" x-cloak style="padding: 0 15px; flex: 1; display: flex; flex-direction: column; overflow: hidden;">
         <ul class="nav" style="border-bottom: 2px solid var(--wa-border-strong); margin-bottom: 15px; display: flex; padding-left: 0; list-style: none; width: 100%; flex: 0 0 auto;">
             <li class="nav-item" style="flex: 1; text-align: center; margin-bottom: -2px;">
                 <button class="nav-link" 
-                        @click.prevent="rightTab = 'templates'"
+                        @click.prevent="changeRightTab('templates')"
                         :style="{ 
                             color: rightTab === 'templates' ? '#fff' : '#8a94ad',
                             backgroundColor: 'transparent',
@@ -24,7 +24,7 @@
             </li>
             <li class="nav-item" style="flex: 1; text-align: center; margin-bottom: -2px;">
                 <button class="nav-link" 
-                        @click.prevent="rightTab = 'other'"
+                        @click.prevent="changeRightTab('other')"
                         :style="{ 
                             color: rightTab === 'other' ? '#fff' : '#8a94ad',
                             backgroundColor: 'transparent',

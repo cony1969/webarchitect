@@ -10,7 +10,7 @@
              selectedPageObj: null,
              selectedPageDomainObj: null,
              selectedPageProjectObj: null,
-             projectTab: 'basic',
+             projectTab: window.waSessionTabs.get('legacy_properties', 'basic'),
 
              headerTitle() {
                  if (this.$store.pagePreview.current) return 'VLASTNOSTI STRÁNKY {' + (this.$store.pagePreview.current.data.name || 'Stránka') + '}';
@@ -87,11 +87,7 @@
                  const allowedTabs = ['basic', 'appearance', 'bootstrap', 'advanced'];
                  const nextTab = allowedTabs.includes(String(tab)) ? String(tab) : 'basic';
                  this.projectTab = nextTab;
-                 try {
-                     window.sessionStorage.setItem('warProjectPropertiesActiveTab', nextTab);
-                 } catch (e) {
-                     // ignore storage errors
-                 }
+                 window.waSessionTabs.set('legacy_properties', nextTab);
                  this.$nextTick(() => this.scrollProjectTabIntoView());
              },
 
@@ -105,14 +101,6 @@
              },
 
              init() {
-                 try {
-                     const storedTab = window.sessionStorage.getItem('warProjectPropertiesActiveTab');
-                     const allowedTabs = ['basic', 'appearance', 'bootstrap', 'advanced'];
-                     this.projectTab = allowedTabs.includes(String(storedTab)) ? String(storedTab) : 'basic';
-                 } catch (e) {
-                     this.projectTab = 'basic';
-                 }
-
                  this.hydrateFromTreeState();
                  this.$nextTick(() => this.scrollProjectTabIntoView());
 

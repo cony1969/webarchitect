@@ -12,9 +12,6 @@
                      this.activeSection = saved || null;
                  }
              } catch (e) {}
-             this.$nextTick(() => {
-                 if (@js($id) === 'right' && (this.$store.projectEditor.active || this.$store.componentEditor.current || this.$store.pagePreview.current)) this.openSection('properties');
-             });
          },
          rememberSection() {
              try { window.localStorage.setItem(this.storageKey, this.activeSection || ''); } catch (e) {}

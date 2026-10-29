@@ -11,7 +11,7 @@
             <p class="wa-project-note" x-show="draft.projectId">Vlastná verzia projektu: <strong x-text="draft.projectName"></strong></p>
             <div class="wa-component-summary mt-4"><div><span>Verzia</span><strong x-text="draft.revision"></strong></div><div><span>Uloženie</span><strong x-text="store.dirty(key) ? 'Neuložené zmeny' : 'Uložené'"></strong></div></div>
             <p class="wa-project-muted mt-3">Bootstrap triedy a CSS upravíte v ďalších záložkách. Štruktúru komponentu môžete upraviť cez JSON v strednej karte.</p>
-            <button type="button" class="btn wa-project-secondary" @click="draft.view = 'json'" :disabled="!draft.loaded">Otvoriť JSON v Ace</button>
+            <button type="button" class="btn wa-project-secondary" @click="store.changeView(key, 'json')" :disabled="!draft.loaded">Otvoriť JSON v Ace</button>
         </div>
         <label class="wa-project-field wa-property-search" x-show="ui.tab !== 'basic'">Vyhľadať vlastnosť
             <input type="search" x-model="ui.search" @keydown.escape.stop="ui.search = ''" placeholder="napr. odsadenie / padding" aria-label="Vyhľadať vlastnosť po slovensky alebo anglicky" autocomplete="off" spellcheck="false">

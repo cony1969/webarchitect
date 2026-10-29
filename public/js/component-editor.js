@@ -54,7 +54,7 @@
             drafts: {}, activeKey: null,
             get current() { return this.drafts[this.activeKey] || null; },
             ensure(key, path = null) {
-                if (!this.drafts[key]) this.drafts[key] = { id: null, path, revision: 1, shared: false, loaded: false, loading: false, saving: false, form: { name: '', slug: '', target_path: '', tab: 'bootstrap', category: '' }, code: '', baseline: '', view: 'preview', preview: '', codeError: '', error: '', errors: {}, notice: '', projectId: null, projectName: '', placement: null, controls: window.waComponentControls.state() };
+                if (!this.drafts[key]) this.drafts[key] = { id: null, path, revision: 1, shared: false, loaded: false, loading: false, saving: false, form: { name: '', slug: '', target_path: '', tab: 'bootstrap', category: '' }, code: '', baseline: '', view: window.waSessionTabs?.get('component_view', 'preview') || 'preview', preview: '', codeError: '', error: '', errors: {}, notice: '', projectId: null, projectName: '', placement: null, controls: window.waComponentControls.state() };
                 if (path && !this.drafts[key].path) this.drafts[key].path = path;
                 return this.drafts[key];
             },
@@ -159,6 +159,12 @@
                 const draft = this.drafts[key];
                 try { const source = this.parsed(draft); Object.assign(source, { name: draft.form.name, slug: draft.form.slug, tab: draft.form.tab }); draft.code = pretty(source); this.updateDocument(key, false); } catch (_) {}
             },
+            changeView(key, view) {
+                const draft = this.drafts[key];
+                if (!draft || !['preview', 'json'].includes(view)) return;
+                draft.view = view;
+                window.waSessionTabs?.set('component_view', view);
+            },
             format(key) {
                 const draft = this.drafts[key];
                 try { draft.code = pretty(this.parsed(draft)); this.updateDocument(key); } catch (error) { draft.codeError = 'Neplatný JSON: ' + error.message; }
@@ -247,6 +253,7 @@
                 this.$watch('draft.code', () => { const ace = instances.get(this.key); if (ace && ace.getValue() !== this.draft.code) ace.setValue(this.draft.code, -1); });
                 this.$watch('draft.saving', () => instances.get(this.key)?.setReadOnly(this.draft.saving));
                 this.$watch('draft.view', () => this.$nextTick(() => { if (this.draft.view === 'json') this.openAce(); }));
+                this.$nextTick(() => { if (this.draft.view === 'json') this.openAce(); });
             },
             openAce() {
                 if (instances.has(this.key)) { instances.get(this.key).resize(); instances.get(this.key).focus(); return; }

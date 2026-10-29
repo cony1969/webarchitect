@@ -19,9 +19,10 @@ Route::get('/', function () {
 
 Route::get('/dashboard', function () {
     return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+})->middleware(['auth', 'verified'])->block(10, 10)->name('dashboard');
 
 Route::middleware('auth')->group(function () {
+    Route::post('/api/ui/session-tab', \App\Http\Controllers\UI\SessionTabController::class)->block(10, 10);
     Route::get('/api/cms/component-placement/options', [ComponentPlacementController::class, 'options']);
     Route::post('/api/cms/component-placement', [ComponentPlacementController::class, 'insert']);
     Route::get('/api/cms/page-composition/{id}', [ComponentPlacementController::class, 'show'])->whereUuid('id');

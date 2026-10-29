@@ -26,8 +26,8 @@
     </template>
     <div x-show="draft.loaded">
         <div class="wa-component-switch" role="group" aria-label="Zobrazenie komponentu">
-            <button type="button" :aria-pressed="draft.view === 'preview'" @click="draft.view = 'preview'">Náhľad</button>
-            <button type="button" :aria-pressed="draft.view === 'json'" @click="draft.view = 'json'">JSON · Ace</button>
+            <button type="button" :aria-pressed="draft.view === 'preview'" @click="store.changeView(key, 'preview')">Náhľad</button>
+            <button type="button" :aria-pressed="draft.view === 'json'" @click="store.changeView(key, 'json')">JSON · Ace</button>
             <button type="button" class="wa-component-format" x-show="draft.view === 'json'" @click="store.format(key)" :disabled="draft.saving">Formátovať JSON</button>
         </div>
         <div x-show="draft.codeError" class="wa-project-message is-error" role="alert"><span x-text="draft.codeError"></span> Náhľad zobrazuje poslednú platnú verziu.</div>

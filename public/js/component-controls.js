@@ -135,7 +135,7 @@
     const cssMatches = (query, property) => matchesSearch(query, property.name, property.label, property.aliases);
     const cssSearchResults = (query, rows) => cssCatalog(rows).filter(property => cssMatches(query, property));
     const cssCustomProperty = value => /^--[a-zA-Z0-9_-]+$/.test(value);
-    const state = () => ({ tab: 'basic', search: '', rootIndex: 0, rootOptions: [], editable: false, breakpoint: '', extraFields: [], allFields: false, allClasses: false, classTokens: [], styleRows: [], stylesTouched: false });
+    const state = () => ({ tab: window.waSessionTabs?.get('component_properties', 'basic') || 'basic', search: '', rootIndex: 0, rootOptions: [], editable: false, breakpoint: '', extraFields: [], allFields: false, allClasses: false, classTokens: [], styleRows: [], stylesTouched: false });
     const blankRow = () => ({ id: crypto.randomUUID(), name: '', value: '', pseudos: [] });
     const sync = (draft, source) => {
         const ui = draft.controls ||= state();
@@ -161,7 +161,7 @@
             get config() { return window.waComponentPropertyConfig; },
             get fields() { return visibleFields(this.config, this.ui); },
             get cssResults() { return cssSearchResults(this.ui.search, this.ui.styleRows); },
-            changePropertyTab(tab) { this.ui.tab = tab; },
+            changePropertyTab(tab) { if (!['basic', 'bootstrap', 'css'].includes(tab)) return; this.ui.tab = tab; window.waSessionTabs?.set('component_properties', tab); },
             addField() { if (this.extraField && !this.ui.extraFields.includes(this.extraField)) this.ui.extraFields.push(this.extraField); this.extraField = ''; },
             addStyleRow() {
                 const row = blankRow(); this.ui.styleRows.push(row);

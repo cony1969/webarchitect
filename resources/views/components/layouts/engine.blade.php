@@ -32,6 +32,8 @@
 <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 
+    <script>window.waSessionTabsConfig = @js(['tabs' => session('wa.tabs.'.auth()->id(), []), 'csrf' => csrf_token()]);</script>
+    <script defer src="{{ asset('js/session-tabs.js') }}?v=20261029-session1"></script>
     <script>window.waCssPseudos = @js(json_decode(file_get_contents(resource_path('data/css-pseudos.json')), true));</script>
     <script>window.waComponentPropertyConfig = @js(app(\App\Services\Cms\ComponentPropertyCatalog::class)->data());</script>
     <script>window.waProjectEditorConfig = @js(array_merge(config('domain-editor'), ['csrf' => csrf_token()]));</script>
@@ -41,16 +43,16 @@
     <link rel="stylesheet" href="{{ asset('assets/libs/spectrum-colorpicker2/spectrum.min.css') }}">
     <script defer src="{{ asset('assets/libs/spectrum-colorpicker2/spectrum.min.js') }}"></script>
     <script defer src="{{ asset('js/color-picker.js') }}?v=20261028-color-button3"></script>
-    <script defer src="{{ asset('js/project-editor.js') }}?v=20261029-page-delete1"></script>
+    <script defer src="{{ asset('js/project-editor.js') }}?v=20261029-session1"></script>
     <script defer src="{{ asset('js/site-import.js') }}?v=20261028-css-select2"></script>
     <script defer src="{{ asset('assets/libs/ace/ace.js') }}"></script>
     <script defer src="{{ asset('assets/libs/ace/mode-json.js') }}"></script>
     <script defer src="{{ asset('assets/libs/ace/theme-tomorrow_night.js') }}"></script>
     <script defer src="{{ asset('js/pseudo-styles.js') }}?v=20261028-pseudo2"></script>
-    <script defer src="{{ asset('js/component-controls.js') }}?v=20261029-width-toggle1"></script>
+    <script defer src="{{ asset('js/component-controls.js') }}?v=20261029-session1"></script>
     <script defer src="{{ asset('js/box-model.js') }}?v=20261028-pseudo2"></script>
     <script defer src="{{ asset('js/alignment-controls.js') }}?v=20261028-pseudo2"></script>
-    <script defer src="{{ asset('js/component-editor.js') }}?v=20261029-width-toggle1"></script>
+    <script defer src="{{ asset('js/component-editor.js') }}?v=20261029-session1"></script>
     <script defer src="{{ asset('js/page-preview.js') }}?v=20261028-css-select2"></script>
     <!-- Stabilné, oficiálne načítanie AlpineJS a HTMX -->
     <script defer src="{{ asset('js/alpine.min.js') }}"></script>
@@ -64,6 +66,9 @@
     <link rel="stylesheet" href="{{ asset('css/project-editor.css') }}?v=20261029-page-delete1">
 </head>
 <body>
+    <div class="wa-project-message is-error m-2" role="alert" x-data="{ message: '' }" @wa-session-tabs-status.window="message = $event.detail.message" x-show="message" x-cloak>
+        <span x-text="message"></span> <button type="button" @click="window.waSessionTabs.retry()">Skúsiť znova</button>
+    </div>
 
     {{-- Globálna príprava dát pre asynchrónny Blade / HTMX komponent profilu --}}
     @if(auth()->check())
