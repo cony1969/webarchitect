@@ -119,7 +119,11 @@ it('offers responsive grid widths from the installed Bootstrap and preserves ful
     $columns = collect($catalog['fields'])->firstWhere('id','columns');
     expect($columns['common'])->toBeTrue()->and($columns['options']['md'])->toContain('col-md-6','col-md-12')->and(array_diff($columns['options']['md'],$catalog['classes']))->toBe([]);
     $this->source['objects']['class'] = 'container-fluid w-100 brand';
+    $restore = ['before' => ['container', 'brand'], 'applied' => ['brand', 'container-fluid', 'w-100']];
+    $this->source['objects']['editor_full_width'] = $restore;
     $this->postJson('/ui/components/editor', array_replace($this->payload,['json_content'=>json_encode($this->source)]))->assertOk();
     expect($this->component->fresh()->document['nodes'][0]['attributes']['class'])->toBe('container-fluid w-100 brand');
+    expect($this->component->fresh()->document['nodes'][0]['attributes']['editor_full_width'])->toBe($restore);
+    expect(\App\Services\Cms\DocumentData::toLegacy($this->component->fresh()->document)['editor_full_width'])->toBe($restore);
     $this->get('/dashboard')->assertOk()->assertSee('Roztiahnuť na celú šírku rodiča')->assertSee('Šírka stĺpca (z 12)');
 });

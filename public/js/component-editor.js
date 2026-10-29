@@ -112,11 +112,21 @@
                 const draft = this.drafts[key]; draft.code = pretty(source); this.updateDocument(key, false, false);
             },
             selectPropertyRoot(key) { const draft = this.drafts[key]; window.waComponentControls.sync(draft, this.parsed(draft)); },
-            fillParentWidth(key) {
+            fullWidthEnabled(key) {
                 const draft = this.drafts[key];
+                if (!draft?.controls.editable || draft.codeError) return false;
+                const controls = window.waComponentControls;
+                const node = controls.roots(this.parsed(draft))[draft.controls.rootIndex];
+                return controls.isFullWidth(draft.controls.classTokens.join(' '), node.type);
+            },
+            toggleParentWidth(key) { this.fillParentWidth(key, !this.fullWidthEnabled(key)); },
+            fillParentWidth(key, enabled = true) {
+                const draft = this.drafts[key], controls = window.waComponentControls;
                 if (!draft?.controls.editable || !draft.loaded || draft.loading || draft.saving || draft.codeError) return;
-                const node = window.waComponentControls.roots(this.parsed(draft))[draft.controls.rootIndex];
-                this.classesChanged(key, window.waComponentControls.fullWidthClasses(draft.controls.classTokens.join(' '), node.type));
+                const source = this.parsed(draft), node = controls.roots(source)[draft.controls.rootIndex];
+                controls.setFullWidth(node, enabled);
+                draft.controls.classTokens = controls.tokens(controls.attribute(node, 'class'));
+                this.writeControlSource(key, source);
             },
             bootstrapChanged(key, field, value) {
                 const draft = this.drafts[key], controls = window.waComponentControls;
@@ -132,6 +142,7 @@
                 const source = this.parsed(draft), node = controls.roots(source)[draft.controls.rootIndex];
                 draft.controls.classTokens = controls.tokens(classes.join(' '));
                 controls.setAttribute(node, 'class', draft.controls.classTokens.join(' '));
+                if (!controls.isFullWidth(draft.controls.classTokens.join(' '), node.type)) controls.setAttribute(node, 'editor_full_width', '');
                 this.writeControlSource(key, source);
             },
             stylesChanged(key) {

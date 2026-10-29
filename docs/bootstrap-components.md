@@ -189,3 +189,10 @@ Plná šírka vnoreného prvku sa počíta voči jeho rodičovi, nie mimo neho.
 Mriežka náhľadu predstavuje plochu stránky. Náhľad nepridáva vlastné vodorovné
 odsadenie body, takže šírka container-fluid zodpovedá celej ploche mriežky.
 Zmena tried sa ako ostatné úpravy uloží až cez Uložiť zmeny.
+
+Plná šírka je prepínacie tlačidlo s aria-pressed a tyrkysovým zapnutým stavom.
+Druhé kliknutie obnoví pôvodné triedy šírky, pričom zachová ostatné úpravy.
+Uzol uchováva editor_full_width (before/applied), aby obnovenie fungovalo aj po
+uložení, opätovnom načítaní a skopírovaní do projektu. Tieto metadáta sa nevykresľujú
+do HTML. Ručná zmena na inú šírku prepínač vypne a zruší starú snímku.
+Select2 voľba 100 % vždy plnú šírku zapne; opakovaný výber ju nevypína.

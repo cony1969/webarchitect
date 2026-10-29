@@ -55,6 +55,35 @@
         if (needsBlock && !result.includes('d-block')) result.push('d-block');
         return result;
     };
+    const isFullWidth = (classes, type = 'div') => {
+        const current = tokens(classes);
+        const expanded = fullWidthClasses(classes, type);
+        return current.includes('w-100') && current.length === expanded.length && expanded.every(token => current.includes(token));
+    };
+    // Keep the reversible class delta with the node so save/reload and project copies retain it.
+    const setFullWidth = (node, enabled) => {
+        const current = tokens(attribute(node, 'class'));
+        const active = isFullWidth(current.join(' '), node.type);
+        if (enabled === active) return;
+        if (enabled) {
+            const applied = fullWidthClasses(current.join(' '), node.type);
+            setAttribute(node, 'editor_full_width', {before: current, applied});
+            setAttribute(node, 'class', applied.join(' '));
+        } else {
+            const saved = attribute(node, 'editor_full_width');
+            let result;
+            if (Array.isArray(saved?.before) && Array.isArray(saved?.applied) && [...saved.before, ...saved.applied].every(token => typeof token === 'string' && token && !/\s/.test(token))) {
+                const added = saved.applied.filter(token => !saved.before.includes(token));
+                const removed = saved.before.filter(token => !saved.applied.includes(token));
+                result = [...saved.before.filter(token => current.includes(token) || removed.includes(token)), ...current.filter(token => !saved.before.includes(token) && !added.includes(token))];
+            } else {
+                // Older definitions have no restore snapshot: return to natural Bootstrap sizing.
+                result = current.filter(token => token !== 'w-100').map(token => token === 'container-fluid' ? 'container' : token === 'col-12' ? 'col' : token);
+            }
+            setAttribute(node, 'class', tokens(result.join(' ')).join(' '));
+            setAttribute(node, 'editor_full_width', '');
+        }
+    };
     const fieldOptionLabel = (field, token) => {
         if (field.id === 'width') return ({'w-25':'25 %', 'w-50':'50 %', 'w-75':'75 %', 'w-100':'100 % · celá šírka rodiča', 'w-auto':'Automatická šírka'})[token] + ' (' + token + ')';
         if (field.id === 'columns') {
@@ -120,7 +149,7 @@
         ui.styleRows = [...styleRows(String(attribute(node, 'style'))), ...(window.waPseudoStyles?.rules(node) || []).flatMap(row => row.pseudos.map(pseudo => ({...row, pseudos: [pseudo]})))].map(row => ({ id: crypto.randomUUID(), pseudos: [], ...row }));
         if (!ui.styleRows.length) ui.styleRows.push(blankRow());
     };
-    window.waComponentControls = { tokens, roots, attribute, setAttribute, styleRows, serializeStyles, fieldOptions, replaceField, state, blankRow, sync, normalizeSearch, matchesSearch, visibleFields, cssSearchResults, cssCatalog, cssMatches, cssCustomProperty, fullWidthClasses, fieldOptionLabel };
+    window.waComponentControls = { tokens, roots, attribute, setAttribute, styleRows, serializeStyles, fieldOptions, replaceField, state, blankRow, sync, normalizeSearch, matchesSearch, visibleFields, cssSearchResults, cssCatalog, cssMatches, cssCustomProperty, fullWidthClasses, isFullWidth, setFullWidth, fieldOptionLabel };
 
     document.addEventListener('alpine:init', () => {
         Alpine.data('waComponentProperties', () => ({
