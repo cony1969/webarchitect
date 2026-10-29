@@ -229,16 +229,17 @@ Git Poštovne je samostatný repozitár; pred prácou overiť jeho aktuálny sta
 
 ## 7. Plánované práce a odporúčané poradie
 
-Nasledujúce body sú návrh ďalšieho postupu. Používateľ chce pokračovať postupne, krok po kroku.
+Prvý bod je výslovne dohodnutá najbližšia úloha. Ostatné body sú návrh ďalšieho postupu; používateľ chce pokračovať postupne, krok po kroku.
 
-1. **Dotiahnuť skladanie layoutu.** Doplniť výber ľubovoľného hotového komponentu z knižnice, jasné cieľové oblasti/sloty, presun a poradie prvkov. Najprv overiť uloženie a opätovné otvorenie existujúcich predlôh.
-2. **Pridať samostatné Bootstrap Row a Col.** V nových predlohách už grid existuje ako štrukturálne uzly; samostatné upraviteľné komponenty ešte nie. Zjednotiť ich výber, responzívne šírky a povolené vnorenie.
-3. **Prepojiť layout so stránkou.** Výber layoutu pri stránke, vytvorenie potrebných projektových kópií, stabilné sloty pre obsah a zachovanie lokálnych úprav. Jasne rozlíšiť úpravu definície a konkrétnej inštancie.
-4. **Dokončiť editor stránok a sekcií.** Výber/vkladanie komponentov a sekcií, zmena poradia, uloženie a opätovné použitie; zachovať dnešné stredné karty a pravé vlastnosti.
-5. **Postupne dopĺňať Bootstrap knižnicu.** Zástupné položky nahrádzať skutočnými definíciami. Pri Poštovni najprv porovnať existujúce a použité komponenty/layout, nie generovať neoverené duplicity.
-6. **Publikačný renderer a spoločný CSS súbor.** Zachovať editovateľný JSON ako zdroj pravdy, pri generovaní získať deterministické selektory a pseudo pravidlá, zlúčiť CSS použitých komponentov a paletu domény. Bootstrap môže zostať samostatná knižničná závislosť. Overiť deduplikáciu, poradie/kaskádu, izoláciu inštancií a invalidáciu cache. Vue nezavádzať.
-7. **Načítať/Aktualizovať Poštovňu.** Záloha, fingerprint, väzby na pôvodné súbory/komponenty, opakovateľný import bez duplicít, konflikty používateľských zmien a vizuálne porovnanie. Formuláre a obsluhu PHP riešiť osobitne. Vzory HTML neimportovať automaticky ako produkčné stránky.
-8. **Až neskôr skutočné vytváranie webov/databáz**, Laravel vzory a prihlasovanie, publikovanie na ASUS a budúci export ku klientovi cez Git/FTP.
+1. **Ako prvú prácu odstrániť prázdny priestor nad komponentom/kontajnerom v blueprint náhľade.** Ide o pomocné horné odsadenie editora rezervované pre názvy na rámčekoch, nie o uložený margin/padding komponentu. Upraviť náhľad tak, aby nevytváral zbytočný prázdny pás, a pritom zachovať čitateľné a klikateľné názvy na borderoch. Overiť náhľad komponentov aj layoutov v otvorenom Safari. Pri odovzdaní je táto oprava iba naplánovaná; ešte nebola vykonaná.
+2. **Dotiahnuť skladanie layoutu.** Doplniť výber ľubovoľného hotového komponentu z knižnice, jasné cieľové oblasti/sloty, presun a poradie prvkov. Najprv overiť uloženie a opätovné otvorenie existujúcich predlôh.
+3. **Pridať samostatné Bootstrap Row a Col.** V nových predlohách už grid existuje ako štrukturálne uzly; samostatné upraviteľné komponenty ešte nie. Zjednotiť ich výber, responzívne šírky a povolené vnorenie.
+4. **Prepojiť layout so stránkou.** Výber layoutu pri stránke, vytvorenie potrebných projektových kópií, stabilné sloty pre obsah a zachovanie lokálnych úprav. Jasne rozlíšiť úpravu definície a konkrétnej inštancie.
+5. **Dokončiť editor stránok a sekcií.** Výber/vkladanie komponentov a sekcií, zmena poradia, uloženie a opätovné použitie; zachovať dnešné stredné karty a pravé vlastnosti.
+6. **Postupne dopĺňať Bootstrap knižnicu.** Zástupné položky nahrádzať skutočnými definíciami. Pri Poštovni najprv porovnať existujúce a použité komponenty/layout, nie generovať neoverené duplicity.
+7. **Publikačný renderer a spoločný CSS súbor.** Zachovať editovateľný JSON ako zdroj pravdy, pri generovaní získať deterministické selektory a pseudo pravidlá, zlúčiť CSS použitých komponentov a paletu domény. Bootstrap môže zostať samostatná knižničná závislosť. Overiť deduplikáciu, poradie/kaskádu, izoláciu inštancií a invalidáciu cache. Vue nezavádzať.
+8. **Načítať/Aktualizovať Poštovňu.** Záloha, fingerprint, väzby na pôvodné súbory/komponenty, opakovateľný import bez duplicít, konflikty používateľských zmien a vizuálne porovnanie. Formuláre a obsluhu PHP riešiť osobitne. Vzory HTML neimportovať automaticky ako produkčné stránky.
+9. **Až neskôr skutočné vytváranie webov/databáz**, Laravel vzory a prihlasovanie, publikovanie na ASUS a budúci export ku klientovi cez Git/FTP.
 
 ## 8. Dôležité súbory pre pokračovanie
 
