@@ -46,7 +46,7 @@
         }
         const css = (String(source.css || '') + '\n' + pseudoCss.join('\n')).replaceAll('<', '\\3c ');
         const bootstrap = location.origin + '/css/bootstrap.min.css';
-        return '<!doctype html><html lang="sk"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="' + escape("default-src 'none'; style-src 'unsafe-inline' " + bootstrap + "; img-src data:; base-uri 'none'; form-action 'none'; script-src 'none'") + '"><link rel="stylesheet" href="' + escape(bootstrap) + '"><style>body{margin:0;padding:42px 20px;background:#fff;background-image:linear-gradient(#3bc0c31c 1px,transparent 1px),linear-gradient(90deg,#3bc0c31c 1px,transparent 1px);background-size:20px 20px} .wa-preview-root{position:relative;min-height:200px;outline:2px dashed #0a969b;outline-offset:-2px} .wa-preview-root:not(.wa-custom-pseudo):empty:before{content:attr(data-wa-label);position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#08777c;font:14px system-ui} ' + css + '</style></head><body>' + root.outerHTML + '</body></html>';
+        return '<!doctype html><html lang="sk"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="' + escape("default-src 'none'; style-src 'unsafe-inline' " + bootstrap + "; img-src data:; base-uri 'none'; form-action 'none'; script-src 'none'") + '"><link rel="stylesheet" href="' + escape(bootstrap) + '"><style>body{margin:0;padding:42px 0;background:#fff;background-image:linear-gradient(#3bc0c31c 1px,transparent 1px),linear-gradient(90deg,#3bc0c31c 1px,transparent 1px);background-size:20px 20px} .wa-preview-root{position:relative;min-height:200px;outline:2px dashed #0a969b;outline-offset:-2px} .wa-preview-root:not(.wa-custom-pseudo):empty:before{content:attr(data-wa-label);position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#08777c;font:14px system-ui} ' + css + '</style></head><body>' + root.outerHTML + '</body></html>';
     };
 
     document.addEventListener('alpine:init', () => {
@@ -112,9 +112,16 @@
                 const draft = this.drafts[key]; draft.code = pretty(source); this.updateDocument(key, false, false);
             },
             selectPropertyRoot(key) { const draft = this.drafts[key]; window.waComponentControls.sync(draft, this.parsed(draft)); },
+            fillParentWidth(key) {
+                const draft = this.drafts[key];
+                if (!draft?.controls.editable || !draft.loaded || draft.loading || draft.saving || draft.codeError) return;
+                const node = window.waComponentControls.roots(this.parsed(draft))[draft.controls.rootIndex];
+                this.classesChanged(key, window.waComponentControls.fullWidthClasses(draft.controls.classTokens.join(' '), node.type));
+            },
             bootstrapChanged(key, field, value) {
                 const draft = this.drafts[key], controls = window.waComponentControls;
                 if (!draft?.controls.editable || draft.saving || draft.codeError) return;
+                if (field.id === 'width' && value === 'w-100') { this.fillParentWidth(key); return; }
                 if (!field.common && !draft.controls.extraFields.includes(field.id)) draft.controls.extraFields.push(field.id);
                 const classes = controls.replaceField(draft.controls.classTokens.join(' '), field, draft.controls.breakpoint, value);
                 this.classesChanged(key, classes);

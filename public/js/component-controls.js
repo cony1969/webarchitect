@@ -41,6 +41,29 @@
         if (value && allowed.includes(value)) result.push(value);
         return tokens(result.join(' '));
     };
+    const isContainerClass = token => /^container(?:-(?:fluid|sm|md|lg|xl|xxl))?$/.test(token);
+    const isColumnClass = token => /^col(?:-(?:sm|md|lg|xl|xxl))?(?:-(?:auto|[1-9]|1[0-2]))?$/.test(token);
+    const fullWidthClasses = (classes, type = 'div') => {
+        const current = tokens(classes);
+        const container = current.some(isContainerClass);
+        const column = current.some(isColumnClass);
+        const needsBlock = current.some(token => /^d-(?:(?:sm|md|lg|xl|xxl)-)?inline$/.test(token)) || (['a','span','strong','em','b','i','small','label','code'].includes(type.toLowerCase()) && !current.some(token => /^d-(?:none|block|inline-block|grid|table|table-cell|table-row|flex|inline-flex)$/.test(token)));
+        const result = current.filter(token => !/^d-(?:(?:sm|md|lg|xl|xxl)-)?inline$/.test(token) && !isContainerClass(token) && !isColumnClass(token) && !/^w-(?:25|50|75|100|auto)$/.test(token));
+        if (container) result.push('container-fluid');
+        if (column) result.push('col-12');
+        result.push('w-100');
+        if (needsBlock && !result.includes('d-block')) result.push('d-block');
+        return result;
+    };
+    const fieldOptionLabel = (field, token) => {
+        if (field.id === 'width') return ({'w-25':'25 %', 'w-50':'50 %', 'w-75':'75 %', 'w-100':'100 % · celá šírka rodiča', 'w-auto':'Automatická šírka'})[token] + ' (' + token + ')';
+        if (field.id === 'columns') {
+            const value = token.split('-').at(-1);
+            return (/^\d+$/.test(value) ? value + ' / 12' + (value === '12' ? ' · celý riadok' : '') : value === 'auto' ? 'Podľa obsahu' : 'Rovnomerne') + ' (' + token + ')';
+        }
+        if (field.id === 'container' && token === 'container-fluid') return 'Celá šírka rodiča (container-fluid)';
+        return token;
+    };
     const normalizeSearch = value => String(value || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
     const matchesSearch = (query, ...values) => {
         const haystack = normalizeSearch(values.flat(Infinity).join(' '));
@@ -48,7 +71,7 @@
     };
     const bootstrapAliases = {
         container: 'container type responsive fluid', display: 'display visibility visible hidden', padding: 'padding spacing', margin: 'margin spacing',
-        width: 'width sizing', background: 'background color', color: 'text color foreground',
+        columns: 'stlpec stlpce mriezka grid column columns col col-md-12', width: 'width sizing cela sirka full width roztiahnut vyplnit', background: 'background color', color: 'text color foreground',
         px: 'padding horizontal left right inline', py: 'padding vertical top bottom', pt: 'padding top', pb: 'padding bottom', ps: 'padding start left inline', pe: 'padding end right inline',
         mx: 'margin horizontal left right inline', my: 'margin vertical top bottom', mt: 'margin top', mb: 'margin bottom', ms: 'margin start left inline', me: 'margin end right inline',
         height: 'height sizing', gap: 'gap spacing gutters', direction: 'flex direction', wrap: 'flex wrap', justify: 'justify content alignment', align: 'align items alignment', self: 'align self alignment',
@@ -97,7 +120,7 @@
         ui.styleRows = [...styleRows(String(attribute(node, 'style'))), ...(window.waPseudoStyles?.rules(node) || []).flatMap(row => row.pseudos.map(pseudo => ({...row, pseudos: [pseudo]})))].map(row => ({ id: crypto.randomUUID(), pseudos: [], ...row }));
         if (!ui.styleRows.length) ui.styleRows.push(blankRow());
     };
-    window.waComponentControls = { tokens, roots, attribute, setAttribute, styleRows, serializeStyles, fieldOptions, replaceField, state, blankRow, sync, normalizeSearch, matchesSearch, visibleFields, cssSearchResults, cssCatalog, cssMatches, cssCustomProperty };
+    window.waComponentControls = { tokens, roots, attribute, setAttribute, styleRows, serializeStyles, fieldOptions, replaceField, state, blankRow, sync, normalizeSearch, matchesSearch, visibleFields, cssSearchResults, cssCatalog, cssMatches, cssCustomProperty, fullWidthClasses, fieldOptionLabel };
 
     document.addEventListener('alpine:init', () => {
         Alpine.data('waComponentProperties', () => ({
@@ -225,7 +248,7 @@
                 const options = fieldOptions(this.field, this.draft.controls.breakpoint);
                 const selected = [...this.draft.controls.classTokens].reverse().find(token => options.includes(token)) || '';
                 this.widget.empty().append(new Option('Nenastavené', ''));
-                for (const token of options) this.widget.append(new Option(token, token));
+                for (const token of options) this.widget.append(new Option(fieldOptionLabel(this.field, token), token));
                 this.widget.prop('disabled', this.draft.saving || !!this.draft.codeError || !this.draft.controls.editable).val(selected).trigger('change.select2');
             },
             destroy() { if (this.widget?.data('select2')) this.widget.off('.waControl').select2('destroy'); },

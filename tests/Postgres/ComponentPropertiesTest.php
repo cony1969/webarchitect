@@ -113,3 +113,13 @@ it('preserves nested pseudo rules through document round trips and page composit
     $composed = app(\App\Services\Cms\PageComposition::class)->resolve($this->user,$document,null);
     expect($composed['preview']['objects']['style_rules'])->toBe($source['attributes']['style_rules']);
 });
+
+it('offers responsive grid widths from the installed Bootstrap and preserves full width classes on save', function () {
+    $catalog = app(ComponentPropertyCatalog::class)->data();
+    $columns = collect($catalog['fields'])->firstWhere('id','columns');
+    expect($columns['common'])->toBeTrue()->and($columns['options']['md'])->toContain('col-md-6','col-md-12')->and(array_diff($columns['options']['md'],$catalog['classes']))->toBe([]);
+    $this->source['objects']['class'] = 'container-fluid w-100 brand';
+    $this->postJson('/ui/components/editor', array_replace($this->payload,['json_content'=>json_encode($this->source)]))->assertOk();
+    expect($this->component->fresh()->document['nodes'][0]['attributes']['class'])->toBe('container-fluid w-100 brand');
+    $this->get('/dashboard')->assertOk()->assertSee('Roztiahnuť na celú šírku rodiča')->assertSee('Šírka stĺpca (z 12)');
+});

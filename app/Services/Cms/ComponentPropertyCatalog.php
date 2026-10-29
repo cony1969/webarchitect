@@ -26,7 +26,8 @@ class ComponentPropertyCatalog
         $add('display', 'Zobrazenie', 'd', ['none', 'inline', 'inline-block', 'block', 'grid', 'table', 'table-cell', 'table-row', 'flex', 'inline-flex'], true, true);
         $add('padding', 'Vnútorné odsadenie', 'p', range(0, 5), true, true);
         $add('margin', 'Vonkajšie odsadenie', 'm', [...range(0, 5), 'auto'], true, true);
-        $add('width', 'Šírka', 'w', ['25', '50', '75', '100', 'auto'], false, true);
+        $add('width', 'Šírka komponentu', 'w', ['25', '50', '75', '100', 'auto'], false, true);
+        $add('columns', 'Šírka stĺpca (z 12)', 'col', ['', 'auto', ...range(1, 12)], true, true);
         $add('background', 'Farba pozadia', 'bg', [...$colors, 'body', 'transparent'], false, true);
         $add('color', 'Farba textu', 'text', [...$colors, 'body', 'muted', 'black-50', 'white-50'], false, true);
         foreach (['p' => 'Vnútorné odsadenie', 'm' => 'Vonkajšie odsadenie'] as $prefix => $label) {

@@ -23,6 +23,10 @@
         </div>
         <div id="component-property-bootstrap" role="tabpanel" aria-labelledby="component-property-tab-bootstrap" x-show="ui.tab === 'bootstrap'">
             <fieldset class="wa-project-fields" :disabled="!draft.loaded || draft.loading || draft.saving || !!draft.codeError || !ui.editable">
+                <div class="wa-fill-parent">
+                    <button type="button" class="btn wa-project-secondary" @click="store.fillParentWidth(key)"><i class="fas fa-arrows-alt-h" aria-hidden="true"></i> Roztiahnuť na celú šírku rodiča</button>
+                    <p class="wa-project-muted">Platí pre všetky šírky obrazovky. Kontajner použije container-fluid, stĺpec col-12 a ostatné prvky w-100. Pre responzívny stĺpec vyberte breakpoint a počet z 12 nižšie. Vlastné CSS obmedzenia a odstupy upravíte v CSS.</p>
+                </div>
                 <label class="wa-project-field mb-3">Šírka obrazovky<select x-model="ui.breakpoint"><template x-for="(label, value) in config.breakpoints" :key="value"><option :value="value" x-text="label"></option></template></select></label>
                 <template x-for="field in fields" :key="field.id">
                     <label class="wa-project-field mb-3" x-data="waBootstrapField(field)"><span x-text="field.label"></span><select x-ref="field" :aria-label="field.label"></select></label>

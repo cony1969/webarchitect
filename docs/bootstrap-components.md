@@ -169,3 +169,23 @@ v databáze sa tým nemení. Ostatné komponenty ani CMS tieto pravidlá neovply
 ::before a ::after potrebujú content; podporu a použiteľné vlastnosti jednotlivých
 stavov/prvkov určuje prehliadač. Hotový spoločný publikovaný CSS súbor domény
 zostáva samostatným ďalším krokom.
+
+## Šírka komponentu a plocha stránky
+
+Bootstrap záložka obsahuje rýchlu voľbu Roztiahnuť na celú šírku rodiča. Nahradí
+kontajnerové triedy triedou container-fluid, existujúce šírky stĺpca (vrátane
+responzívnych alternatív) triedou col-12 a percentuálne šírky triedou w-100.
+Prvok bez existujúcich tried col sa automaticky nemení na stĺpec. Bežné inline
+prvky alebo d-inline dostanú d-block, aby na nich width účinkovalo; d-none sa zachová. Ostatné triedy,
+CSS, pseudo varianty a obsah zostávajú zachované. Voľba Šírka komponentu 100 %
+spustí tú istú úpravu. Vlastné CSS min/max-width, dôležitý width, offsety či
+vonkajšie odstupy môžu ďalej obmedziť rozloženie; rýchla voľba ich neprepisuje.
+
+Šírka stĺpca (z 12) ponúka col, col-auto a 1–12 pre vybraný breakpoint. Napríklad
+md + 12 zapíše col-md-12 a zachová odlišné nastavenia iných breakpointov.
+Stĺpce sa používajú vo vnútri .row; container-fluid určuje šírku kontajnera.
+Plná šírka vnoreného prvku sa počíta voči jeho rodičovi, nie mimo neho.
+
+Mriežka náhľadu predstavuje plochu stránky. Náhľad nepridáva vlastné vodorovné
+odsadenie body, takže šírka container-fluid zodpovedá celej ploche mriežky.
+Zmena tried sa ako ostatné úpravy uloží až cez Uložiť zmeny.
